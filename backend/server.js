@@ -189,8 +189,8 @@ async function fetchLiveFlights() {
       }
     } catch (error) {
       console.error('OpenSky Error:', error.message);
-      if (error.response && error.response.status === 429) {
-        console.log("OpenSky rate limit hit! Switching primary feed to ADSB.lol backup.");
+      if (error.response && (error.response.status === 429 || error.response.status === 403 || error.response.status === 401)) {
+        console.log("OpenSky block hit! Switching primary feed to ADSB.lol backup.");
         openSkyRateLimited = true;
       }
     }
