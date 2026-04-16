@@ -1,4 +1,11 @@
 require('dotenv').config();
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -114,10 +121,30 @@ app.get('/api/route/:flightNumber', async (req, res) => {
       }
     }
     
-    res.json(null);
+    const fallbackRoute = {
+      origin: 'Data Unavailable',
+      originIata: 'N/A',
+      originIcao: 'N/A',
+      originTimezone: 'Unknown',
+      destination: 'Data Unavailable',
+      destinationIata: 'N/A',
+      destinationIcao: 'N/A',
+      destinationTimezone: 'Unknown'
+    };
+    
+    res.json(fallbackRoute);
   } catch (error) {
     console.error('AviationStack Error:', error.message);
-    res.status(500).json({ error: error.message });
+    res.json({
+      origin: 'Data Unavailable',
+      originIata: 'N/A',
+      originIcao: 'N/A',
+      originTimezone: 'Unknown',
+      destination: 'Data Unavailable',
+      destinationIata: 'N/A',
+      destinationIcao: 'N/A',
+      destinationTimezone: 'Unknown'
+    });
   }
 });
 
@@ -255,5 +282,10 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, async () => {
   console.log(`Backend server running on port ${PORT}`);
-  fetchLiveFlights();
+  try {
+    await fetchLiveFlights();
+    console.log(`Initial flight fetch complete. Cache size: ${flightCache.length}`);
+  } catch (err) {
+    console.error('Initial fetch failed:', err.message);
+  }
 });
