@@ -91,8 +91,13 @@ export default function Home() {
         axios.get(`${API_URL}/api/route/${selectedFlight.flightNumber}`)
           .then(res => {
              if (res.data) setFlightRouteData(res.data);
+             else setFlightRouteData({ origin: "Data Unavailable", originIata: "N/A", originIcao: "---", destination: "Data Unavailable", destinationIata: "N/A", destinationIcao: "---" });
           })
-          .catch(() => {});
+          .catch(() => {
+             setFlightRouteData({ origin: "Data Unavailable", originIata: "N/A", originIcao: "---", destination: "Data Unavailable", destinationIata: "N/A", destinationIcao: "---" });
+          });
+      } else {
+         setFlightRouteData({ origin: "Data Unavailable", originIata: "N/A", originIcao: "---", destination: "Data Unavailable", destinationIata: "N/A", destinationIcao: "---" });
       }
     } else {
       setFlightPhotoUrl(null);
@@ -273,9 +278,11 @@ export default function Home() {
                     )}
                   </div>
 
-                  <div className="text-sm font-medium text-gray-300 z-10 relative">
-                     <span className="text-gray-500">Origin / Registration: </span> 
-                     <span className="font-bold text-white">{selectedFlight.airline}</span>
+                  <div className="flex items-center text-sm font-medium text-gray-300 z-10 relative bg-black/20 p-3 rounded-xl border border-white/5">
+                     <div>
+                       <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Registration</div>
+                       <div className="font-bold text-white">{selectedFlight.airline}</div>
+                     </div>
                   </div>
                </div>
 
