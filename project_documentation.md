@@ -1,7 +1,7 @@
-# FlightAI Platform Documentation
+# SkyIntel Platform Documentation
 
 ## Overview
-FlightAI is a deep telemetry, real-time tracking platform. It allows users to track global flights, providing real-time data on location, altitude, and weather conditions. An embedded AI Assistant powered by OpenAI helps users with aviation queries contextually aware of the currently tracked flight.
+SkyIntel is a deep telemetry, real-time tracking platform. It allows users to track global flights, providing real-time data on location, altitude, and weather conditions. An embedded AI Assistant called **SkyLord**, powered by Groq (Llama 3.1), helps users with aviation queries contextually aware of the currently tracked flight.
 
 ## Tech Stack
 ### Frontend
