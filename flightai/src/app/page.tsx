@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { Search, Settings, Bell, Mic, Send, Plane, Navigation, Activity, AlertCircle, Compass, ArrowUp, Zap, Cloud, Wind, Thermometer, MapPin, Flag } from 'lucide-react';
+import { Search, Settings, Bell, Mic, Send, Plane, Navigation, Activity, AlertCircle, Compass, ArrowUp, Zap, Cloud, Wind, Thermometer, MapPin, Flag, Crosshair, X, Eye, Radio } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
@@ -14,11 +14,11 @@ const Map = dynamic(() => import('@/components/Map'), {
   loading: () => <div className="flex-1 h-full bg-[#0d1117] flex items-center justify-center">Loading Real-Time Map...</div>
 });
 
-interface ChatMessage { role: 'user' | 'assistant'; content: string; isError?: boolean; }
+interface ChatMessage { role: 'user' | 'assistant'; content: string; isError?: boolean; referencedFlights?: string[]; }
 
 export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>([
-    { role: 'assistant', content: "Welcome to FlightAI Command Center. I'm connected to live worldwide telemetry. What would you like to track?" }
+    { role: 'assistant', content: "Welcome to SkyIntel Command Center. I'm SkyLord, your aviation intelligence assistant. What would you like to track?" }
   ]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
@@ -35,6 +35,7 @@ export default function Home() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [airportData, setAirportData] = useState<any>(null);
   const [targetPos, setTargetPos] = useState<[number, number] | null>(null);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
 
   const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
@@ -68,14 +69,29 @@ export default function Home() {
 
   useEffect(() => {
     if (selectedFlight?.id) {
+      const hex = selectedFlight.id.toLowerCase();
       setFlightPhotoUrl(null);
-      axios.get(`https://api.planespotters.net/pub/photos/hex/${selectedFlight.id.toLowerCase()}`)
-        .then(res => {
-           if (res.data && res.data.photos && res.data.photos.length > 0) {
-              setFlightPhotoUrl(res.data.photos[0].thumbnail_large.src);
-           }
-        })
-        .catch(() => {});
+      
+      const sources = [
+        `https://api.planespotters.net/pub/photos/hex/${hex}`,
+        `https://www.flightradar24.com/static/images/data/aircraft/lib/hex/${hex.toUpperCase()}.jpg`
+      ];
+
+      const fetchPhoto = async () => {
+        // Try Planespotters first (as before)
+        try {
+          const res = await axios.get(sources[0]);
+          if (res.data && res.data.photos && res.data.photos.length > 0) {
+            setFlightPhotoUrl(res.data.photos[0].thumbnail_large.src);
+            return;
+          }
+        } catch (err) {}
+
+        // Fallback to FlightRadar24 static image (direct URL check)
+        setFlightPhotoUrl(sources[1]);
+      };
+
+      fetchPhoto();
 
       // Fetch Weather
       setWeatherData(null);
@@ -85,10 +101,14 @@ export default function Home() {
         })
         .catch(() => {});
         
-      // Fetch Route
+      // Fetch Route (AeroDataBox Premium + Fallbacks)
       setFlightRouteData(null);
-      if (selectedFlight.flightNumber && selectedFlight.flightNumber !== 'Unknown') {
-        axios.get(`${API_URL}/api/route/${selectedFlight.flightNumber}`)
+      const lookupId = (selectedFlight.flightNumber && selectedFlight.flightNumber !== 'Unknown') 
+        ? selectedFlight.flightNumber 
+        : selectedFlight.id;
+
+      if (lookupId) {
+        axios.get(`${API_URL}/api/route/${lookupId}`)
           .then(res => {
              if (res.data) setFlightRouteData(res.data);
              else setFlightRouteData({ origin: "Data Unavailable", originIata: "N/A", originIcao: "---", destination: "Data Unavailable", destinationIata: "N/A", destinationIcao: "---" });
@@ -96,8 +116,6 @@ export default function Home() {
           .catch(() => {
              setFlightRouteData({ origin: "Data Unavailable", originIata: "N/A", originIcao: "---", destination: "Data Unavailable", destinationIata: "N/A", destinationIcao: "---" });
           });
-      } else {
-         setFlightRouteData({ origin: "Data Unavailable", originIata: "N/A", originIcao: "---", destination: "Data Unavailable", destinationIata: "N/A", destinationIcao: "---" });
       }
     } else {
       setFlightPhotoUrl(null);
@@ -140,7 +158,17 @@ export default function Home() {
         messages: newMessages,
         context: { ...selectedFlight, routeData: flightRouteData } 
       });
-      if (res.data && res.data.content) setMessages([...newMessages, { role: 'assistant', content: res.data.content }]);
+      if (res.data && res.data.content) {
+        setMessages([...newMessages, { 
+          role: 'assistant', 
+          content: res.data.content,
+          referencedFlights: res.data.referencedFlights || []
+        }]);
+        // If AI triggered a focus action and we have a flight, re-center map
+        if (res.data.action === 'focus_map' && selectedFlight?.lat) {
+          setTargetPos([selectedFlight.lat, selectedFlight.lng]);
+        }
+      }
     } catch (e: any) {
       if (e.response && e.response.status === 429) {
          setMessages([...newMessages, { role: 'assistant', content: "SYSTEM ALERT: The OpenAI API Key provided has exhausted its credits/quota. Please supply a funded API key to restore AI features.", isError: true }]);
@@ -159,13 +187,63 @@ export default function Home() {
     return `${Math.floor(seconds/60)}m ago`;
   };
 
+  const calculateETA = () => {
+    if (!selectedFlight || !flightRouteData?.destLat || !flightRouteData?.destLng || !selectedFlight.speed || selectedFlight.speed === 0) return null;
+    const R = 6371;
+    const dLat = (flightRouteData.destLat - selectedFlight.lat) * Math.PI / 180;
+    const dLon = (flightRouteData.destLng - selectedFlight.lng) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(selectedFlight.lat * Math.PI/180) * Math.cos(flightRouteData.destLat * Math.PI/180) * Math.sin(dLon/2)**2;
+    const distance = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const hours = distance / selectedFlight.speed;
+    return { distanceKm: Math.round(distance), hours: parseFloat(hours.toFixed(1)), minutes: Math.round(hours * 60) };
+  };
+
+  const getFlightPhase = () => {
+    if (!selectedFlight) return null;
+    if (selectedFlight.verticalRate > 5) return 'climbing';
+    if (selectedFlight.verticalRate < -5) return 'descending';
+    return 'cruising';
+  };
+
+  const getHeadingDirection = (heading: number) => {
+    const dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
+    return dirs[Math.round(heading / 45) % 8];
+  };
+
+  // ── Mental Link: Badge click → search live flights → sync map ──
+  const handleFlightBadgeClick = async (callsign: string) => {
+    try {
+      const res = await axios.get(`${API_URL}/api/search/${encodeURIComponent(callsign)}`);
+      if (res.data && res.data.type === 'flight') {
+        setSelectedFlight(res.data.data);
+        setAirportData(null);
+        setTargetPos([res.data.data.lat, res.data.data.lng]);
+      }
+    } catch { /* flight may not be in live cache */ }
+  };
+
+  const handleUntrack = () => {
+    setSelectedFlight(null);
+    setAirportData(null);
+    setFlightRouteData(null);
+    setTargetPos(null);
+  };
+
+  const handleFocusFlight = () => {
+    if (selectedFlight?.lat) {
+      setTargetPos([selectedFlight.lat, selectedFlight.lng]);
+    }
+  };
+
+  const eta = calculateETA();
+
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
       {/* HEADER */}
       <header className="h-16 flex items-center justify-between px-6 glass-panel border-b-0 z-10">
         <div className="flex items-center gap-2">
           <Plane className="w-6 h-6 text-yellow-400" />
-          <span className="font-bold text-xl tracking-tight">FlightAI</span>
+          <span className="font-bold text-xl tracking-tight">SkyIntel</span>
         </div>
         
         <div className="flex-1 max-w-xl mx-8">
@@ -190,7 +268,9 @@ export default function Home() {
             LIVE
           </div>
           <div className="text-muted-foreground border-r border-white/10 pr-5 text-sm font-mono">{mounted ? currentTime.toLocaleTimeString() : '\u00A0'}</div>
-          <div className="w-8 h-8 rounded-full border border-white/10 bg-gradient-to-tr from-yellow-400 to-amber-600 shadow-[0_0_15px_rgba(251,191,36,0.3)]"></div>
+          <button onClick={() => setShowAvatarModal(true)} className="w-9 h-9 rounded-full border-2 border-yellow-500/50 overflow-hidden shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(251,191,36,0.5)] transition-all cursor-pointer">
+            <img src="/avatar.png" alt="Profile" className="w-full h-full object-cover" />
+          </button>
         </div>
       </header>
 
@@ -273,15 +353,28 @@ export default function Home() {
                         src={flightPhotoUrl} 
                         alt={`Aircraft ${selectedFlight.id}`} 
                         className="w-full h-full object-cover opacity-90 hover:opacity-100 transition-opacity relative z-10 block"
-                        onError={(e) => { e.currentTarget.style.opacity = '0'; }}
+                        onError={(e) => { 
+                          if (e.currentTarget.src.includes('planespotters')) {
+                             // This should have already been handled by the effect, but as a last resort:
+                             e.currentTarget.style.display = 'none';
+                          } else {
+                             e.currentTarget.style.display = 'none';
+                          }
+                        }}
                       />
                     )}
                   </div>
 
-                  <div className="flex items-center text-sm font-medium text-gray-300 z-10 relative bg-black/20 p-3 rounded-xl border border-white/5">
-                     <div>
-                       <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Registration</div>
-                       <div className="font-bold text-white">{selectedFlight.airline}</div>
+                  <div className="flex flex-1 items-center gap-4 text-sm font-medium text-gray-300 z-10 relative bg-black/20 p-3 rounded-xl border border-white/5">
+                     <div className="flex-1">
+                       <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Callsign / Ops</div>
+                       <div className="font-bold text-white mb-0.5">{selectedFlight.flightNumber || 'N/A'}</div>
+                       <div className="text-[9px] text-gray-400 font-medium truncate">{selectedFlight.airline}</div>
+                     </div>
+                     <div className="flex-1 border-l border-white/10 pl-4 overflow-hidden">
+                       <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Aircraft Type</div>
+                       <div className="font-bold text-white mb-0.5 truncate" title={flightRouteData?.aircraftModel}>{flightRouteData?.aircraftModel || 'Unknown Type'}</div>
+                       <div className="text-[9px] text-yellow-500 font-mono font-bold tracking-wider">{flightRouteData?.registration || '---'}</div>
                      </div>
                   </div>
                </div>
@@ -305,6 +398,9 @@ export default function Home() {
                          <span className="font-mono text-xs text-green-500/80">{flightRouteData.destinationIata} / {flightRouteData.destinationIcao}</span>
                       </div>
                    </div>
+                   {flightRouteData.source && (
+                     <div className="text-[9px] text-muted-foreground/50 uppercase tracking-[0.2em] text-center mt-1">Data Source: {flightRouteData.source}</div>
+                   )}
                    
                    {/* Expanded Route Details */}
                    {expandedRoute && (
@@ -348,6 +444,20 @@ export default function Home() {
                   <MetricCard icon={<Compass className="w-4 h-4 text-purple-400" />} label="True Heading" value={`${Math.round(selectedFlight.heading)}°`} />
                   <MetricCard icon={<Zap className="w-4 h-4 text-yellow-400" />} label="Vertical Rate" value={selectedFlight.verticalRate ? `${selectedFlight.verticalRate} m/s` : 'Level'} />
                </div>
+
+               {/* ETA Card */}
+               {eta && (
+                 <div className="bg-gradient-to-r from-emerald-500/10 to-green-500/5 rounded-2xl p-4 border border-emerald-500/20 flex items-center justify-between">
+                   <div className="flex flex-col gap-1">
+                     <span className="text-[10px] text-emerald-400 uppercase tracking-widest font-bold">Estimated Arrival</span>
+                     <span className="font-bold text-white text-lg">~{eta.hours} hours</span>
+                   </div>
+                   <div className="flex flex-col gap-1 text-right">
+                     <span className="text-[10px] text-gray-500 uppercase tracking-widest">Distance Remaining</span>
+                     <span className="font-mono text-emerald-400">{eta.distanceKm.toLocaleString()} km</span>
+                   </div>
+                 </div>
+               )}
 
                {/* Additional Geographic Info */}
                <div className="bg-black/40 rounded-2xl p-5 border border-white/5 space-y-4">
@@ -417,7 +527,33 @@ export default function Home() {
 
         {/* CENTER PANEL - MAP */}
         <div className="flex-1 h-full relative border-l border-r border-white/5">
-           <Map onFlightSelect={setSelectedFlight} selectedFlightId={selectedFlight?.id} targetPos={targetPos} />
+           <Map onFlightSelect={(flight) => { setSelectedFlight(flight); setAirportData(null); }} onFlightDeselect={handleUntrack} selectedFlightId={selectedFlight?.id} targetPos={targetPos} />
+           
+           {/* ── Top Flight Info Bar ── */}
+           {selectedFlight && (
+             <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-black/70 backdrop-blur-xl px-6 py-2.5 rounded-2xl text-white text-sm shadow-2xl border border-white/10 flex items-center gap-4 pointer-events-none">
+               <span className="flex items-center gap-2 font-bold text-yellow-400">
+                 <Plane className="w-4 h-4" />
+                 {selectedFlight.flightNumber || 'Unknown'}
+               </span>
+               <div className="w-px h-4 bg-white/20"></div>
+               <span className="font-mono text-xs">{selectedFlight.altitude?.toLocaleString()} ft</span>
+               <div className="w-px h-4 bg-white/20"></div>
+               <span className="font-mono text-xs">{selectedFlight.speed} km/h</span>
+               <div className="w-px h-4 bg-white/20"></div>
+               <span className="font-mono text-xs">{Math.round(selectedFlight.heading)}° {getHeadingDirection(selectedFlight.heading)}</span>
+               <div className="w-px h-4 bg-white/20"></div>
+               <span className={`text-xs font-semibold uppercase tracking-wider ${getFlightPhase() === 'climbing' ? 'text-green-400' : getFlightPhase() === 'descending' ? 'text-orange-400' : 'text-blue-400'}`}>
+                 {getFlightPhase()}
+               </span>
+               {eta && (
+                 <>
+                   <div className="w-px h-4 bg-white/20"></div>
+                   <span className="text-xs text-emerald-400 font-medium">ETA ~{eta.hours}h ({eta.distanceKm} km)</span>
+                 </>
+               )}
+             </div>
+           )}
         </div>
 
         {/* RIGHT PANEL - AI */}
@@ -426,6 +562,36 @@ export default function Home() {
             <h2 className="font-semibold text-xl">Hello, <span className="text-yellow-400">Aman</span></h2>
             <p className="text-sm text-muted-foreground mt-1">Ready to assist with flight data.</p>
           </div>
+
+          {/* ── Tracking Context Bar ── */}
+          {selectedFlight && (
+            <div className="tracking-bar mx-3 mt-3 rounded-xl px-4 py-2.5 flex items-center gap-3">
+              <span className="relative flex h-2.5 w-2.5 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
+              </span>
+              <div className="flex-1 min-w-0">
+                <span className="text-[10px] text-yellow-400/70 uppercase tracking-widest font-semibold">Currently Tracking</span>
+                <div className="font-bold text-yellow-300 text-sm truncate">{selectedFlight.flightNumber || selectedFlight.id}</div>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button onClick={handleFocusFlight} className="tracking-bar-btn bg-yellow-500/15 text-yellow-400 hover:bg-yellow-500/25 border-yellow-500/20" title="Focus map">
+                  <Crosshair className="w-3.5 h-3.5 inline -mt-0.5 mr-0.5" />Focus
+                </button>
+                <button onClick={handleUntrack} className="tracking-bar-btn bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20" title="Untrack">
+                  <X className="w-3.5 h-3.5 inline -mt-0.5" />
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ── Context Indicator ── */}
+          {selectedFlight && (
+            <div className="context-indicator mx-5 mt-2.5 flex items-center gap-2 text-[11px] text-yellow-400/60 font-medium">
+              <Radio className="w-3 h-3 text-yellow-500/50" />
+              <span>SkyLord is analyzing <span className="text-yellow-400 font-bold">{selectedFlight.flightNumber || selectedFlight.id}</span></span>
+            </div>
+          )}
           
           <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4 scrollbar-thin">
              {messages.map((msg, idx) => (
@@ -440,6 +606,17 @@ export default function Home() {
                    {msg.isError && <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />}
                    <div>{msg.content}</div>
                  </div>
+                 {/* ── Flight Reference Badges ── */}
+                 {msg.role === 'assistant' && msg.referencedFlights && msg.referencedFlights.length > 0 && (
+                   <div className="flex flex-wrap gap-2 mt-1">
+                     {msg.referencedFlights.map((ref, rIdx) => (
+                       <button key={rIdx} className="flight-badge" onClick={() => handleFlightBadgeClick(ref)}>
+                         <Plane className="w-3.5 h-3.5" />
+                         {ref}
+                       </button>
+                     ))}
+                   </div>
+                 )}
                </div>
              ))}
              {loading && (
@@ -464,6 +641,28 @@ export default function Home() {
           </div>
         </div>
       </main>
+
+      {/* ── Fullscreen Avatar Modal ── */}
+      {showAvatarModal && (
+        <div 
+          className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center cursor-pointer"
+          onClick={() => setShowAvatarModal(false)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh] animate-[scaleIn_0.3s_ease-out]">
+            <img 
+              src="/avatar.png" 
+              alt="Profile" 
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10"
+            />
+            <button 
+              onClick={() => setShowAvatarModal(false)}
+              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white flex items-center justify-center hover:bg-white/20 transition-colors text-sm font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

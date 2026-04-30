@@ -5,8 +5,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "FlightAI - Real-time Flight Tracking",
-  description: "Advanced flight tracking powered by AI.",
+  title: "SkyIntel - Real-time Flight Tracking",
+  description: "Advanced flight tracking powered by SkyLord AI.",
 };
 
 export default function RootLayout({

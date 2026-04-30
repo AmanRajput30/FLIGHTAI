@@ -58,3 +58,148 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
+
+/* ── Selection Glow (replaces aggressive radar pulse) ── */
+.selection-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(56, 189, 248, 0.08) 50%, transparent 70%);
+  animation: selectionBreath 2.5s ease-in-out infinite;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes selectionBreath {
+  0%, 100% {
+    width: 36px;
+    height: 36px;
+    opacity: 0.8;
+  }
+  50% {
+    width: 48px;
+    height: 48px;
+    opacity: 1;
+  }
+}
+
+/* ── Hover Glow on Aircraft ── */
+.custom-plane-icon {
+  transition: filter 0.4s ease, opacity 0.4s ease;
+  cursor: pointer;
+}
+
+.custom-plane-icon:hover svg {
+  filter: drop-shadow(0 0 8px #fbbf24) drop-shadow(0 0 16px rgba(251, 191, 36, 0.4));
+}
+
+/* ── Selected Aircraft Glow (clean cyan instead of red) ── */
+.selected-plane svg {
+  filter: drop-shadow(0 0 10px #38bdf8) drop-shadow(0 0 22px rgba(56, 189, 248, 0.5));
+}
+
+/* ── Dimmed/Shadow effect for unselected planes when a target is acquired ── */
+.dimmed-plane {
+  opacity: 0.25 !important;
+  filter: saturate(0.2) brightness(0.5) !important;
+  transition: opacity 0.4s ease, filter 0.4s ease !important;
+}
+
+.dimmed-plane:hover {
+  opacity: 0.7 !important;
+  filter: saturate(0.6) brightness(0.8) !important;
+}
+
+/* ── Modal Scale-In Animation ── */
+@keyframes scaleIn {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ── Tracking Context Bar ── */
+.tracking-bar {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(245, 158, 11, 0.06) 100%);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  backdrop-filter: blur(12px);
+  animation: trackBarSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes trackBarSlideIn {
+  0% { transform: translateY(-100%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.tracking-bar-btn {
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid transparent;
+}
+
+.tracking-bar-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* ── Flight Reference Badge ── */
+.flight-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
+  margin-top: 8px;
+}
+
+.flight-badge:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.5);
+  box-shadow: 0 0 16px rgba(251, 191, 36, 0.25), 0 0 4px rgba(251, 191, 36, 0.15);
+  transform: translateY(-1px);
+}
+
+.flight-badge svg {
+  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.4));
+}
+
+/* ── Context Indicator ── */
+.context-indicator {
+  animation: contextPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes contextPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* ── Slide-up animation for badges ── */
+@keyframes badgeSlideUp {
+  0% { transform: translateY(6px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.flight-badge {
+  animation: badgeSlideUp 0.3s ease-out;
+}
+

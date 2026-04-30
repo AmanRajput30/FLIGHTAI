@@ -9,14 +9,18 @@ import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-const createPlaneIcon = (heading: number, isSelected: boolean) => {
-  const color = isSelected ? '#ef4444' : '#fbbf24'; // Red if selected, yellow otherwise
+const createPlaneIcon = (heading: number, isSelected: boolean, hasSelection: boolean) => {
+  const color = isSelected ? '#38bdf8' : '#fbbf24'; // Cyan-sky highlight if selected, yellow otherwise
   const scale = isSelected ? 1.3 : 1.0;
+  const dimClass = (!isSelected && hasSelection) ? 'dimmed-plane' : '';
+  // Subtle glow ring for selected plane instead of aggressive radar pulse
+  const glowRing = isSelected ? `<div class="selection-glow"></div>` : '';
   // FlightRadar-style solid commercial jet top-down outline
   return L.divIcon({
-    className: 'custom-plane-icon',
+    className: `custom-plane-icon ${isSelected ? 'selected-plane' : ''} ${dimClass}`,
     html: `
-      <div style="transform: rotate(${heading}deg) scale(${scale});">
+      ${glowRing}
+      <div style="transform: rotate(${heading}deg) scale(${scale}); transition: transform 0.3s ease;">
         <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="${color}" stroke="#111111" stroke-width="1.2" stroke-linejoin="round">
           <path d="M11.97,2.023c-1.391,0-1.84,1.385-1.84,1.936v6.232L2.528,14.659v2.181l7.602-2.386v5.823l-2.072,1.554v1.543l3.912-1.121l3.911,1.121v-1.543l-2.071-1.554v-5.823l7.602,2.386v-2.181l-7.602-4.468V3.959C13.809,3.407,13.36,2.023,11.97,2.023z"/>
         </svg>
@@ -29,11 +33,11 @@ const createPlaneIcon = (heading: number, isSelected: boolean) => {
 };
 
 const iconCache: Record<string, L.DivIcon> = {};
-const getPlaneIcon = (heading: number, isSelected: boolean) => {
+const getPlaneIcon = (heading: number, isSelected: boolean, hasSelection: boolean) => {
   const roundedHeading = Math.round(heading);
-  const cacheKey = `${roundedHeading}-${isSelected}`;
+  const cacheKey = `${roundedHeading}-${isSelected}-${hasSelection}`;
   if (!iconCache[cacheKey]) {
-    iconCache[cacheKey] = createPlaneIcon(roundedHeading, isSelected);
+    iconCache[cacheKey] = createPlaneIcon(roundedHeading, isSelected, hasSelection);
   }
   return iconCache[cacheKey];
 };
@@ -57,9 +61,20 @@ function MapController({ targetPos }: { targetPos: [number, number] | null }) {
   return null;
 }
 
-function MarkerLayer({ flights, selectedFlightId, onFlightSelect }: { flights: any[], selectedFlightId: string | null, onFlightSelect: (flight: any) => void }) {
+function PopupHandler({ onClose }: { onClose: () => void }) {
+  const map = useMap();
+  useEffect(() => {
+    const handler = () => onClose();
+    map.on('popupclose', handler);
+    return () => { map.off('popupclose', handler); };
+  }, [map, onClose]);
+  return null;
+}
+
+function MarkerLayer({ flights, selectedFlightId, onFlightSelect, onFlightDeselect }: { flights: any[], selectedFlightId: string | null, onFlightSelect: (flight: any) => void, onFlightDeselect: () => void }) {
   const map = useMap();
   const [bounds, setBounds] = useState(() => map.getBounds().pad(1.0));
+  const hasSelection = !!selectedFlightId;
   
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
@@ -93,11 +108,12 @@ function MarkerLayer({ flights, selectedFlightId, onFlightSelect }: { flights: a
 
   return (
     <>
+      <PopupHandler onClose={onFlightDeselect} />
       {visibleFlights.map(flight => (
         <Marker 
           key={flight.id} 
           position={[flight.lat, flight.lng]}
-          icon={getPlaneIcon(flight.heading, flight.id === selectedFlightId)}
+          icon={getPlaneIcon(flight.heading, flight.id === selectedFlightId, hasSelection)}
           eventHandlers={{
             click: () => onFlightSelect(flight)
           }}
@@ -116,11 +132,12 @@ function MarkerLayer({ flights, selectedFlightId, onFlightSelect }: { flights: a
 
 interface MapProps {
   onFlightSelect: (flight: any) => void;
+  onFlightDeselect: () => void;
   selectedFlightId: string | null;
   targetPos?: [number, number] | null;
 }
 
-const MapComponent = ({ onFlightSelect, selectedFlightId, targetPos }: MapProps) => {
+const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, targetPos }: MapProps) => {
   const [flights, setFlights] = useState<any[]>([]);
   const [flightPath, setFlightPath] = useState<[number, number][]>([]);
 
@@ -135,7 +152,7 @@ const MapComponent = ({ onFlightSelect, selectedFlightId, targetPos }: MapProps)
   useEffect(() => {
     if (selectedFlightId) {
       // Fetch historical path
-      axios.get(`${API_URL}/api/flight-track/${selectedFlightId}`)
+      axios.get(`${API_URL}/api/flight-path/${selectedFlightId}`)
         .then(res => {
           if (res.data && res.data.path) {
              // Path object is [time, lat, lng, ...]
@@ -169,20 +186,10 @@ const MapComponent = ({ onFlightSelect, selectedFlightId, targetPos }: MapProps)
           <Polyline positions={flightPath} pathOptions={{ color: '#fbbf24', weight: 3, dashArray: '5, 10', opacity: 0.8 }} />
         )}
         
-        <MarkerLayer flights={flights} selectedFlightId={selectedFlightId} onFlightSelect={onFlightSelect} />
+        <MarkerLayer flights={flights} selectedFlightId={selectedFlightId} onFlightSelect={onFlightSelect} onFlightDeselect={onFlightDeselect} />
       </MapContainer>
       
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 glass px-6 py-3 rounded-full text-sm font-medium flex items-center gap-4 text-muted-foreground z-[400] pointer-events-none shadow-xl border border-white/10">
-        <span>Active Flights: {flights.length}</span>
-        <div className="w-1 h-1 rounded-full bg-border"></div>
-        <span className="text-yellow-400 flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span>
-          </span>
-          Live Feed
-        </span>
-      </div>
+
       
       <style jsx global>{`
         .leaflet-container { background: #0d1117 !important; }
