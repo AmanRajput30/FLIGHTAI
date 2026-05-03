@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from 'react';
-import { Search, Settings, Bell, Mic, Send, Plane, Navigation, Activity, AlertCircle, Compass, ArrowUp, Zap, Cloud, Wind, Thermometer, MapPin, Flag, Crosshair, X, Eye, Radio } from 'lucide-react';
+import { Search, Settings, Bell, Mic, Send, Plane, Navigation, Activity, AlertCircle, Compass, ArrowUp, Zap, Cloud, Wind, Thermometer, MapPin, Flag, Crosshair, X, Eye, Radio, Layers } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
@@ -23,6 +23,7 @@ export default function Home() {
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
   const [selectedFlight, setSelectedFlight] = useState<any>(null);
+  const [focusedFlightId, setFocusedFlightId] = useState<string | null>(null);
   const [flightPhotoUrl, setFlightPhotoUrl] = useState<string | null>(null);
   const [weatherData, setWeatherData] = useState<any>(null);
   const [flightRouteData, setFlightRouteData] = useState<any>(null);
@@ -36,6 +37,43 @@ export default function Home() {
   const [airportData, setAirportData] = useState<any>(null);
   const [targetPos, setTargetPos] = useState<[number, number] | null>(null);
   const [showAvatarModal, setShowAvatarModal] = useState(false);
+  
+  // Premium Map & Performance State
+  const [mapMode, setMapMode] = useState<'satellite' | 'dark' | 'hybrid'>('dark');
+  const [performanceMode, setPerformanceMode] = useState(false);
+  const fpsRef = useRef<number[]>([]);
+
+  useEffect(() => {
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let animationFrameId: number;
+
+    const measureFPS = () => {
+      frameCount++;
+      const now = performance.now();
+      if (now - lastTime >= 1000) {
+        const fps = Math.round((frameCount * 1000) / (now - lastTime));
+        fpsRef.current.push(fps);
+        if (fpsRef.current.length > 5) fpsRef.current.shift();
+        
+        // Adaptive logic: If average FPS < 20 for multiple seconds, engage performance mode
+        const avgFps = fpsRef.current.reduce((a, b) => a + b, 0) / fpsRef.current.length;
+        if (avgFps < 20 && fpsRef.current.length >= 3) {
+           if (!performanceMode) {
+              setPerformanceMode(true);
+              setMapMode('dark'); // Force dark map to save GPU
+           }
+        }
+
+        frameCount = 0;
+        lastTime = now;
+      }
+      animationFrameId = requestAnimationFrame(measureFPS);
+    };
+
+    animationFrameId = requestAnimationFrame(measureFPS);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [performanceMode]);
 
   const handleSearch = async (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
@@ -46,11 +84,13 @@ export default function Home() {
         if (res.data) {
           if (res.data.type === 'flight') {
              setSelectedFlight(res.data.data);
+             setFocusedFlightId(res.data.data.id);
              setAirportData(null);
              setTargetPos([res.data.data.lat, res.data.data.lng]);
           } else if (res.data.type === 'airport') {
              setAirportData(res.data.data);
              setSelectedFlight(null);
+             setFocusedFlightId(null);
              setTargetPos([res.data.data.lat, res.data.data.lng]);
           } else {
              setSearchError("No results found.");
@@ -156,7 +196,7 @@ export default function Home() {
     try {
       const res = await axios.post(`${API_URL}/api/chat`, { 
         messages: newMessages,
-        context: { ...selectedFlight, routeData: flightRouteData } 
+        context: focusedFlightId && selectedFlight && selectedFlight.id === focusedFlightId ? { ...selectedFlight, routeData: flightRouteData } : null 
       });
       if (res.data && res.data.content) {
         setMessages([...newMessages, { 
@@ -216,6 +256,7 @@ export default function Home() {
       const res = await axios.get(`${API_URL}/api/search/${encodeURIComponent(callsign)}`);
       if (res.data && res.data.type === 'flight') {
         setSelectedFlight(res.data.data);
+        setFocusedFlightId(res.data.data.id);
         setAirportData(null);
         setTargetPos([res.data.data.lat, res.data.data.lng]);
       }
@@ -223,9 +264,7 @@ export default function Home() {
   };
 
   const handleUntrack = () => {
-    setSelectedFlight(null);
-    setAirportData(null);
-    setFlightRouteData(null);
+    setFocusedFlightId(null);
     setTargetPos(null);
   };
 
@@ -263,6 +302,27 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-5">
+          {/* Map Mode Toggle */}
+          <div className="flex bg-black/40 border border-white/10 rounded-full p-1 relative">
+            <button 
+              onClick={() => { setMapMode('dark'); setPerformanceMode(false); }}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all z-10 flex items-center gap-1.5 ${mapMode === 'dark' ? 'bg-white/10 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+            >
+              <Eye className="w-3.5 h-3.5" /> Dark
+            </button>
+            <button 
+              onClick={() => { setMapMode('satellite'); setPerformanceMode(false); }}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all z-10 flex items-center gap-1.5 ${mapMode === 'satellite' ? 'bg-white/10 text-white shadow-sm' : 'text-gray-400 hover:text-white'} ${performanceMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              disabled={performanceMode}
+              title={performanceMode ? "Disabled due to low FPS" : "Esri World Imagery"}
+            >
+              <Layers className="w-3.5 h-3.5" /> Premium
+            </button>
+            {performanceMode && (
+               <span className="absolute -bottom-5 right-0 text-[9px] text-red-400 whitespace-nowrap">Performance Mode Active (Low FPS)</span>
+            )}
+          </div>
+
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium">
             <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
             LIVE
@@ -525,12 +585,19 @@ export default function Home() {
           )}
         </div>
 
-        {/* CENTER PANEL - MAP */}
-        <div className="flex-1 h-full relative border-l border-r border-white/5">
-           <Map onFlightSelect={(flight) => { setSelectedFlight(flight); setAirportData(null); }} onFlightDeselect={handleUntrack} selectedFlightId={selectedFlight?.id} targetPos={targetPos} />
+         <div className="flex-1 h-full relative border-l border-r border-white/5">
+           <Map 
+             onFlightSelect={(flight) => { setSelectedFlight(flight); setFocusedFlightId(flight.id); setAirportData(null); }} 
+             onFlightDeselect={handleUntrack} 
+             selectedFlightId={focusedFlightId} 
+             routeData={flightRouteData} 
+             targetPos={targetPos}
+             mapMode={mapMode}
+             performanceMode={performanceMode}
+           />
            
            {/* ── Top Flight Info Bar ── */}
-           {selectedFlight && (
+           {focusedFlightId && selectedFlight && selectedFlight.id === focusedFlightId && (
              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-black/70 backdrop-blur-xl px-6 py-2.5 rounded-2xl text-white text-sm shadow-2xl border border-white/10 flex items-center gap-4 pointer-events-none">
                <span className="flex items-center gap-2 font-bold text-yellow-400">
                  <Plane className="w-4 h-4" />
@@ -564,7 +631,7 @@ export default function Home() {
           </div>
 
           {/* ── Tracking Context Bar ── */}
-          {selectedFlight && (
+          {focusedFlightId && selectedFlight && selectedFlight.id === focusedFlightId && (
             <div className="tracking-bar mx-3 mt-3 rounded-xl px-4 py-2.5 flex items-center gap-3">
               <span className="relative flex h-2.5 w-2.5 shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
@@ -586,7 +653,7 @@ export default function Home() {
           )}
 
           {/* ── Context Indicator ── */}
-          {selectedFlight && (
+          {focusedFlightId && selectedFlight && selectedFlight.id === focusedFlightId && (
             <div className="context-indicator mx-5 mt-2.5 flex items-center gap-2 text-[11px] text-yellow-400/60 font-medium">
               <Radio className="w-3 h-3 text-yellow-500/50" />
               <span>SkyLord is analyzing <span className="text-yellow-400 font-bold">{selectedFlight.flightNumber || selectedFlight.id}</span></span>

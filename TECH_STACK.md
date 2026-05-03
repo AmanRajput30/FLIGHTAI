@@ -1,6 +1,6 @@
-# FlightAI — Tech Stack & Architecture
+# SkyIntel — Tech Stack & Architecture
 
-A simple breakdown of every technology, language, and tool used in FlightAI and what each one does.
+A simple breakdown of every technology, language, and tool used in SkyIntel and what each one does.
 
 ---
 
@@ -8,9 +8,9 @@ A simple breakdown of every technology, language, and tool used in FlightAI and 
 
 | Language | Where It's Used | Why |
 |----------|----------------|-----|
-| **TypeScript** | Frontend (all `.tsx` and `.ts` files) | Adds type safety to JavaScript — catches bugs before they happen |
-| **JavaScript** | Backend (`server.js`, `chatRoute.js`) | Runs the server-side logic, fast and lightweight |
-| **CSS** | Styling (`globals.css`) | Controls how everything looks — colors, layouts, animations |
+| **TypeScript** | Frontend (all `.tsx` and `.ts` files) | Adds type safety to JavaScript — catches bugs before they happen, critical for complex telemetry objects |
+| **JavaScript** | Backend (`server.js`, `chatRoute.js`) | Runs the server-side logic, fast and lightweight, allowing rapid prototyping |
+| **CSS** | Styling (`globals.css`) | Controls how everything looks — colors, layouts, animations, realistic styling |
 | **HTML** | Inside React components (JSX) | The structure of every UI element on screen |
 
 ---
@@ -19,13 +19,13 @@ A simple breakdown of every technology, language, and tool used in FlightAI and 
 
 | Technology | Version | What It Does |
 |-----------|---------|-------------|
-| **Next.js** | 16.2.2 | The React framework that runs the whole frontend. Handles routing, server-side rendering, and builds the production app |
-| **React** | 19.2.4 | The UI library. Every panel, button, and card is a React component that updates in real-time |
-| **Tailwind CSS** | 4.x | Utility-first CSS framework. Instead of writing CSS files, we style directly in the HTML with classes like `bg-black text-white rounded-xl` |
-| **Leaflet** | 1.9.4 | The map engine. Renders the interactive world map, places aircraft markers, draws flight paths |
-| **React-Leaflet** | 5.0.0 | Connects Leaflet to React so the map reacts to state changes (selecting flights, updating positions) |
-| **Framer Motion** | 12.38.0 | Animation library. Handles smooth transitions and micro-animations throughout the UI |
-| **Lucide React** | 1.7.0 | Icon library. All the icons you see (plane, search, compass, zap, etc.) come from here |
+| **Next.js** | 16.2.2 | The React framework that runs the whole frontend. Handles routing, server-side rendering, and builds the production app. Chosen for fast load times and SSR. |
+| **React** | 19.2.4 | The UI library. Every panel, button, and card is a React component that updates in real-time. Chosen for component-based architecture. |
+| **Tailwind CSS** | 4.x | Utility-first CSS framework. Instead of writing CSS files, we style directly in the HTML with classes. Chosen to build UI 5x faster. |
+| **Leaflet** | 1.9.4 | The map engine. Renders the interactive world map, places aircraft markers, draws flight paths. Chosen for being free, open-source, and highly customizable. |
+| **React-Leaflet** | 5.0.0 | Connects Leaflet to React so the map reacts to state changes. Chosen for seamless React integration. |
+| **Framer Motion** | 12.38.0 | Animation library. Handles smooth transitions and micro-animations throughout the UI. Chosen for high-performance complex animations. |
+| **Lucide React** | 1.7.0 | Icon library. All the icons you see (plane, search, compass, zap, etc.) come from here. Chosen for clean, modern SVG icons. |
 | **Socket.IO Client** | 4.8.3 | Real-time connection to the backend. Receives live flight position updates without refreshing the page |
 | **Axios** | 1.14.0 | HTTP client. Sends requests to the backend (search, chat, route lookup) |
 | **Zustand** | 5.0.12 | State management library (available for complex state if needed) |
@@ -85,6 +85,7 @@ backend/
 | **OpenWeatherMap** | Weather for cities/airports (used by chatbot fallback) | API Key |
 | **Planespotters.net** | Real aircraft photos by ICAO24 hex code | Free, no key |
 | **CartoDB** | Dark-themed map tiles that render the world map | Free, no key |
+| **Esri World Imagery** | Premium high-resolution satellite imagery for the map | Free, no key |
 
 ---
 
@@ -147,12 +148,14 @@ USER'S BROWSER (localhost:3000)
 | Pattern | Where | What It Does |
 |---------|-------|-------------|
 | **Fallback Chains** | Flight feed, routes, photos | If API #1 fails → try #2 → try #3 → show placeholder |
-| **In-Memory Caching** | Routes, flight positions | Avoids hitting APIs repeatedly for the same data |
+| **In-Memory Caching** | Routes, flight positions, Map Icons | Avoids hitting APIs repeatedly and prevents DOM thrashing by caching complex SVG markers by bucketed heading. |
 | **Position Interpolation** | Map markers | Smoothly moves planes between 60-second API refreshes |
 | **Viewport Culling** | Map rendering | Only draws planes visible on screen (max 1,500) to prevent lag |
+| **FPS Guardian Engine** | Map rendering | Monitors browser FPS and gracefully degrades visuals (drops shadow/Esri tiles) if performance dips below 20 FPS. |
+| **Aircraft Classification** | Map rendering | Dynamically sorts raw telemetry into 8 categories (Commercial, Cargo, Private, Helicopter, etc.) to apply realistic SVGs. |
 | **Intelligence Layer** | Chat AI | Raw telemetry → computed insights (climbing/cruising/descending, ETA, speed category) |
 | **Command Detection** | Chat AI | Parses user messages for map commands ("track", "zoom", "focus") and controls the map via Socket.IO |
 
 ---
 
-> **Built by Aman and Natasha** — FlightAI Command Center ✈️
+> **Built by Aman** — SkyIntel Command Center ✈️
