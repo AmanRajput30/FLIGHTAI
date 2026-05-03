@@ -1,4 +1,4 @@
-# ✈️ FlightAI — Complete Feature Documentation
+# ✈️ SkyIntel — Complete Feature Documentation
 
 > **Version:** 1.0.0  
 > **Last Updated:** April 23, 2026  
@@ -12,17 +12,17 @@ The centerpiece of the application — a live, interactive world map showing tho
 
 | Feature | Details |
 |---------|---------|
-| **Map Provider** | Leaflet + React-Leaflet with CartoDB Dark tile layer |
-| **Live Aircraft Icons** | Custom SVG plane icons rotated to match each aircraft's true heading |
-| **Selected Aircraft Highlight** | Clicked aircraft turns red and scales up (1.3×) for visual distinction |
-| **Icon Caching** | Icons are cached by heading + selection state for performance |
+| **Map Provider** | Leaflet + React-Leaflet with Esri World Imagery (Premium) and CartoDB Dark (Performance Fallback) |
+| **Live Aircraft Icons** | Highly realistic, multi-layered metallic SVG aircraft icons scaled by aviation category |
+| **Aircraft Classification** | Dynamically classifies raw telemetry into 8 visual categories (Commercial, Cargo, Private, Military, Helicopter, Prop, Glider, Unknown) |
+| **FPS Guardian Engine** | Actively monitors browser framerates; gracefully degrades complex visuals to simple 2D SVGs and dark maps if FPS drops below 20 |
+| **Split State Tracking** | Clicking a flight pins its deep telemetry in the left panel, while allowing the map and chatbot to independently track/untrack targets |
+| **Selected Aircraft Highlight** | Tracked aircraft glow with a blue cyan ring and scale up (1.4×) |
+| **Icon Caching** | Icons are cached by category, 15° heading buckets, selection state, and zoom level for maximum performance |
 | **Viewport Culling** | Only aircraft within the visible map bounds (with padding) are rendered — maximum 1,500 markers to prevent browser crashes |
 | **Flight Trajectory Lines** | Dashed yellow polyline showing the flight path of the selected aircraft |
-| **Click-to-Select** | Click any plane on the map to lock onto it and view full telemetry in the left panel |
-| **Popup on Click** | Glass-styled popup showing flight number and airline on aircraft click |
 | **Smooth Fly-To Animations** | Map smoothly animates to searched locations or AI-commanded coordinates |
-| **Dark Theme Styling** | Custom dark background (`#0d1117`) with glassmorphism popups |
-| **No Zoom Controls** | Native zoom controls hidden for cleaner UI (scroll/pinch still works) |
+| **Map Mode Toggle** | Seamlessly switch between Premium Satellite Imagery and classic Dark Telemetry modes |
 
 ---
 
@@ -281,6 +281,7 @@ WebSocket-based real-time event system connecting backend to all frontend client
 | **OpenWeatherMap** | Weather for chatbot fallback queries | API Key |
 | **Planespotters.net** | Aircraft photos by ICAO24 hex | No auth (free) |
 | **CartoDB** | Dark map tiles | No auth (free) |
+| **Esri World Imagery** | Premium satellite imagery tiles | No auth (free) |
 
 ---
 
@@ -346,4 +347,4 @@ AI/
 
 ---
 
-> **Built by Aman and Natasha** — SkyIntel Command Center 🛩️
+> **Built by Aman** — SkyIntel Command Center 🛩️
