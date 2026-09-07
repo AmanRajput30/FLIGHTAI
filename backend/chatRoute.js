@@ -2,6 +2,14 @@ const express = require('express');
 const router = express.Router();
 const OpenAI = require('openai');
 const axios = require('axios');
+const rateLimit = require('express-rate-limit');
+
+// Chat Rate Limiter - 20 requests per 15 minutes per IP
+const chatLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Too many chat requests, please try again later.' }
+});
 
 const openai = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
@@ -124,9 +132,16 @@ async function localNLPEngine(messages, io, contextFlight) {
 }
 
 // ─── Main Chat Route ───
-router.post('/', async (req, res) => {
+router.post('/', chatLimiter, async (req, res) => {
   try {
     const { messages, context } = req.body;
+    
+    if (!messages || !Array.isArray(messages)) return res.status(400).json({ error: "Invalid messages format." });
+    
+    // Limit payload size to prevent prompt stuffing/abuse
+    const payloadSize = JSON.stringify(messages).length;
+    if (payloadSize > 4000) return res.status(400).json({ error: "Prompt too large. Please shorten your message." });
+
     const io = req.app.get('io');
     
     const contextFlight = context?.flightNumber || null;
@@ -198,7 +213,7 @@ ${analysis.eta ? `ETA: Approximately ${analysis.eta.hours} hours (${analysis.eta
 
     try {
       const response = await openai.chat.completions.create({
-        model: "llama-3.1-8b-instant",
+        model: "llama3-8b-8192",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "system", content: flightContext },

@@ -5,7 +5,7 @@ import { Search, Settings, Bell, Mic, Send, Plane, Navigation, Activity, AlertCi
 import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
-import { io } from 'socket.io-client';
+import { socket } from '@/lib/socket';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -30,6 +30,7 @@ export default function Home() {
   const [expandedRoute, setExpandedRoute] = useState<'origin' | 'destination' | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
+  const [systemStatus, setSystemStatus] = useState<'live' | 'stale'>('live');
   
   const [searchQuery, setSearchQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -174,7 +175,10 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    const socket = io(API_URL);
+    socket.on('system_status', (status: 'live' | 'stale') => {
+      setSystemStatus(status);
+    });
+
     socket.on('flights_update', (flights: any[]) => {
       setSelectedFlight((prev: any) => {
         if (!prev) return prev;
@@ -182,7 +186,11 @@ export default function Home() {
         return updated ? updated : prev;
       });
     });
-    return () => { socket.disconnect(); };
+
+    return () => {
+      socket.off('system_status');
+      socket.off('flights_update');
+    };
   }, []);
 
   const handleSendMessage = async () => {
@@ -323,10 +331,17 @@ export default function Home() {
             )}
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium">
-            <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
-            LIVE
-          </div>
+          {systemStatus === 'live' ? (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium">
+              <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
+              LIVE
+            </div>
+          ) : (
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-medium">
+              <span className="relative flex h-2 w-2"><span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span></span>
+              DEGRADED
+            </div>
+          )}
           <div className="text-muted-foreground border-r border-white/10 pr-5 text-sm font-mono">{mounted ? currentTime.toLocaleTimeString() : '\u00A0'}</div>
           <button onClick={() => setShowAvatarModal(true)} className="w-9 h-9 rounded-full border-2 border-yellow-500/50 overflow-hidden shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(251,191,36,0.5)] transition-all cursor-pointer">
             <img src="/avatar.png" alt="Profile" className="w-full h-full object-cover" />
