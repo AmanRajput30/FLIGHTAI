@@ -213,7 +213,7 @@ ${analysis.eta ? `ETA: Approximately ${analysis.eta.hours} hours (${analysis.eta
 
     try {
       const response = await openai.chat.completions.create({
-        model: "llama3-8b-8192",
+        model: "llama-3.1-8b-instant",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "system", content: flightContext },
@@ -233,8 +233,8 @@ ${analysis.eta ? `ETA: Approximately ${analysis.eta.hours} hours (${analysis.eta
         action
       });
     } catch (openAiError) {
-      if (openAiError.status === 429 || openAiError.status === 401) {
-         console.log("Groq limit reached, falling back to Local NLP Engine.");
+      if (openAiError.status === 429 || openAiError.status === 401 || openAiError.status === 400 || openAiError.status === 503) {
+         console.log("Groq limit or model error reached, falling back to Local NLP Engine.", openAiError.message);
          const localResult = await localNLPEngine(messages, io, contextFlight);
          const referencedFlights = extractFlightReferences(localResult.content, contextFlight);
          return res.json({ 
