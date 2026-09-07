@@ -4,7 +4,7 @@ import { useEffect, useState, memo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import { io } from 'socket.io-client';
+import { socket } from '@/lib/socket';
 import axios from 'axios';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
@@ -182,11 +182,10 @@ function MapController({ targetPos }: { targetPos: [number, number] | null }) {
   }, [targetPos, map]);
 
   useEffect(() => {
-    const socket = io(API_URL);
-    socket.on('command_focus_map', (data) => {
+    socket.on('command_focus_map', (data: any) => {
       map.flyTo([data.lat, data.lng], data.zoom || 8, { duration: 2 });
     });
-    return () => { socket.disconnect(); };
+    return () => { socket.off('command_focus_map'); };
   }, [map]);
   return null;
 }
@@ -280,11 +279,10 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
   const [flightPath, setFlightPath] = useState<[number, number][]>([]);
 
   useEffect(() => {
-    const socket = io(API_URL);
-    socket.on('flights_update', (updatedFlights) => {
+    socket.on('flights_update', (updatedFlights: any[]) => {
       setFlights(updatedFlights);
     });
-    return () => { socket.disconnect(); };
+    return () => { socket.off('flights_update'); };
   }, []);
 
   useEffect(() => {

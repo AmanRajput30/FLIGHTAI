@@ -12,6 +12,9 @@ const { Server } = require('socket.io');
 const cors = require('cors');
 const axios = require('axios');
 const OpenAI = require('openai');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { LRUCache } = require('lru-cache');
 
 const openai = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
@@ -19,20 +22,46 @@ const openai = new OpenAI({
 });
 const chatRoute = require('./chatRoute');
 
-const routeCache = new Map(); // Cache for flight routes to improve robustness
+const routeCache = new LRUCache({
+  max: 500,
+  ttl: 1000 * 60 * 60 * 24 // 24 hours
+}); // Cache for flight routes to improve robustness
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: '*', methods: ['GET', 'POST'] }});
 
-app.use(cors());
+const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
+const io = new Server(server, { 
+  cors: { 
+    origin: frontendOrigin, 
+    methods: ['GET', 'POST'] 
+  }
+});
+
+app.use(helmet());
+app.use(cors({ origin: frontendOrigin }));
 app.use(express.json());
 app.set('io', io);
 
+// Rate Limiters
+const searchLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: { error: 'Too many search requests, please try again later.' }
+});
+
+const routeLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 150,
+  message: { error: 'Too many route requests, please try again later.' }
+});
+
 // Global Unified Search
-app.get('/api/search/:query', async (req, res) => {
+app.get('/api/search/:query', searchLimiter, async (req, res) => {
   try {
-    const query = req.params.query.toLowerCase().trim();
+    let rawQuery = req.params.query;
+    if (!rawQuery || rawQuery.length > 100) return res.status(400).json({ error: "Invalid search query." });
+    const query = rawQuery.toLowerCase().trim();
     if (!query) return res.json(null);
     
     // Pass 1: Scan live flights cache
@@ -70,11 +99,12 @@ app.set('io', io);
 app.use('/api/chat', chatRoute);
 
 // Endpoint for Origin and Destination (AviationStack + ADSB.lol fallback)
-app.get('/api/route/:flightNumber', async (req, res) => {
+app.get('/api/route/:flightNumber', routeLimiter, async (req, res) => {
   try {
     let fn = req.params.flightNumber;
     if (!fn || fn === 'Unknown') return res.json(null);
     fn = fn.trim().toUpperCase();
+    if (!/^[A-Z0-9]{2,10}$/.test(fn)) return res.status(400).json({ error: 'Invalid flight number format' });
 
     // Check Cache first
     if (routeCache.has(fn)) {
@@ -311,6 +341,7 @@ app.get('/api/flight-track/:icao24', async (req, res) => {
 });
 
 let flightCache = [];
+let lastUpdatedAt = 0;
 
 let openSkyRateLimited = false;
 let openSkyLimitedAt = 0;
@@ -352,6 +383,7 @@ async function fetchLiveFlights() {
           };
         });
         console.log(`[OpenSky] Successfully fetched ${flightCache.length} flights`);
+        lastUpdatedAt = Date.now();
         io.emit('flights_update', flightCache);
         return; // Success, skip fallback
       }
@@ -391,6 +423,7 @@ async function fetchLiveFlights() {
             isLive: true
           };
         });
+        lastUpdatedAt = Date.now();
         io.emit('flights_update', flightCache);
       }
     } catch (error) {
@@ -399,9 +432,24 @@ async function fetchLiveFlights() {
   }
 }
 
+async function fetchLiveFlightsLoop() {
+  await fetchLiveFlights();
+  setTimeout(fetchLiveFlightsLoop, 60000);
+}
+
 
 setInterval(() => {
   if (flightCache.length === 0) return;
+
+  const isStale = (Date.now() - lastUpdatedAt) > 120000;
+  
+  if (isStale) {
+    io.emit('system_status', 'stale');
+    return; // Freeze interpolation to prevent zombie planes flying off the map
+  }
+
+  io.emit('system_status', 'live');
+
   flightCache = flightCache.map(flight => {
     if (flight.speed > 0) {
       const headingRad = flight.heading * (Math.PI / 180);
@@ -415,19 +463,32 @@ setInterval(() => {
   io.emit('flights_update', flightCache);
 }, 2000);
 
-setInterval(fetchLiveFlights, 60000);
+const socketConnections = new Map();
 
 io.on('connection', (socket) => {
+  const ip = socket.handshake.address;
+  const currentCount = socketConnections.get(ip) || 0;
+  
+  if (currentCount >= 15) {
+    console.warn(`[Socket.IO] Disconnecting IP ${ip} - connection limit reached.`);
+    socket.disconnect(true);
+    return;
+  }
+  
+  socketConnections.set(ip, currentCount + 1);
+
+  socket.emit('system_status', (Date.now() - lastUpdatedAt) > 120000 ? 'stale' : 'live');
   socket.emit('flights_update', flightCache);
+
+  socket.on('disconnect', () => {
+    const count = socketConnections.get(ip) || 0;
+    if (count > 0) socketConnections.set(ip, count - 1);
+  });
 });
 
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, async () => {
   console.log(`Backend server running on port ${PORT}`);
-  try {
-    await fetchLiveFlights();
-    console.log(`Initial flight fetch complete. Cache size: ${flightCache.length}`);
-  } catch (err) {
-    console.error('Initial fetch failed:', err.message);
-  }
+  // Start the polling loop
+  fetchLiveFlightsLoop();
 });
