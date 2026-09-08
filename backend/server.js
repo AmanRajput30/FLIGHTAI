@@ -30,7 +30,7 @@ const routeCache = new LRUCache({
 const app = express();
 const server = http.createServer(app);
 
-const frontendOrigin = process.env.FRONTEND_URL || 'http://localhost:3000';
+const frontendOrigin = process.env.FRONTEND_URL || 'https://skyintel-black.vercel.app';
 const io = new Server(server, { 
   cors: { 
     origin: frontendOrigin, 
