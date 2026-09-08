@@ -56,6 +56,18 @@ const routeLimiter = rateLimit({
   message: { error: 'Too many route requests, please try again later.' }
 });
 
+app.get('/api/status', (req, res) => {
+  res.json({
+    flightCacheLength: flightCache ? flightCache.length : 0,
+    openSkyRateLimited: openSkyRateLimited,
+    lastUpdatedAt: lastUpdatedAt,
+    envStatus: {
+      username: !!process.env.OPENSKY_USERNAME,
+      password: !!process.env.OPENSKY_PASSWORD
+    }
+  });
+});
+
 // Global Unified Search
 app.get('/api/search/:query', searchLimiter, async (req, res) => {
   try {
