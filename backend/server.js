@@ -359,88 +359,37 @@ let openSkyRateLimited = false;
 let openSkyLimitedAt = 0;
 
 async function fetchLiveFlights() {
-  // Auto-recover: retry OpenSky every 5 minutes after a rate limit
-  if (openSkyRateLimited && (Date.now() - openSkyLimitedAt > 5 * 60 * 1000)) {
-    console.log("[OpenSky] Cooldown expired — retrying OpenSky...");
-    openSkyRateLimited = false;
-  }
-
-  if (!openSkyRateLimited) {
-    try {
-      const openSkyConfig = (process.env.OPENSKY_USERNAME && process.env.OPENSKY_PASSWORD) 
-          ? { auth: { username: process.env.OPENSKY_USERNAME, password: process.env.OPENSKY_PASSWORD } } 
-          : {};
-      const res = await axios.get('https://opensky-network.org/api/states/all', openSkyConfig);
-      if (res.data && res.data.states) {
-        // OpenSky provides ~12,000 to 15,000 flights. We grab all valid ones globally (both airborne and grounded).
-        const validStates = res.data.states.filter(s => s[5] !== null && s[6] !== null);
-        
-        flightCache = validStates.map(s => {
-          const altFt = s[7] ? Math.round(s[7] * 3.28084) : 35000;
-          const spdKmh = s[9] ? Math.round(s[9] * 3.6) : 800;
-          return {
-            id: s[0], // icao24
-            flightNumber: s[1] ? s[1].trim() : 'Unknown',
-            airline: s[2] || 'Private/Unknown',
-            origin:  'N/A',
-            destination: 'N/A',
-            lat: s[6],
-            lng: s[5],
-            altitude: altFt,
-            speed: spdKmh,
-            heading: s[10] || 0,
-            verticalRate: s[11] || 0, // m/s
-            lastContact: s[4], // unix timestamp
-            isLive: true
-          };
-        });
-        console.log(`[OpenSky] Successfully fetched ${flightCache.length} flights`);
-        lastUpdatedAt = Date.now();
-        io.emit('flights_update', flightCache);
-        return; // Success, skip fallback
-      }
-    } catch (error) {
-      console.error('OpenSky Error:', error.message);
-      if (error.response && (error.response.status === 429 || error.response.status === 403 || error.response.status === 401)) {
-        console.log("OpenSky block hit! Switching to ADSB.lol backup. Will retry in 5 minutes.");
-        openSkyRateLimited = true;
-        openSkyLimitedAt = Date.now();
-      }
+  try {
+    // ADSB.lol global endpoint (point 0,0 radius 25000nm covers the globe)
+    const res = await axios.get('https://api.adsb.lol/v2/point/0/0/25000');
+    if (res.data && res.data.ac) {
+      const validStates = res.data.ac.filter(s => s.lat !== undefined && s.lon !== undefined);
+      
+      flightCache = validStates.map(s => {
+        const altFt = s.alt_baro ? s.alt_baro : 35000;
+        const spdKmh = s.gs ? Math.round(s.gs * 1.852) : 800;
+        return {
+          id: s.hex || 'Unknown',
+          flightNumber: s.flight ? s.flight.trim() : 'Unknown',
+          airline: s.t || 'Private/Unknown',
+          origin:  'N/A',
+          destination: 'N/A',
+          lat: s.lat,
+          lng: s.lon,
+          altitude: altFt,
+          speed: spdKmh,
+          heading: s.track || 0,
+          verticalRate: s.baro_rate ? Math.round(s.baro_rate * 0.00508) : 0,
+          lastContact: s.seen ? Math.floor(Date.now()/1000) - Math.round(s.seen) : Math.floor(Date.now()/1000),
+          isLive: true
+        };
+      });
+      console.log(`[ADSB.lol] Successfully fetched ${flightCache.length} flights`);
+      lastUpdatedAt = Date.now();
+      io.emit('flights_update', flightCache);
     }
-  }
-
-  // Backup/Fallback Protocol: ADSB.lol
-  if (openSkyRateLimited) {
-    try {
-      const res = await axios.get('https://api.adsb.lol/v2/ladd');
-      if (res.data && res.data.ac) {
-        const validStates = res.data.ac.filter(s => s.lat !== undefined && s.lon !== undefined);
-        
-        flightCache = validStates.map(s => {
-          const altFt = s.alt_baro ? s.alt_baro : 35000;
-          const spdKmh = s.gs ? Math.round(s.gs * 1.852) : 800;
-          return {
-            id: s.hex || 'Unknown',
-            flightNumber: s.flight ? s.flight.trim() : 'Unknown',
-            airline: s.t || 'Private/Unknown',
-            origin:  'N/A',
-            destination: 'N/A',
-            lat: s.lat,
-            lng: s.lon,
-            altitude: altFt,
-            speed: spdKmh,
-            heading: s.track || 0,
-            verticalRate: s.baro_rate ? Math.round(s.baro_rate * 0.00508) : 0,
-            lastContact: s.seen ? Math.floor(Date.now()/1000) - Math.round(s.seen) : Math.floor(Date.now()/1000),
-            isLive: true
-          };
-        });
-        lastUpdatedAt = Date.now();
-        io.emit('flights_update', flightCache);
-      }
-    } catch (error) {
-      console.error('ADSB Backup Error:', error.message);
-    }
+  } catch (error) {
+    console.error('ADSB API Error:', error.message);
   }
 }
 
