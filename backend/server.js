@@ -76,7 +76,7 @@ app.get('/api/search/:query', searchLimiter, async (req, res) => {
     
     // Pass 2: Fallback to LLM Airport Geocoding
     const response = await openai.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "openai/gpt-oss-20b",
       messages: [
         { role: "system", content: "You are an API that returns ONLY valid JSON for airport searches. Return keys: name, iata, icao, city, country, lat (number), lng (number), timezone, elevation. If the query does not appear to be a real airport or major city anywhere in the world, return {\"error\":\"not found\"}." },
         { role: "user", content: query }
