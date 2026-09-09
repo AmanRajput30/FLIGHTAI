@@ -358,64 +358,112 @@ let lastUpdatedAt = 0;
 let openSkyRateLimited = false;
 let openSkyLimitedAt = 0;
 
-async function fetchLiveFlights() {
+async function fetchFromOpenSky() {
   try {
-    const openSkyConfig = (process.env.OPENSKY_USERNAME && process.env.OPENSKY_PASSWORD) 
+    const config = (process.env.OPENSKY_USERNAME && process.env.OPENSKY_PASSWORD) 
         ? { auth: { username: process.env.OPENSKY_USERNAME, password: process.env.OPENSKY_PASSWORD } } 
         : {};
-    
-    openSkyConfig.headers = {
-      'User-Agent': 'SkyIntel/1.0 (Flight Tracking App)',
-      'Accept': 'application/json'
-    };
+    config.headers = { 'User-Agent': 'SkyIntel/1.0', 'Accept': 'application/json' };
+    config.timeout = 15000;
 
-    const res = await axios.get('https://opensky-network.org/api/states/all', openSkyConfig);
+    const res = await axios.get('https://opensky-network.org/api/states/all', config);
     if (res.data && res.data.states) {
-      const validStates = res.data.states.filter(s => s[5] !== null && s[6] !== null);
-      
-      flightCache = validStates.map(s => {
-        const altFt = s[7] ? Math.round(s[7] * 3.28084) : 35000;
-        const spdKmh = s[9] ? Math.round(s[9] * 3.6) : 800;
-        return {
-          id: s[0], // icao24
+      const flights = res.data.states
+        .filter(s => s[5] !== null && s[6] !== null)
+        .map(s => ({
+          id: s[0],
           flightNumber: s[1] ? s[1].trim() : 'Unknown',
           airline: s[2] || 'Private/Unknown',
-          origin:  'N/A',
-          destination: 'N/A',
-          lat: s[6],
-          lng: s[5],
-          altitude: altFt,
-          speed: spdKmh,
+          origin: 'N/A', destination: 'N/A',
+          lat: s[6], lng: s[5],
+          altitude: s[7] ? Math.round(s[7] * 3.28084) : 35000,
+          speed: s[9] ? Math.round(s[9] * 3.6) : 800,
           heading: s[10] || 0,
-          verticalRate: s[11] || 0, // m/s
-          lastContact: s[4], // unix timestamp
-          isLive: true
-        };
-      });
-      console.log(`[OpenSky] Successfully fetched ${flightCache.length} flights`);
-      lastUpdatedAt = Date.now();
-      io.emit('flights_update', flightCache);
+          verticalRate: s[11] || 0,
+          lastContact: s[4],
+          isLive: true,
+          source: 'opensky'
+        }));
+      console.log(`[OpenSky] Fetched ${flights.length} flights`);
+      return flights;
     }
-  } catch (error) {
-    console.error('OpenSky API Error:', error.message);
-    if (error.response) {
-       console.error('Status:', error.response.status, 'Data:', error.response.data);
+  } catch (err) {
+    console.error('[OpenSky] Error:', err.message);
+  }
+  return [];
+}
+
+async function fetchFromADSBLol() {
+  try {
+    const res = await axios.get('https://api.adsb.lol/v2/point/0/0/25000', { timeout: 20000 });
+    if (res.data && res.data.ac) {
+      const flights = res.data.ac
+        .filter(s => s.lat !== undefined && s.lon !== undefined)
+        .map(s => ({
+          id: s.hex || 'Unknown',
+          flightNumber: s.flight ? s.flight.trim() : 'Unknown',
+          airline: s.t || 'Private/Unknown',
+          origin: 'N/A', destination: 'N/A',
+          lat: s.lat, lng: s.lon,
+          altitude: s.alt_baro ? s.alt_baro : 35000,
+          speed: s.gs ? Math.round(s.gs * 1.852) : 800,
+          heading: s.track || 0,
+          verticalRate: s.baro_rate ? Math.round(s.baro_rate * 0.00508) : 0,
+          lastContact: s.seen ? Math.floor(Date.now()/1000) - Math.round(s.seen) : Math.floor(Date.now()/1000),
+          isLive: true,
+          source: 'adsblol'
+        }));
+      console.log(`[ADSB.lol] Fetched ${flights.length} flights`);
+      return flights;
     }
+  } catch (err) {
+    console.error('[ADSB.lol] Error:', err.message);
+  }
+  return [];
+}
+
+function mergeFlightData(sources) {
+  const merged = new Map();
+  // Add all flights, deduplicating by ICAO24 hex (id). Later sources fill gaps.
+  for (const flights of sources) {
+    for (const f of flights) {
+      if (!merged.has(f.id)) {
+        merged.set(f.id, f);
+      }
+    }
+  }
+  return Array.from(merged.values());
+}
+
+async function fetchLiveFlights() {
+  // Fetch from all available sources in parallel
+  const [openSkyFlights, adsbLolFlights] = await Promise.all([
+    fetchFromOpenSky(),
+    fetchFromADSBLol()
+  ]);
+
+  // Merge: OpenSky first (higher quality data), ADSB.lol fills gaps
+  const merged = mergeFlightData([openSkyFlights, adsbLolFlights]);
+
+  if (merged.length > 0) {
+    flightCache = merged;
+    lastUpdatedAt = Date.now();
+    console.log(`[Fusion] Total unique flights: ${merged.length} (OpenSky: ${openSkyFlights.length}, ADSB.lol: ${adsbLolFlights.length})`);
+    io.emit('flights_update', flightCache);
+  } else {
+    console.warn('[Fusion] No flights from any source!');
   }
 }
 
-app.get('/api/test-opensky', async (req, res) => {
-  try {
-    const config = { 
-      auth: { username: process.env.OPENSKY_USERNAME, password: process.env.OPENSKY_PASSWORD },
-      headers: { 'User-Agent': 'SkyIntel/1.0 (Flight Tracking App)', 'Accept': 'application/json' },
-      timeout: 15000
-    };
-    const r = await axios.get('https://opensky-network.org/api/states/all', config);
-    res.json({ success: true, count: r.data.states.length });
-  } catch(e) {
-    res.json({ success: false, message: e.message, status: e.response ? e.response.status : null, data: e.response ? e.response.data : null });
-  }
+app.get('/api/test-sources', async (req, res) => {
+  const [openSky, adsbLol] = await Promise.all([fetchFromOpenSky(), fetchFromADSBLol()]);
+  const merged = mergeFlightData([openSky, adsbLol]);
+  res.json({
+    openSky: openSky.length,
+    adsbLol: adsbLol.length,
+    merged: merged.length,
+    cacheLength: flightCache.length
+  });
 });
 
 async function fetchLiveFlightsLoop() {
