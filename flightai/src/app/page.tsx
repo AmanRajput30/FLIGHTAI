@@ -27,6 +27,7 @@ export default function Home() {
   const [flightPhotoUrl, setFlightPhotoUrl] = useState<string | null>(null);
   const [weatherData, setWeatherData] = useState<any>(null);
   const [flightRouteData, setFlightRouteData] = useState<any>(null);
+  const [aircraftMetadata, setAircraftMetadata] = useState<any>(null);
   const [expandedRoute, setExpandedRoute] = useState<'origin' | 'destination' | null>(null);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [mounted, setMounted] = useState(false);
@@ -158,10 +159,20 @@ export default function Home() {
              setFlightRouteData({ origin: "Data Unavailable", originIata: "N/A", originIcao: "---", destination: "Data Unavailable", destinationIata: "N/A", destinationIcao: "---" });
           });
       }
+      
+      // Fetch aircraft metadata (adsbdb)
+      setAircraftMetadata(null);
+      axios.get(`${API_URL}/api/aircraft/${hex}`)
+        .then(res => {
+           if (res.data) setAircraftMetadata(res.data);
+        })
+        .catch(() => {});
+
     } else {
       setFlightPhotoUrl(null);
       setWeatherData(null);
       setFlightRouteData(null);
+      setAircraftMetadata(null);
       setExpandedRoute(null);
     }
   }, [selectedFlight?.id]);
@@ -448,10 +459,25 @@ export default function Home() {
                      </div>
                      <div className="flex-1 border-l border-white/10 pl-4 overflow-hidden">
                        <div className="text-[10px] text-gray-500 uppercase tracking-widest mb-0.5">Aircraft Type</div>
-                       <div className="font-bold text-white mb-0.5 truncate" title={flightRouteData?.aircraftModel}>{flightRouteData?.aircraftModel || 'Unknown Type'}</div>
-                       <div className="text-[9px] text-yellow-500 font-mono font-bold tracking-wider">{flightRouteData?.registration || '---'}</div>
+                       <div className="font-bold text-white mb-0.5 truncate" title={aircraftMetadata?.manufacturer ? `${aircraftMetadata.manufacturer} ${aircraftMetadata.type}` : flightRouteData?.aircraftModel}>
+                         {aircraftMetadata?.type || flightRouteData?.aircraftModel || 'Unknown Type'}
+                       </div>
+                       <div className="text-[9px] text-yellow-500 font-mono font-bold tracking-wider">{aircraftMetadata?.registration || flightRouteData?.registration || '---'}</div>
                      </div>
                   </div>
+                  {/* Expanded Aircraft Metadata */}
+                  {aircraftMetadata && (
+                    <div className="flex flex-col gap-1 text-sm font-medium text-gray-300 z-10 relative bg-black/20 p-3 rounded-xl border border-white/5 mt-[-8px]">
+                      <div className="flex justify-between border-b border-white/5 pb-1 mb-1">
+                        <span className="text-[10px] text-gray-500 uppercase">Manufacturer</span>
+                        <span className="text-[11px] text-white font-semibold">{aircraftMetadata.manufacturer || 'Unknown'}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-[10px] text-gray-500 uppercase">Registered Owner</span>
+                        <span className="text-[11px] text-white font-semibold">{aircraftMetadata.registered_owner || 'Unknown'} ({aircraftMetadata.registered_owner_country_iso_name || 'N/A'})</span>
+                      </div>
+                    </div>
+                  )}
                </div>
 
                {/* Route Information */}

@@ -466,6 +466,31 @@ app.get('/api/test-sources', async (req, res) => {
   });
 });
 
+app.get('/api/aircraft/:hex', async (req, res) => {
+  const hex = req.params.hex;
+  if (!hex || hex === 'Unknown') return res.status(400).json({ error: 'Invalid hex' });
+  
+  const cacheKey = `aircraft_${hex}`;
+  const cached = routeCache.get(cacheKey);
+  if (cached) return res.json(cached);
+
+  try {
+    const response = await axios.get(`https://api.adsbdb.com/v0/aircraft/${hex}`, {
+      timeout: 5000,
+      headers: { 'User-Agent': 'SkyIntel/1.0' }
+    });
+    
+    if (response.data && response.data.response && response.data.response.aircraft) {
+      const metadata = response.data.response.aircraft;
+      routeCache.set(cacheKey, metadata);
+      return res.json(metadata);
+    }
+    return res.status(404).json({ error: 'Not found in ADS-B DB' });
+  } catch (error) {
+    return res.status(error.response?.status || 500).json({ error: 'Failed to fetch aircraft details' });
+  }
+});
+
 async function fetchLiveFlightsLoop() {
   await fetchLiveFlights();
   setTimeout(fetchLiveFlightsLoop, 60000);
