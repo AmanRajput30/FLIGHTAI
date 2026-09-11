@@ -748,27 +748,6 @@ export default function Home() {
         </div>
       </main>
 
-      {/* ── Fullscreen Avatar Modal ── */}
-      {showAvatarModal && (
-        <div 
-          className="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-xl flex items-center justify-center cursor-pointer"
-          onClick={() => setShowAvatarModal(false)}
-        >
-          <div className="relative max-w-[90vw] max-h-[90vh] animate-[scaleIn_0.3s_ease-out]">
-            <img 
-              src="/avatar.png" 
-              alt="Profile" 
-              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/10"
-            />
-            <button 
-              onClick={() => setShowAvatarModal(false)}
-              className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white/10 backdrop-blur border border-white/20 text-white flex items-center justify-center hover:bg-white/20 transition-colors text-sm font-bold"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
