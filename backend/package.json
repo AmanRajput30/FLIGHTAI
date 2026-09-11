@@ -13,12 +13,17 @@
   "type": "commonjs",
   "dependencies": {
     "axios": "^1.14.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
+    "csrf-sync": "^4.2.1",
     "dotenv": "^17.4.0",
     "express": "^5.2.1",
     "express-rate-limit": "^8.7.0",
     "helmet": "^8.3.0",
     "lru-cache": "^11.5.2",
+    "mongoose": "^9.10.0",
+    "nodemailer": "^10.0.3",
     "openai": "^6.33.0",
     "socket.io": "^4.8.3"
   }

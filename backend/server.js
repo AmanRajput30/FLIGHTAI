@@ -15,6 +15,11 @@ const OpenAI = require('openai');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { LRUCache } = require('lru-cache');
+const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+const { csrfProtection } = require('./middleware/csrf');
+const authRoute = require('./routes/authRoute');
+const userRoute = require('./routes/userRoute');
 
 const openai = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
@@ -39,9 +44,31 @@ const io = new Server(server, {
 });
 
 app.use(helmet());
-app.use(cors({ origin: frontendOrigin }));
+app.use(cors({ origin: frontendOrigin, credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 app.set('io', io);
+
+// Database Connection
+if (process.env.MONGODB_URI) {
+  mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('✅ Connected to MongoDB'))
+    .catch(err => console.error('❌ MongoDB connection error:', err));
+} else {
+  console.warn('⚠️ MONGODB_URI not provided. Authentication features will not work.');
+}
+
+// Authentication Rate Limiter
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 50, // limit each IP to 50 requests per windowMs
+  message: { error: 'Too many authentication attempts, please try again later.' }
+});
+
+// Apply CSRF to all non-GET requests (handled inside csrfProtection)
+// Mount auth routes (with rate limiter)
+app.use('/api/auth', authLimiter, csrfProtection, authRoute);
+app.use('/api/user', csrfProtection, userRoute);
 
 // Rate Limiters
 const searchLimiter = rateLimit({
