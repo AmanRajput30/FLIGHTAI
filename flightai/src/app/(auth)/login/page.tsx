@@ -31,7 +31,7 @@ export default function LoginPage() {
         rememberMe,
       });
       await refreshUser();
-      router.push("/");
+      router.push("/dashboard");
     } catch (err: any) {
       setError(err.response?.data?.error || "Unable to sign in. Please check your credentials and try again.");
     } finally {
