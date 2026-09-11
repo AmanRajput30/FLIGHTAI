@@ -213,7 +213,7 @@ ${analysis.eta ? `ETA: Approximately ${analysis.eta.hours} hours (${analysis.eta
 
     try {
       const response = await openai.chat.completions.create({
-        model: "openai/gpt-oss-20b",
+        model: "llama3-8b-8192",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "system", content: flightContext },
