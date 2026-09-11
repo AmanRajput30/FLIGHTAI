@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { socket } from '@/lib/socket';
+import UserMenu from '@/components/UserMenu';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -38,7 +39,6 @@ export default function Home() {
   const [searchError, setSearchError] = useState<string | null>(null);
   const [airportData, setAirportData] = useState<any>(null);
   const [targetPos, setTargetPos] = useState<[number, number] | null>(null);
-  const [showAvatarModal, setShowAvatarModal] = useState(false);
   
   // Premium Map & Performance State
   const [mapMode, setMapMode] = useState<'satellite' | 'dark' | 'hybrid'>('dark');
@@ -354,9 +354,7 @@ export default function Home() {
             </div>
           )}
           <div className="text-muted-foreground border-r border-white/10 pr-5 text-sm font-mono">{mounted ? currentTime.toLocaleTimeString() : '\u00A0'}</div>
-          <button onClick={() => setShowAvatarModal(true)} className="w-9 h-9 rounded-full border-2 border-yellow-500/50 overflow-hidden shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:border-yellow-400 hover:shadow-[0_0_20px_rgba(251,191,36,0.5)] transition-all cursor-pointer">
-            <img src="/avatar.png" alt="Profile" className="w-full h-full object-cover" />
-          </button>
+          <UserMenu />
         </div>
       </header>
 
