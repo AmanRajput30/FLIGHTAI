@@ -162,7 +162,10 @@ app.get('/api/search/:query', searchLimiter, async (req, res) => {
   }
 });
 app.set('io', io);
-app.use('/api/chat', chatRoute);
+const { requireAuth } = require('./middleware/auth');
+
+// Protected Routes
+app.use('/api/chat', requireAuth, csrfProtection, chatRoute);
 
 // Endpoint for Origin and Destination (AviationStack + ADSB.lol fallback)
 app.get('/api/route/:flightNumber', routeLimiter, async (req, res) => {

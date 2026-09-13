@@ -1,10 +1,10 @@
-"use client";
+﻿"use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter, usePathname } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-backend.onrender.com';
 
 export interface User {
   _id: string;

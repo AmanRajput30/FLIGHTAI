@@ -11,7 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-backend.onrender.com';
 
 const Map = dynamic(() => import('@/components/Map'), { 
   ssr: false,
@@ -236,9 +236,9 @@ export default function Home() {
       }
     } catch (e: any) {
       if (e.response && e.response.status === 429) {
-         setMessages([...newMessages, { role: 'assistant', content: "SYSTEM ALERT: The OpenAI API Key provided has exhausted its credits/quota. Please supply a funded API key to restore AI features.", isError: true }]);
+         setMessages([...newMessages, { role: 'assistant', content: "SYSTEM ALERT: Rate limit exceeded. Please try again later.", isError: true }]);
       } else {
-         setMessages([...newMessages, { role: 'assistant', content: "An error occurred handling the AI API API error or missing backend parameters.", isError: true }]);
+         setMessages([...newMessages, { role: 'assistant', content: "An error occurred handling the AI API response. Please try again.", isError: true }]);
       }
     } finally {
       setLoading(false);
@@ -275,7 +275,7 @@ export default function Home() {
     return dirs[Math.round(heading / 45) % 8];
   };
 
-  // ── Mental Link: Badge click → search live flights → sync map ──
+  // â”€â”€ Mental Link: Badge click â†’ search live flights â†’ sync map â”€â”€
   const handleFlightBadgeClick = async (callsign: string) => {
     try {
       const res = await axios.get(`${API_URL}/api/search/${encodeURIComponent(callsign)}`);
@@ -408,7 +408,7 @@ export default function Home() {
                  </div>
                  <div className="col-span-2 bg-black/40 rounded-2xl p-4 border border-white/5 flex flex-col gap-1 hover:border-white/10 transition-colors">
                     <span className="text-[10px] text-gray-500 uppercase tracking-widest">Global Coordinates</span>
-                    <span className="font-mono text-green-400 text-sm tracking-widest">{airportData.lat.toFixed(4)}°, {airportData.lng.toFixed(4)}°</span>
+                    <span className="font-mono text-green-400 text-sm tracking-widest">{airportData.lat.toFixed(4)}Â°, {airportData.lng.toFixed(4)}Â°</span>
                  </div>
               </div>
             </div>
@@ -544,9 +544,9 @@ export default function Home() {
 
                {/* Metric Grid */}
                <div className="grid grid-cols-2 gap-3">
-                  <MetricCard icon={<ArrowUp className="w-4 h-4 text-primary" />} label="Altitude" value={`${selectedFlight.altitude.toLocaleString()} ft`} />
-                  <MetricCard icon={<Activity className="w-4 h-4 text-green-400" />} label="Ground Speed" value={`${selectedFlight.speed} km/h`} />
-                  <MetricCard icon={<Compass className="w-4 h-4 text-purple-400" />} label="True Heading" value={`${Math.round(selectedFlight.heading)}°`} />
+                  <MetricCard icon={<ArrowUp className="w-4 h-4 text-primary" />} label="Altitude" value={selectedFlight.altitude ? `${selectedFlight.altitude.toLocaleString()} ft` : 'Unknown'} />
+                  <MetricCard icon={<Activity className="w-4 h-4 text-green-400" />} label="Ground Speed" value={selectedFlight.speed ? `${selectedFlight.speed} km/h` : 'Unknown'} />
+                  <MetricCard icon={<Compass className="w-4 h-4 text-purple-400" />} label="True Heading" value={selectedFlight.heading ? `${Math.round(selectedFlight.heading)}°` : 'Unknown'} />
                   <MetricCard icon={<Zap className="w-4 h-4 text-yellow-400" />} label="Vertical Rate" value={selectedFlight.verticalRate ? `${selectedFlight.verticalRate} m/s` : 'Level'} />
                </div>
 
@@ -568,11 +568,11 @@ export default function Home() {
                <div className="bg-black/40 rounded-2xl p-5 border border-white/5 space-y-4">
                   <div className="flex justify-between items-center">
                      <span className="text-sm text-gray-400">Live Latitude</span>
-                     <span className="font-mono text-sm">{selectedFlight.lat.toFixed(4)}°</span>
+                     <span className="font-mono text-sm">{selectedFlight.lat.toFixed(4)}Â°</span>
                   </div>
                   <div className="flex justify-between items-center">
                      <span className="text-sm text-gray-400">Live Longitude</span>
-                     <span className="font-mono text-sm">{selectedFlight.lng.toFixed(4)}°</span>
+                     <span className="font-mono text-sm">{selectedFlight.lng.toFixed(4)}Â°</span>
                   </div>
                   <div className="h-[1px] w-full bg-white/10"></div>
                   <div className="flex justify-between items-center">
@@ -594,7 +594,7 @@ export default function Home() {
                      <div className="grid grid-cols-2 gap-4">
                         <div className="flex flex-col gap-1">
                            <span className="text-xs text-gray-500 flex items-center gap-1"><Thermometer className="w-3 h-3"/> Ground Temp</span>
-                           <span className="font-mono text-lg">{weatherData.temperature_2m}°C</span>
+                           <span className="font-mono text-lg">{weatherData.temperature_2m}Â°C</span>
                         </div>
                         <div className="flex flex-col gap-1">
                            <span className="text-xs text-gray-500 flex items-center gap-1"><Wind className="w-3 h-3"/> Surface Wind</span>
@@ -641,7 +641,7 @@ export default function Home() {
              performanceMode={performanceMode}
            />
            
-           {/* ── Top Flight Info Bar ── */}
+           {/* â”€â”€ Top Flight Info Bar â”€â”€ */}
            {focusedFlightId && selectedFlight && selectedFlight.id === focusedFlightId && (
              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-black/70 backdrop-blur-xl px-6 py-2.5 rounded-2xl text-white text-sm shadow-2xl border border-white/10 flex items-center gap-4 pointer-events-none">
                <span className="flex items-center gap-2 font-bold text-yellow-400">
@@ -653,7 +653,7 @@ export default function Home() {
                <div className="w-px h-4 bg-white/20"></div>
                <span className="font-mono text-xs">{selectedFlight.speed} km/h</span>
                <div className="w-px h-4 bg-white/20"></div>
-               <span className="font-mono text-xs">{Math.round(selectedFlight.heading)}° {getHeadingDirection(selectedFlight.heading)}</span>
+               <span className="font-mono text-xs">{Math.round(selectedFlight.heading)}Â° {getHeadingDirection(selectedFlight.heading)}</span>
                <div className="w-px h-4 bg-white/20"></div>
                <span className={`text-xs font-semibold uppercase tracking-wider ${getFlightPhase() === 'climbing' ? 'text-green-400' : getFlightPhase() === 'descending' ? 'text-orange-400' : 'text-blue-400'}`}>
                  {getFlightPhase()}
@@ -671,11 +671,11 @@ export default function Home() {
         {/* RIGHT PANEL - AI */}
         <div className="w-[400px] h-full flex flex-col glass-panel border-l border-t-0 z-10 shadow-[-2px_0_20px_rgba(0,0,0,0.5)] bg-card/95">
           <div className="p-5 border-b border-white/5">
-            <h2 className="font-semibold text-xl">Hello, <span className="text-yellow-400">Aman</span></h2>
+            <h2 className="font-semibold text-xl">Hello, <span className="text-yellow-400">{user?.name ? user.name.split(' ')[0] : 'Guest'}</span></h2>
             <p className="text-sm text-muted-foreground mt-1">Ready to assist with flight data.</p>
           </div>
 
-          {/* ── Tracking Context Bar ── */}
+          {/* â”€â”€ Tracking Context Bar â”€â”€ */}
           {focusedFlightId && selectedFlight && selectedFlight.id === focusedFlightId && (
             <div className="tracking-bar mx-3 mt-3 rounded-xl px-4 py-2.5 flex items-center gap-3">
               <span className="relative flex h-2.5 w-2.5 shrink-0">
@@ -697,7 +697,7 @@ export default function Home() {
             </div>
           )}
 
-          {/* ── Context Indicator ── */}
+          {/* â”€â”€ Context Indicator â”€â”€ */}
           {focusedFlightId && selectedFlight && selectedFlight.id === focusedFlightId && (
             <div className="context-indicator mx-5 mt-2.5 flex items-center gap-2 text-[11px] text-yellow-400/60 font-medium">
               <Radio className="w-3 h-3 text-yellow-500/50" />
@@ -718,7 +718,7 @@ export default function Home() {
                    {msg.isError && <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />}
                    <div>{msg.content}</div>
                  </div>
-                 {/* ── Flight Reference Badges ── */}
+                 {/* â”€â”€ Flight Reference Badges â”€â”€ */}
                  {msg.role === 'assistant' && msg.referencedFlights && msg.referencedFlights.length > 0 && (
                    <div className="flex flex-wrap gap-2 mt-1">
                      {msg.referencedFlights.map((ref, rIdx) => (
