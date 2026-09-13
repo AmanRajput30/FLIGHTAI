@@ -29,22 +29,53 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 let csrfPromise: Promise<string> | null = null;
 
+const fetchCsrfToken = () => {
+  if (!csrfPromise) {
+    csrfPromise = axios.get(`${API_URL}/api/auth/csrf-token`).then(res => res.data.csrfToken);
+  }
+  return csrfPromise;
+};
+
+// Configure axios defaults globally for SSR/CSR cookies
+axios.defaults.withCredentials = true;
+
+// Global CSRF Interceptor
+axios.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+    if (
+      error.response &&
+      error.response.status === 403 &&
+      (error.response.data?.error === 'CSRF token missing' || error.response.data?.error === 'CSRF token invalid') &&
+      !originalRequest._retry
+    ) {
+      originalRequest._retry = true;
+      // Force fetch a new CSRF token
+      csrfPromise = null;
+      try {
+        const newCsrfToken = await fetchCsrfToken();
+        axios.defaults.headers.common['x-csrf-token'] = newCsrfToken;
+        originalRequest.headers['x-csrf-token'] = newCsrfToken;
+        return axios(originalRequest);
+      } catch (retryError) {
+        return Promise.reject(retryError);
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
 
-  // Configure axios defaults globally for SSR/CSR cookies
-  axios.defaults.withCredentials = true;
-
   const refreshUser = async () => {
     try {
       // 1. Fetch CSRF Token First (cached promise to prevent Strict Mode race conditions)
-      if (!csrfPromise) {
-        csrfPromise = axios.get(`${API_URL}/api/auth/csrf-token`).then(res => res.data.csrfToken);
-      }
-      const csrfToken = await csrfPromise;
+      const csrfToken = await fetchCsrfToken();
       axios.defaults.headers.common['x-csrf-token'] = csrfToken;
 
       // 2. Fetch User

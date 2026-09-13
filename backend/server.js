@@ -14,6 +14,7 @@ const axios = require('axios');
 const OpenAI = require('openai');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const { requireAuth, requireVerified } = require('./middleware/auth');
 const { LRUCache } = require('lru-cache');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
@@ -110,20 +111,10 @@ const routeLimiter = rateLimit({
   message: { error: 'Too many route requests, please try again later.' }
 });
 
-app.get('/api/status', (req, res) => {
-  res.json({
-    flightCacheLength: flightCache ? flightCache.length : 0,
-    openSkyRateLimited: openSkyRateLimited,
-    lastUpdatedAt: lastUpdatedAt,
-    envStatus: {
-      username: !!process.env.OPENSKY_USERNAME,
-      password: !!process.env.OPENSKY_PASSWORD
-    }
-  });
-});
+const { GROQ_MODEL } = require('./config/constants');
 
 // Global Unified Search
-app.get('/api/search/:query', searchLimiter, async (req, res) => {
+app.get('/api/search/:query', searchLimiter, requireAuth, async (req, res) => {
   try {
     let rawQuery = req.params.query;
     if (!rawQuery || rawQuery.length > 100) return res.status(400).json({ error: "Invalid search query." });
@@ -142,7 +133,7 @@ app.get('/api/search/:query', searchLimiter, async (req, res) => {
     
     // Pass 2: Fallback to LLM Airport Geocoding
     const response = await openai.chat.completions.create({
-      model: "openai/gpt-oss-20b",
+      model: GROQ_MODEL,
       messages: [
         { role: "system", content: "You are an API that returns ONLY valid JSON for airport searches. Return keys: name, iata, icao, city, country, lat (number), lng (number), timezone, elevation. If the query does not appear to be a real airport or major city anywhere in the world, return {\"error\":\"not found\"}." },
         { role: "user", content: query }
@@ -161,14 +152,12 @@ app.get('/api/search/:query', searchLimiter, async (req, res) => {
     res.status(500).json({ error: "Failed to perform search." });
   }
 });
-app.set('io', io);
-const { requireAuth, requireVerified } = require('./middleware/auth');
 
 // Protected Routes
 app.use('/api/chat', requireAuth, requireVerified, csrfProtection, chatRoute);
 
 // Endpoint for Origin and Destination (AviationStack + ADSB.lol fallback)
-app.get('/api/route/:flightNumber', routeLimiter, async (req, res) => {
+app.get('/api/route/:flightNumber', routeLimiter, requireAuth, async (req, res) => {
   try {
     let fn = req.params.flightNumber;
     if (!fn || fn === 'Unknown') return res.json(null);
@@ -433,8 +422,8 @@ async function fetchFromOpenSky() {
           airline: s[2] || 'Private/Unknown',
           origin: 'N/A', destination: 'N/A',
           lat: s[6], lng: s[5],
-          altitude: s[7] ? Math.round(s[7] * 3.28084) : 35000,
-          speed: s[9] ? Math.round(s[9] * 3.6) : 800,
+          altitude: s[7] != null ? Math.round(s[7] * 3.28084) : null,
+          speed: s[9] != null ? Math.round(s[9] * 3.6) : null,
           heading: s[10] || 0,
           verticalRate: s[11] || 0,
           lastContact: s[4],
@@ -462,8 +451,8 @@ async function fetchFromADSBLol() {
           airline: s.t || 'Private/Unknown',
           origin: 'N/A', destination: 'N/A',
           lat: s.lat, lng: s.lon,
-          altitude: s.alt_baro ? s.alt_baro : 35000,
-          speed: s.gs ? Math.round(s.gs * 1.852) : 800,
+          altitude: s.alt_baro != null ? s.alt_baro : null,
+          speed: s.gs != null ? Math.round(s.gs * 1.852) : null,
           heading: s.track || 0,
           verticalRate: s.baro_rate ? Math.round(s.baro_rate * 0.00508) : 0,
           lastContact: s.seen ? Math.floor(Date.now()/1000) - Math.round(s.seen) : Math.floor(Date.now()/1000),
@@ -512,18 +501,8 @@ async function fetchLiveFlights() {
   }
 }
 
-app.get('/api/test-sources', async (req, res) => {
-  const [openSky, adsbLol] = await Promise.all([fetchFromOpenSky(), fetchFromADSBLol()]);
-  const merged = mergeFlightData([openSky, adsbLol]);
-  res.json({
-    openSky: openSky.length,
-    adsbLol: adsbLol.length,
-    merged: merged.length,
-    cacheLength: flightCache.length
-  });
-});
-
-app.get('/api/aircraft/:hex', async (req, res) => {
+// Endpoint for Hex (Registration) lookup
+app.get('/api/aircraft/:hex', requireAuth, async (req, res) => {
   const hex = req.params.hex;
   if (!hex || hex === 'Unknown') return res.status(400).json({ error: 'Invalid hex' });
   

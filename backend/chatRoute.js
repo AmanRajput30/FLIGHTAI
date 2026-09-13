@@ -3,6 +3,7 @@ const router = express.Router();
 const OpenAI = require('openai');
 const axios = require('axios');
 const rateLimit = require('express-rate-limit');
+const { GROQ_MODEL } = require('./config/constants');
 
 // Chat Rate Limiter - 20 requests per 15 minutes per IP
 const chatLimiter = rateLimit({
@@ -58,7 +59,11 @@ function detectResponseAction(userMessage, contextFlight) {
 
 // ─── Intelligence Layer ─── Compute insights from raw telemetry
 function analyzeFlight(context) {
-  if (!context || !context.altitude) return null;
+  if (!context || context.altitude == null) return null;
+
+  if (context.altitude === 0 && context.speed === 0) {
+    return { phase: "on ground", speedCategory: "stationary", direction: "N/A", altitudeContext: "on ground", eta: null };
+  }
 
   let phase = "cruising";
   if (context.verticalRate > 5) phase = "climbing";
@@ -213,7 +218,7 @@ ${analysis.eta ? `ETA: Approximately ${analysis.eta.hours} hours (${analysis.eta
 
     try {
       const response = await openai.chat.completions.create({
-        model: "openai/gpt-oss-20b",
+        model: GROQ_MODEL,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "system", content: flightContext },

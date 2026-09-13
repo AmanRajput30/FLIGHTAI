@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState, memo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
@@ -270,7 +270,7 @@ interface MapProps {
   selectedFlightId: string | null;
   routeData?: any;
   targetPos?: [number, number] | null;
-  mapMode?: 'satellite' | 'dark' | 'hybrid';
+  mapMode?: 'satellite' | 'dark';
   performanceMode?: boolean;
 }
 
