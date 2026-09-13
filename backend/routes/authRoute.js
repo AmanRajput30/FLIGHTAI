@@ -91,14 +91,19 @@ router.post('/register', async (req, res) => {
     });
 
     // Send Verification Email
-    const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verifyToken}`;
-    await emailService.sendEmail({
-      to: newUser.email,
-      subject: 'Verify your SkyIntel Account',
-      html: `<p>Welcome to SkyIntel!</p><p>Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
-    });
+    try {
+      const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verifyToken}`;
+      await emailService.sendEmail({
+        to: newUser.email,
+        subject: 'Verify your SkyIntel Account',
+        html: `<p>Welcome to SkyIntel!</p><p>Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
+      });
+    } catch (emailErr) {
+      console.error('Failed to send verification email, but user was created:', emailErr);
+      // We do not return here, we let the registration succeed.
+    }
 
-    res.status(201).json({ message: 'Registration successful. Please check your email to verify your account.' });
+    res.status(201).json({ message: 'Registration successful.' });
   } catch (error) {
     console.error('Register Error:', error);
     res.status(500).json({ error: 'Server error during registration' });
@@ -251,11 +256,15 @@ router.post('/forgot-password', async (req, res) => {
       });
 
       const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
-      await emailService.sendEmail({
-        to: user.email,
-        subject: 'Password Reset Request',
-        html: `<p>You requested a password reset.</p><p>Click the link below to reset it:</p><a href="${resetLink}">Reset Password</a><p>If you didn't request this, ignore this email.</p>`
-      });
+      try {
+        await emailService.sendEmail({
+          to: user.email,
+          subject: 'Password Reset Request',
+          html: `<p>You requested a password reset.</p><p>Click the link below to reset it:</p><a href="${resetLink}">Reset Password</a><p>If you didn't request this, ignore this email.</p>`
+        });
+      } catch (emailErr) {
+        console.error('Failed to send reset email:', emailErr);
+      }
     }
 
     res.json({ message: 'If an account with that email exists, we have sent a reset link.' });
