@@ -35,7 +35,13 @@ const logSecurityEvent = async (userId, eventType, req, metadata = {}) => {
  * Dispense CSRF token for the frontend
  */
 router.get('/csrf-token', (req, res) => {
-  res.json({ csrfToken: generateCsrfToken(req) });
+  const token = generateCsrfToken(req);
+  res.cookie('_csrf', token, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'Lax',
+  });
+  res.json({ csrfToken: token });
 });
 
 /**

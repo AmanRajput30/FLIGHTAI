@@ -65,7 +65,7 @@ export default function LandingPage() {
         </p>
         
         <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Link href={user ? "/dashboard" : "/register"} className="flex items-center justify-center gap-2 text-lg font-bold text-black bg-yellow-500 hover:bg-yellow-400 px-8 py-4 rounded-full transition-all hover:scale-105 shadow-[0_0_30px_rgba(251,191,36,0.3)]">
+          <Link href="/dashboard" className="flex items-center justify-center gap-2 text-lg font-bold text-black bg-yellow-500 hover:bg-yellow-400 px-8 py-4 rounded-full transition-all hover:scale-105 shadow-[0_0_30px_rgba(251,191,36,0.3)]">
             {user ? "Open Dashboard" : "Start Tracking Now"} <ArrowRight className="w-5 h-5" />
           </Link>
           {!user && (
