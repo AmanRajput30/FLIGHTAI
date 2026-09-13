@@ -36,15 +36,35 @@ const app = express();
 const server = http.createServer(app);
 
 const frontendOrigin = process.env.FRONTEND_URL || 'https://skyintel-black.vercel.app';
+const allowedOrigins = [
+  frontendOrigin,
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'https://skyintel-black.vercel.app'
+];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Allow vercel preview deployments dynamically
+    if (origin.endsWith('.vercel.app') || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked request from origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+};
+
 const io = new Server(server, { 
-  cors: { 
-    origin: frontendOrigin, 
-    methods: ['GET', 'POST'] 
-  }
+  cors: corsOptions
 });
 
 app.use(helmet());
-app.use(cors({ origin: frontendOrigin, credentials: true }));
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 app.set('io', io);
