@@ -1,5 +1,10 @@
 const nodemailer = require('nodemailer');
+const dns = require('dns');
 
+// Force IPv4 because some PaaS providers (like Render) have broken IPv6 routing which causes ENETUNREACH when connecting to Gmail.
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 // Define the generic Email Provider interface.
 // The user MUST supply real SMTP credentials in .env.
 let transporter;
