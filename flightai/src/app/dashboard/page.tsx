@@ -7,6 +7,9 @@ import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { socket } from '@/lib/socket';
 import UserMenu from '@/components/UserMenu';
+import { useAuth } from '@/context/AuthContext';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
@@ -18,6 +21,9 @@ const Map = dynamic(() => import('@/components/Map'), {
 interface ChatMessage { role: 'user' | 'assistant'; content: string; isError?: boolean; referencedFlights?: string[]; }
 
 export default function Home() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
+
   const [messages, setMessages] = useState<ChatMessage[]>([
     { role: 'assistant', content: "Welcome to SkyIntel Command Center. I'm SkyLord, your aviation intelligence assistant. What would you like to track?" }
   ]);
@@ -731,19 +737,30 @@ export default function Home() {
              <div ref={messagesEndRef} />
           </div>
 
-          <div className="p-5 mt-auto bg-black/20">
-            <div className="relative group flex items-center">
-              <input 
-                type="text" value={inputValue} onChange={e => setInputValue(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Ask AI an aviation question..."
-                className="w-full bg-black/60 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm outline-none focus:border-yellow-400/50 focus:ring-1 focus:ring-yellow-400/50 transition-all placeholder:text-muted-foreground/50 text-white"
-              />
-              <div className="absolute right-2 flex items-center">
-                <button onClick={handleSendMessage} className="w-8 h-8 rounded-lg bg-yellow-500 text-black flex items-center justify-center hover:bg-yellow-400 transition-colors">
-                  <Send className="w-4 h-4 ml-0.5" />
-                </button>
+          <div className="p-5 mt-auto bg-black/20 border-t border-white/5">
+            {authLoading ? (
+               <div className="h-12 flex items-center justify-center"><div className="w-5 h-5 rounded-full border-2 border-yellow-500 border-t-transparent animate-spin"></div></div>
+            ) : user ? (
+              <div className="relative group flex items-center">
+                <input 
+                  type="text" value={inputValue} onChange={e => setInputValue(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
+                  placeholder="Ask AI an aviation question..."
+                  className="w-full bg-black/60 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm outline-none focus:border-yellow-400/50 focus:ring-1 focus:ring-yellow-400/50 transition-all placeholder:text-muted-foreground/50 text-white"
+                />
+                <div className="absolute right-2 flex items-center">
+                  <button onClick={handleSendMessage} className="w-8 h-8 rounded-lg bg-yellow-500 text-black flex items-center justify-center hover:bg-yellow-400 transition-colors">
+                    <Send className="w-4 h-4 ml-0.5" />
+                  </button>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+                 <p className="text-sm text-yellow-500 font-medium mb-3">Create a free account to unlock SkyLord AI Assistant</p>
+                 <Link href="/register" className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2.5 rounded-lg transition-colors text-sm">
+                   Create Account
+                 </Link>
+              </div>
+            )}
           </div>
         </div>
       </main>
