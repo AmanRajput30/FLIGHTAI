@@ -326,7 +326,7 @@ export default function Home() {
   return (
     <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
       {/* HEADER */}
-      <header className="h-16 flex items-center justify-between px-6 glass-panel border-b-0 z-10">
+      <header className="h-16 flex items-center justify-between px-6 glass-panel border-b-0 z-40 relative">
         <div className="flex items-center gap-2">
           <Plane className="w-6 h-6 text-yellow-400" />
           <span className="font-bold text-xl tracking-tight">SkyIntel</span>
