@@ -34,6 +34,7 @@ const routeCache = new LRUCache({
 }); // Cache for flight routes to improve robustness
 
 const app = express();
+app.set('trust proxy', 1); // Trust the first proxy (Render's load balancer) for rate limiting
 const server = http.createServer(app);
 
 const frontendOrigin = process.env.FRONTEND_URL || 'https://skyintel-black.vercel.app';
