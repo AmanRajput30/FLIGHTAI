@@ -217,7 +217,7 @@ export default function RegisterPage() {
                 </svg>
               </div>
               <span className="text-xs text-gray-400 leading-tight">
-                I agree to the <Link href="#" className="text-yellow-500 hover:underline">Terms of Service</Link> and <Link href="#" className="text-yellow-500 hover:underline">Privacy Policy</Link>, and consent to the processing of my data.
+                I agree to the <Link href="/terms" className="text-yellow-500 hover:underline" target="_blank">Terms of Service</Link> and <Link href="/privacy" className="text-yellow-500 hover:underline" target="_blank">Privacy Policy</Link>, and consent to the processing of my data.
               </span>
             </label>
           </div>

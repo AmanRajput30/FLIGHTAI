@@ -106,8 +106,14 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 text-center text-gray-500 text-sm z-10 border-t border-white/5 bg-[#0d1117]">
-        &copy; {new Date().getFullYear()} SkyIntel Aviation. All rights reserved.
+      <footer className="w-full text-center p-6 text-sm text-gray-500 z-10 border-t border-white/5 bg-black/50">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
+          <span>&copy; {new Date().getFullYear()} SkyIntel Aviation. All rights reserved.</span>
+          <div className="flex gap-4">
+            <Link href="/terms" className="hover:text-yellow-400 transition-colors">Terms of Service</Link>
+            <Link href="/privacy" className="hover:text-yellow-400 transition-colors">Privacy Policy</Link>
+          </div>
+        </div>
       </footer>
     </div>
   );
