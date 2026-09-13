@@ -78,6 +78,7 @@ router.post('/register', async (req, res) => {
       username: username.toLowerCase(),
       email: email.toLowerCase(),
       passwordHash,
+      avatar: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=eab308&color=000`
     });
 
     // Create Verification Token
