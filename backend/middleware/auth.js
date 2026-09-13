@@ -57,7 +57,24 @@ const requireRole = (...roles) => {
   };
 };
 
+/**
+ * Middleware to require email verification
+ * Must be used AFTER requireAuth so req.user is populated.
+ */
+const requireVerified = (req, res, next) => {
+  if (!req.user) {
+    return res.status(401).json({ error: 'Authentication required' });
+  }
+  
+  if (!req.user.isEmailVerified) {
+    return res.status(403).json({ error: 'EMAIL_NOT_VERIFIED', message: 'Please verify your email address to access this feature.' });
+  }
+  
+  next();
+};
+
 module.exports = {
   requireAuth,
   requireRole,
+  requireVerified,
 };

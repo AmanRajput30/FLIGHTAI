@@ -136,10 +136,6 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    if (!user.isEmailVerified) {
-      return res.status(403).json({ error: 'Please verify your email address before logging in.' });
-    }
-
     // Create Session
     const { token: sessionId, hash: sessionTokenHash } = cryptoUtils.generateSecureToken(64);
     
@@ -180,6 +176,49 @@ router.post('/login', async (req, res) => {
  */
 router.get('/me', requireAuth, (req, res) => {
   res.json({ user: req.user });
+});
+
+/**
+ * POST /api/auth/resend-verification
+ * Allows a logged in user to request a fresh verification email.
+ */
+router.post('/resend-verification', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.isEmailVerified) {
+      return res.status(400).json({ error: 'Email is already verified' });
+    }
+
+    // Delete any existing unused tokens for this user to prevent spam/confusion
+    await Token.deleteMany({ userId: user._id, type: 'VERIFY_EMAIL' });
+
+    // Create Verification Token
+    const { token: verifyToken, hash: verifyTokenHash } = cryptoUtils.generateSecureToken();
+    
+    await Token.create({
+      userId: user._id,
+      tokenHash: verifyTokenHash,
+      type: 'VERIFY_EMAIL',
+      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+    });
+
+    // Send Verification Email
+    const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verifyToken}`;
+    await emailService.sendEmail({
+      to: user.email,
+      subject: 'Verify your SkyIntel Account (Resend)',
+      html: `<p>Welcome back to SkyIntel!</p><p>Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
+    });
+
+    res.json({ message: 'Verification email sent successfully' });
+  } catch (error) {
+    console.error('Resend Verification Error:', error);
+    res.status(500).json({ error: 'Failed to resend verification email' });
+  }
 });
 
 /**

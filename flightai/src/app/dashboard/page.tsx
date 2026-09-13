@@ -46,6 +46,11 @@ export default function Home() {
   const [airportData, setAirportData] = useState<any>(null);
   const [targetPos, setTargetPos] = useState<[number, number] | null>(null);
   
+  // Verification State
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
+  
   // Premium Map & Performance State
   const [mapMode, setMapMode] = useState<'satellite' | 'dark' | 'hybrid'>('dark');
   const [performanceMode, setPerformanceMode] = useState(false);
@@ -237,11 +242,28 @@ export default function Home() {
     } catch (e: any) {
       if (e.response && e.response.status === 429) {
          setMessages([...newMessages, { role: 'assistant', content: "SYSTEM ALERT: Rate limit exceeded. Please try again later.", isError: true }]);
+      } else if (e.response && e.response.status === 403 && e.response.data?.error === 'EMAIL_NOT_VERIFIED') {
+         setMessages([...newMessages, { role: 'assistant', content: "SYSTEM ALERT: Please verify your email address to access the AI assistant.", isError: true }]);
       } else {
          setMessages([...newMessages, { role: 'assistant', content: "An error occurred handling the AI API response. Please try again.", isError: true }]);
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (isResending) return;
+    setIsResending(true);
+    setResendSuccess(false);
+    setResendError(null);
+    try {
+      await axios.post(`${API_URL}/api/auth/resend-verification`);
+      setResendSuccess(true);
+    } catch (err: any) {
+      setResendError(err.response?.data?.error || "Failed to resend verification email.");
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -741,18 +763,36 @@ export default function Home() {
             {authLoading ? (
                <div className="h-12 flex items-center justify-center"><div className="w-5 h-5 rounded-full border-2 border-yellow-500 border-t-transparent animate-spin"></div></div>
             ) : user ? (
-              <div className="relative group flex items-center">
-                <input 
-                  type="text" value={inputValue} onChange={e => setInputValue(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Ask AI an aviation question..."
-                  className="w-full bg-black/60 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm outline-none focus:border-yellow-400/50 focus:ring-1 focus:ring-yellow-400/50 transition-all placeholder:text-muted-foreground/50 text-white"
-                />
-                <div className="absolute right-2 flex items-center">
-                  <button onClick={handleSendMessage} className="w-8 h-8 rounded-lg bg-yellow-500 text-black flex items-center justify-center hover:bg-yellow-400 transition-colors">
-                    <Send className="w-4 h-4 ml-0.5" />
-                  </button>
+              user.isEmailVerified ? (
+                <div className="relative group flex items-center">
+                  <input 
+                    type="text" value={inputValue} onChange={e => setInputValue(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
+                    placeholder="Ask AI an aviation question..."
+                    className="w-full bg-black/60 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm outline-none focus:border-yellow-400/50 focus:ring-1 focus:ring-yellow-400/50 transition-all placeholder:text-muted-foreground/50 text-white"
+                  />
+                  <div className="absolute right-2 flex items-center">
+                    <button onClick={handleSendMessage} className="w-8 h-8 rounded-lg bg-yellow-500 text-black flex items-center justify-center hover:bg-yellow-400 transition-colors">
+                      <Send className="w-4 h-4 ml-0.5" />
+                    </button>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
+                   <p className="text-sm text-yellow-500 font-medium mb-3">Verify your email to unlock SkyLord AI Assistant</p>
+                   {resendSuccess ? (
+                     <div className="text-sm text-green-400 font-medium py-2.5">Check your inbox for a new verification link!</div>
+                   ) : (
+                     <button 
+                       onClick={handleResendVerification} 
+                       disabled={isResending}
+                       className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2.5 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                     >
+                       {isResending ? 'Sending...' : 'Resend Verification Email'}
+                     </button>
+                   )}
+                   {resendError && <p className="text-xs text-red-400 mt-2">{resendError}</p>}
+                </div>
+              )
             ) : (
               <div className="flex flex-col items-center justify-center text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
                  <p className="text-sm text-yellow-500 font-medium mb-3">Create a free account to unlock SkyLord AI Assistant</p>
