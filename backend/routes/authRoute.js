@@ -305,33 +305,34 @@ router.post('/forgot-password', async (req, res) => {
 
     const user = await User.findOne({ email: email.toLowerCase() });
     
-    // We don't reveal if the user exists. Just return generic success message.
-    if (user) {
-      const { token: resetToken, hash: resetTokenHash } = cryptoUtils.generateSecureToken();
-      
-      await Token.create({
-        userId: user._id,
-        tokenHash: resetTokenHash,
-        type: 'RESET_PASSWORD',
-        expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000) // 1 hour
-      });
-
-      const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
-      try {
-        // Fire-and-forget to prevent blocking the UI
-        emailService.sendEmail({
-          to: user.email,
-          subject: 'Reset your SkyIntel Password',
-          html: `<p>You requested a password reset.</p><p>Click the link below to reset your password:</p><a href="${resetLink}">Reset Password</a>`
-        }).catch(emailErr => {
-          console.error('Failed to send password reset email (background task):', emailErr.message);
-        });
-      } catch (emailErr) {
-        console.error('Failed to send reset email:', emailErr);
-      }
+    if (!user) {
+      return res.status(404).json({ error: 'No account found with that email address.' });
     }
 
-    res.json({ message: 'If an account with that email exists, we have sent a reset link.' });
+    const { token: resetToken, hash: resetTokenHash } = cryptoUtils.generateSecureToken();
+    
+    await Token.create({
+      userId: user._id,
+      tokenHash: resetTokenHash,
+      type: 'RESET_PASSWORD',
+      expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000) // 1 hour
+    });
+
+    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    try {
+      // Fire-and-forget to prevent blocking the UI
+      emailService.sendEmail({
+        to: user.email,
+        subject: 'Reset your SkyIntel Password',
+        html: `<p>You requested a password reset.</p><p>Click the link below to reset your password:</p><a href="${resetLink}">Reset Password</a>`
+      }).catch(emailErr => {
+        console.error('Failed to send password reset email (background task):', emailErr.message);
+      });
+    } catch (emailErr) {
+      console.error('Failed to send reset email:', emailErr);
+    }
+
+    res.json({ message: 'Password reset link sent to your email.' });
   } catch (error) {
     console.error('Forgot Password Error:', error);
     res.status(500).json({ error: 'Server error' });
