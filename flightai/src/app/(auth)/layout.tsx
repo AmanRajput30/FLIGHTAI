@@ -41,8 +41,12 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
       </div>
 
-      <div className="mt-8 text-sm text-gray-500 z-10">
-        &copy; {new Date().getFullYear()} SkyIntel Aviation. All rights reserved.
+      <div className="mt-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-sm text-gray-500 z-10">
+        <span>&copy; {new Date().getFullYear()} SkyIntel Aviation. All rights reserved.</span>
+        <div className="flex gap-4">
+          <Link href="/terms" className="hover:text-yellow-400 transition-colors">Terms</Link>
+          <Link href="/privacy" className="hover:text-yellow-400 transition-colors">Privacy</Link>
+        </div>
       </div>
     </div>
   );

@@ -39,7 +39,7 @@ router.get('/csrf-token', (req, res) => {
   res.cookie('_csrf', token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'Lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
   });
   res.json({ csrfToken: token });
 });
@@ -155,7 +155,7 @@ router.post('/login', async (req, res) => {
     res.cookie('sessionId', sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax', // User requirement
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
       expires: expiresAt,
     });
 
@@ -184,7 +184,7 @@ router.post('/logout', requireAuth, async (req, res) => {
     res.clearCookie('sessionId', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
     });
     
     res.json({ message: 'Logged out successfully' });
