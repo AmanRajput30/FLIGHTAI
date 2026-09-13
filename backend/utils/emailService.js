@@ -19,6 +19,12 @@ const initializeTransporter = async () => {
     });
   } else {
     // Development fallback: Ethereal
+    if (process.env.NODE_ENV === 'production') {
+      console.log('⚠️ No SMTP configuration found in production. Emails will NOT be sent (Ethereal is blocked by most PaaS providers).');
+      // Leave transporter undefined to skip sending
+      return;
+    }
+
     console.log('⚠️ No SMTP configuration found. Generating Ethereal test account...');
     let testAccount = await nodemailer.createTestAccount();
     transporter = nodemailer.createTransport({
@@ -42,6 +48,11 @@ initializeTransporter().catch(console.error);
  */
 exports.sendEmail = async ({ to, subject, html }) => {
   if (!transporter) {
+    if (process.env.NODE_ENV === 'production') {
+      console.log(`[Email Mock] To: ${to}, Subject: ${subject}`);
+      // In production without SMTP, we just mock it instantly to avoid hanging
+      return { messageId: 'mock-id' };
+    }
     throw new Error('Email transporter not initialized');
   }
 
