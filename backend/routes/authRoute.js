@@ -55,8 +55,12 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
-    if (password.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    if (typeof name !== 'string' || typeof username !== 'string' || typeof email !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ error: 'Invalid input types' });
+    }
+
+    if (password.length < 8 || password.length > 100) {
+      return res.status(400).json({ error: 'Password must be between 8 and 100 characters' });
     }
 
     // Check if email or username exists safely
@@ -123,6 +127,10 @@ router.post('/login', async (req, res) => {
 
     if (!identifier || !password) {
       return res.status(400).json({ error: 'Please provide credentials' });
+    }
+
+    if (typeof identifier !== 'string' || typeof password !== 'string') {
+      return res.status(400).json({ error: 'Invalid input types' });
     }
 
     const normalizedIdentifier = identifier.toLowerCase();
@@ -257,6 +265,7 @@ router.post('/verify-email', async (req, res) => {
   try {
     const { token } = req.body;
     if (!token) return res.status(400).json({ error: 'Token is required' });
+    if (typeof token !== 'string') return res.status(400).json({ error: 'Invalid input types' });
 
     const tokenHash = cryptoUtils.hashToken(token);
     const verifyToken = await Token.findOne({ tokenHash, type: 'VERIFY_EMAIL' });
@@ -292,6 +301,7 @@ router.post('/forgot-password', async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
+    if (typeof email !== 'string') return res.status(400).json({ error: 'Invalid input types' });
 
     const user = await User.findOne({ email: email.toLowerCase() });
     
@@ -337,8 +347,11 @@ router.post('/reset-password', async (req, res) => {
     if (!token || !newPassword) {
       return res.status(400).json({ error: 'Token and new password are required' });
     }
-    if (newPassword.length < 8) {
-      return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    if (typeof token !== 'string' || typeof newPassword !== 'string') {
+      return res.status(400).json({ error: 'Invalid input types' });
+    }
+    if (newPassword.length < 8 || newPassword.length > 100) {
+      return res.status(400).json({ error: 'Password must be between 8 and 100 characters' });
     }
 
     const tokenHash = cryptoUtils.hashToken(token);
