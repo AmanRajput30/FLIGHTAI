@@ -52,7 +52,7 @@ export default function Home() {
   const [resendError, setResendError] = useState<string | null>(null);
   
   // Premium Map & Performance State
-  const [mapMode, setMapMode] = useState<'satellite' | 'dark' | 'hybrid'>('dark');
+  const [mapMode, setMapMode] = useState<'satellite' | 'dark'>('dark');
   const [performanceMode, setPerformanceMode] = useState(false);
   const fpsRef = useRef<number[]>([]);
 
@@ -340,9 +340,9 @@ export default function Home() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearch}
-              placeholder={isSearching ? "Searching Global Database..." : "Search flight, route, airport..."}
-              disabled={isSearching}
-              className={`w-full h-10 bg-black/40 border ${searchError ? 'border-red-500/50 focus:ring-red-500/50' : 'border-white/10 focus:border-yellow-400/50 focus:ring-yellow-400/50'} rounded-full pl-10 pr-4 text-sm outline-none focus:ring-1 transition-all placeholder:text-muted-foreground/70 text-white disabled:opacity-50`}
+              placeholder={!user ? "Sign in to search flights" : isSearching ? "Searching Global Database..." : "Search flight, route, airport..."}
+              disabled={!user || isSearching}
+              className={`w-full h-10 bg-black/40 border ${searchError ? 'border-red-500/50 focus:ring-red-500/50' : 'border-white/10 focus:border-yellow-400/50 focus:ring-yellow-400/50'} rounded-full pl-10 pr-4 text-sm outline-none focus:ring-1 transition-all placeholder:text-muted-foreground/70 text-white disabled:opacity-50 ${!user ? 'cursor-not-allowed' : ''}`}
             />
             {searchError && <span className="absolute -bottom-5 left-4 text-[10px] text-red-400 font-medium">{searchError}</span>}
           </div>
@@ -566,10 +566,10 @@ export default function Home() {
 
                {/* Metric Grid */}
                <div className="grid grid-cols-2 gap-3">
-                  <MetricCard icon={<ArrowUp className="w-4 h-4 text-primary" />} label="Altitude" value={selectedFlight.altitude ? `${selectedFlight.altitude.toLocaleString()} ft` : 'Unknown'} />
-                  <MetricCard icon={<Activity className="w-4 h-4 text-green-400" />} label="Ground Speed" value={selectedFlight.speed ? `${selectedFlight.speed} km/h` : 'Unknown'} />
-                  <MetricCard icon={<Compass className="w-4 h-4 text-purple-400" />} label="True Heading" value={selectedFlight.heading ? `${Math.round(selectedFlight.heading)}°` : 'Unknown'} />
-                  <MetricCard icon={<Zap className="w-4 h-4 text-yellow-400" />} label="Vertical Rate" value={selectedFlight.verticalRate ? `${selectedFlight.verticalRate} m/s` : 'Level'} />
+                  <MetricCard icon={<ArrowUp className="w-4 h-4 text-primary" />} label="Altitude" value={selectedFlight.altitude != null ? `${selectedFlight.altitude.toLocaleString()} ft` : 'Unknown'} />
+                  <MetricCard icon={<Activity className="w-4 h-4 text-green-400" />} label="Ground Speed" value={selectedFlight.speed != null ? `${selectedFlight.speed} km/h` : 'Unknown'} />
+                  <MetricCard icon={<Compass className="w-4 h-4 text-purple-400" />} label="True Heading" value={selectedFlight.heading != null ? `${Math.round(selectedFlight.heading)}°` : 'Unknown'} />
+                  <MetricCard icon={<Zap className="w-4 h-4 text-yellow-400" />} label="Vertical Rate" value={selectedFlight.verticalRate != null ? `${selectedFlight.verticalRate} m/s` : 'Level'} />
                </div>
 
                {/* ETA Card */}

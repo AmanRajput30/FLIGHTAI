@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -12,6 +12,10 @@ export default function ProfileSettingsPage() {
   const [formData, setFormData] = useState({ name: "", bio: "", avatar: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [status, setStatus] = useState<{ type: "success" | "error"; message: string } | null>(null);
+  
+  const [isResending, setIsResending] = useState(false);
+  const [resendSuccess, setResendSuccess] = useState(false);
+  const [resendError, setResendError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -36,6 +40,23 @@ export default function ProfileSettingsPage() {
       setStatus({ type: "error", message: error.response?.data?.error || "Failed to update profile." });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (isResending) return;
+    setIsResending(true);
+    setResendSuccess(false);
+    setResendError(null);
+    try {
+      await axios.post(`${API_URL}/api/auth/resend-verification`);
+      setResendSuccess(true);
+      setTimeout(() => setResendSuccess(false), 5000);
+    } catch (err: any) {
+      setResendError(err.response?.data?.error || "Failed to resend.");
+      setTimeout(() => setResendError(null), 5000);
+    } finally {
+      setIsResending(false);
     }
   };
 
@@ -72,9 +93,17 @@ export default function ProfileSettingsPage() {
             {user.isEmailVerified ? (
               <span className="px-3 py-1.5 rounded-full bg-green-500/10 text-green-400 text-xs font-bold whitespace-nowrap">Verified</span>
             ) : (
-              <span className="px-3 py-1.5 rounded-full bg-yellow-500/10 text-yellow-400 text-xs font-bold whitespace-nowrap">Unverified</span>
+              <button 
+                type="button"
+                onClick={handleResendVerification}
+                disabled={isResending || resendSuccess}
+                className="px-3 py-1.5 rounded-full bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 text-xs font-bold whitespace-nowrap transition-colors disabled:opacity-50"
+              >
+                {isResending ? 'Sending...' : resendSuccess ? 'Sent!' : 'Unverified (Resend)'}
+              </button>
             )}
           </div>
+          {resendError && <p className="text-xs text-red-400 mt-2">{resendError}</p>}
           <p className="text-xs text-gray-500 mt-2">Email address cannot be changed currently.</p>
         </div>
 
