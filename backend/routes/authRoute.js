@@ -211,10 +211,14 @@ router.post('/resend-verification', requireAuth, async (req, res) => {
 
     // Send Verification Email
     const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verifyToken}`;
-    await emailService.sendEmail({
+    
+    // Fire-and-forget to prevent blocking the UI
+    emailService.sendEmail({
       to: user.email,
       subject: 'Verify your SkyIntel Account (Resend)',
       html: `<p>Welcome back to SkyIntel!</p><p>Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
+    }).catch(emailErr => {
+      console.error('Failed to send resend verification email (background task):', emailErr.message);
     });
 
     res.json({ message: 'Verification email sent successfully' });

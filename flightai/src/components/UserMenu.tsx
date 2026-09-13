@@ -34,7 +34,7 @@ export default function UserMenu() {
         className={`w-9 h-9 rounded-full border-2 overflow-hidden shadow-[0_0_15px_rgba(251,191,36,0.3)] hover:shadow-[0_0_20px_rgba(251,191,36,0.5)] transition-all cursor-pointer ${user ? 'border-yellow-500/50 hover:border-yellow-400' : 'border-white/20 hover:border-white/40'}`}
       >
         {user ? (
-          <img src={user.avatar || "/avatar.png"} alt="Profile" className="w-full h-full object-cover" />
+          <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=eab308&color=000`} alt="Profile" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full bg-black/60 flex items-center justify-center">
             <span className="text-gray-400 text-xs font-bold">?</span>

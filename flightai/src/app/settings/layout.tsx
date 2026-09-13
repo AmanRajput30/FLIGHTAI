@@ -37,7 +37,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
           </Link>
           <div className="flex items-center gap-6">
             <div className="w-20 h-20 rounded-full border-4 border-white/10 overflow-hidden shadow-xl">
-              <img src={user.avatar || "/avatar.png"} alt="Profile" className="w-full h-full object-cover" />
+              <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=eab308&color=000`} alt="Profile" className="w-full h-full object-cover" />
             </div>
             <div>
               <h1 className="text-3xl font-bold text-white">{user.name}</h1>
