@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
@@ -27,6 +27,8 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+let csrfPromise: Promise<string> | null = null;
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,9 +40,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const refreshUser = async () => {
     try {
-      // 1. Fetch CSRF Token First
-      const csrfRes = await axios.get(`${API_URL}/api/auth/csrf-token`);
-      const csrfToken = csrfRes.data.csrfToken;
+      // 1. Fetch CSRF Token First (cached promise to prevent Strict Mode race conditions)
+      if (!csrfPromise) {
+        csrfPromise = axios.get(`${API_URL}/api/auth/csrf-token`).then(res => res.data.csrfToken);
+      }
+      const csrfToken = await csrfPromise;
       axios.defaults.headers.common['x-csrf-token'] = csrfToken;
 
       // 2. Fetch User
