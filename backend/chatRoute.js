@@ -146,6 +146,14 @@ router.post('/', chatLimiter, async (req, res) => {
     // Limit payload size to prevent prompt stuffing/abuse
     const payloadSize = JSON.stringify(messages).length;
     if (payloadSize > 4000) return res.status(400).json({ error: "Prompt too large. Please shorten your message." });
+    
+    if (context && typeof context !== 'object') {
+      return res.status(400).json({ error: "Invalid context format." });
+    }
+    
+    if (context && JSON.stringify(context).length > 2000) {
+      return res.status(400).json({ error: "Context payload too large." });
+    }
 
     const io = req.app.get('io');
     
