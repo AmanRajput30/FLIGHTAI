@@ -71,9 +71,16 @@ app.set('io', io);
 
 // Database Connection
 if (process.env.MONGODB_URI) {
-  mongoose.connect(process.env.MONGODB_URI)
+  mongoose.connect(process.env.MONGODB_URI, {
+    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of hanging
+  })
     .then(() => console.log('✅ Connected to MongoDB'))
-    .catch(err => console.error('❌ MongoDB connection error:', err));
+    .catch(err => {
+      console.error('❌ MongoDB connection error (Check IP Whitelist in Atlas):', err.message);
+    });
+    
+  // Disable buffering so queries fail immediately if connection is down
+  mongoose.set('bufferCommands', false);
 } else {
   console.warn('⚠️ MONGODB_URI not provided. Authentication features will not work.');
 }
