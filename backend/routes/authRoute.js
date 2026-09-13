@@ -136,6 +136,10 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    if (!user.isEmailVerified) {
+      return res.status(403).json({ error: 'Please verify your email address before logging in.' });
+    }
+
     // Create Session
     const { token: sessionId, hash: sessionTokenHash } = cryptoUtils.generateSecureToken(64);
     

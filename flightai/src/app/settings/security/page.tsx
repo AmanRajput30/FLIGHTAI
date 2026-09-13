@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
@@ -6,7 +6,7 @@ import axios from "axios";
 import { Loader2, Key, Monitor, ShieldAlert, Trash2, Smartphone, Laptop, CheckCircle2, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-backend.onrender.com";
 
 export default function SecuritySettingsPage() {
   const { user, logout } = useAuth();
@@ -185,7 +185,7 @@ export default function SecuritySettingsPage() {
                       {session.deviceInfo.split(' ').slice(0, 3).join(' ')}
                       {session._id === currentSessionId && <span className="text-[10px] bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded-full font-bold">CURRENT</span>}
                     </h4>
-                    <p className="text-xs text-gray-500 mt-1">IP: {session.ipAddress} • Last active: {new Date(session.lastActiveAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-500 mt-1">IP: {session.ipAddress} â€¢ Last active: {new Date(session.lastActiveAt).toLocaleDateString()}</p>
                   </div>
                 </div>
                 {session._id !== currentSessionId && (
@@ -228,7 +228,7 @@ export default function SecuritySettingsPage() {
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-500 mb-1.5">Enter Password</label>
-              <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all" placeholder="••••••••" />
+              <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" />
             </div>
             <button onClick={handleDeleteAccount} disabled={loadingDelete || deleteConfirmText !== "DELETE ACCOUNT" || !deletePassword} className="mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
               {loadingDelete ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Delete My Account

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useEffect, useState, memo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
@@ -7,7 +7,7 @@ import L from 'leaflet';
 import { socket } from '@/lib/socket';
 import axios from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-backend.onrender.com';
 
 const CATEGORIES = {
   COMMERCIAL: 'COMMERCIAL',
