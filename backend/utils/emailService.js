@@ -39,12 +39,18 @@ exports.sendEmail = async ({ to, subject, html }) => {
 
   const from = process.env.EMAIL_FROM || '"SkyIntel Auth" <noreply@skyintel.com>';
 
-  const info = await transporter.sendMail({
-    from,
-    to,
-    subject,
-    html,
-  });
-
-  return info;
+  console.log(`[EmailService] Attempting to send email to: ${to}`);
+  try {
+    const info = await transporter.sendMail({
+      from,
+      to,
+      subject,
+      html,
+    });
+    console.log(`[EmailService] ✅ Successfully sent email to: ${to} | MessageId: ${info.messageId}`);
+    return info;
+  } catch (err) {
+    console.error(`[EmailService] ❌ CRITICAL ERROR sending email to ${to}:`, err);
+    throw err;
+  }
 };
