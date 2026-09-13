@@ -93,13 +93,16 @@ router.post('/register', async (req, res) => {
     // Send Verification Email
     try {
       const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verifyToken}`;
-      await emailService.sendEmail({
+      // Fire-and-forget to prevent blocking the UI if SMTP is slow or times out
+      emailService.sendEmail({
         to: newUser.email,
         subject: 'Verify your SkyIntel Account',
         html: `<p>Welcome to SkyIntel!</p><p>Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
+      }).catch(emailErr => {
+        console.error('Failed to send verification email (background task):', emailErr.message);
       });
-    } catch (emailErr) {
-      console.error('Failed to send verification email, but user was created:', emailErr);
+    } catch (err) {
+      console.error('Error during email logic:', err);
       // We do not return here, we let the registration succeed.
     }
 
@@ -300,10 +303,13 @@ router.post('/forgot-password', async (req, res) => {
 
       const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
       try {
-        await emailService.sendEmail({
+        // Fire-and-forget to prevent blocking the UI
+        emailService.sendEmail({
           to: user.email,
-          subject: 'Password Reset Request',
-          html: `<p>You requested a password reset.</p><p>Click the link below to reset it:</p><a href="${resetLink}">Reset Password</a><p>If you didn't request this, ignore this email.</p>`
+          subject: 'Reset your SkyIntel Password',
+          html: `<p>You requested a password reset.</p><p>Click the link below to reset your password:</p><a href="${resetLink}">Reset Password</a>`
+        }).catch(emailErr => {
+          console.error('Failed to send password reset email (background task):', emailErr.message);
         });
       } catch (emailErr) {
         console.error('Failed to send reset email:', emailErr);
