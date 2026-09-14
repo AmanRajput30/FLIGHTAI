@@ -12,6 +12,30 @@ const emailService = require('../utils/emailService');
 const router = express.Router();
 
 /**
+ * @route   POST /api/auth/test-email
+ * @desc    Test Resend API integration
+ * @access  Public (for diagnostic purposes)
+ */
+router.post('/test-email', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ error: 'Valid email is required in request body.' });
+    }
+
+    const result = await emailService.sendEmail({
+      to: email,
+      subject: 'Resend Integration Test',
+      html: '<p>If you are seeing this, Resend API integration is working perfectly!</p>'
+    });
+
+    res.status(200).json({ message: 'Test email dispatched successfully!', result });
+  } catch (error) {
+    console.error('Test Email Error:', error);
+    res.status(500).json({ error: 'Failed to send test email', details: error.message });
+  }
+});
+/**
  * Helper: Log Security Event
  */
 const logSecurityEvent = async (userId, eventType, req, metadata = {}) => {
