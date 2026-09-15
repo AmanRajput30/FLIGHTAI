@@ -43,7 +43,7 @@ exports.sendEmail = async ({ to, subject, html }) => {
       // Send via Resend API (bypasses SMTP firewall ports completely)
       // Note: Free Resend accounts MUST use onboarding@resend.dev as the from address,
       // and can ONLY send to the email address used to register the Resend account.
-      const from = process.env.EMAIL_FROM || "SkyIntel <onboarding@resend.dev>";
+      const from = process.env.EMAIL_FROM || "SkyIntel <noreply@aervyn.in>";
       const { data, error } = await resendClient.emails.send({
         from,
         to: [to],
