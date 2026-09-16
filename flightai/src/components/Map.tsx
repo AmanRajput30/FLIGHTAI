@@ -309,6 +309,9 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
       <MapContainer 
         center={[20, 0]} 
         zoom={3} 
+        minZoom={3}
+        maxBounds={[[-90, -180], [90, 180]]}
+        maxBoundsViscosity={1.0}
         style={{ width: '100%', height: '100%', background: mapMode === 'satellite' ? '#020304' : '#0d1117' }}
         zoomControl={false}
       >
@@ -319,12 +322,14 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
             url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
             attribution='Tiles &copy; Esri'
             maxZoom={19}
+            noWrap={true}
           />
         ) : (
           <TileLayer
             url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
             attribution='Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
             maxZoom={16}
+            noWrap={true}
           />
         )}
         
