@@ -329,8 +329,8 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
     <div className="w-full h-full relative z-0">
       <MapContainer 
         center={[20, 0]} 
-        zoom={3} 
-        minZoom={3}
+        zoom={4} 
+        minZoom={4}
         maxBounds={[[-90, -180], [90, 180]]}
         maxBoundsViscosity={1.0}
         style={{ width: '100%', height: '100%', background: mapMode === 'satellite' ? '#020304' : '#0d1117' }}

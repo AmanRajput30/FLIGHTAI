@@ -690,10 +690,9 @@ export default function Home() {
            )}
         </div>
 
-        {/* RIGHT PANEL - AI */}
         <div className="w-[400px] h-full flex flex-col glass-panel border-l border-t-0 z-10 shadow-[-2px_0_20px_rgba(0,0,0,0.5)] bg-card/95">
           <div className="p-5 border-b border-white/5">
-            <h2 className="font-semibold text-xl">Hello, <span className="text-yellow-400">{user?.name ? user.name.split(' ')[0] : 'Guest'}</span></h2>
+            <h2 className="font-semibold text-xl">Hello, <span className="text-yellow-400">{user?.username || user?.name?.split(' ')[0] || 'Guest'}</span></h2>
             <p className="text-sm text-muted-foreground mt-1">Ready to assist with flight data.</p>
           </div>
 

@@ -3,10 +3,10 @@
 import { useAuth } from "@/context/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { User, Shield, ArrowLeft, Loader2 } from "lucide-react";
+import { User, Shield, ArrowLeft, Loader2, LogOut } from "lucide-react";
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, loading, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -70,6 +70,15 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
               </Link>
             );
           })}
+          
+          {/* Logout Button */}
+          <button
+            onClick={logout}
+            className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 border border-transparent mt-4 text-left"
+          >
+            <LogOut className="w-5 h-5 text-red-400" />
+            Log Out
+          </button>
         </div>
 
         {/* Settings Content Area */}
