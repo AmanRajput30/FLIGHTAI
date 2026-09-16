@@ -218,7 +218,7 @@ function MarkerLayer({ flights, selectedFlightId, routeData, onFlightSelect, onF
         setZoom(currentZoom);
         
         if (currentZoom >= 5) {
-          socket.emit('viewport_update', {
+          socket.volatile.emit('viewport_update', {
             minLat: currentBounds.getSouth(),
             maxLat: currentBounds.getNorth(),
             minLng: currentBounds.getWest(),
