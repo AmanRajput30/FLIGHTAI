@@ -1,49 +1,57 @@
-"use client";
-
-import React from 'react';
-import Link from 'next/link';
+import Header from '@/components/layout/Header';
+import Footer from '@/components/layout/Footer';
+import { Database, Zap, MapPin, Cloud } from 'lucide-react';
 
 export default function DataSourcesPage() {
   return (
-    <div className="min-h-screen bg-slate-900 text-white p-8 md:p-16 font-sans">
-      <div className="max-w-3xl mx-auto space-y-8">
-        <div>
-          <Link href="/" className="text-sky-400 hover:text-sky-300 text-sm mb-4 inline-block">&larr; Back to Map</Link>
-          <h1 className="text-3xl font-bold mb-2">Data Sources & Legal Information</h1>
-          <p className="text-gray-400">Averyn uses aviation data obtained from third-party and open-data providers.</p>
-        </div>
-
-        <section className="bg-slate-800 rounded-xl p-6 border border-white/5 shadow-xl">
-          <h2 className="text-xl font-bold text-amber-400 mb-4">ADSB.lol</h2>
-          <p className="mb-4 text-gray-300">
-            Averyn uses live aircraft information obtained from <a href="https://adsb.lol" target="_blank" rel="noopener noreferrer" className="text-sky-400 hover:underline">ADSB.lol</a>.
-          </p>
-          <p className="mb-4 text-gray-300">
-            ADSB.lol's public database and API data is made available under the <strong>Open Database License (ODbL) 1.0</strong>.
-          </p>
-          <p className="mb-4 text-gray-300 text-sm">
-            Averyn is not affiliated with, sponsored by, or endorsed by ADSB.lol unless a separate agreement states otherwise. 
-          </p>
-          <div className="bg-slate-900 rounded p-4 border border-rose-500/20 text-sm text-gray-400 mb-4">
-            <strong>Disclaimer:</strong> Aircraft information may be delayed, incomplete, unavailable, or inaccurate and must not be relied upon for safety-critical aviation operations.
-          </div>
-          
-          <h3 className="font-semibold text-gray-200 mt-6 mb-2">References</h3>
-          <ul className="list-disc list-inside space-y-1 text-sm text-sky-400">
-            <li><a href="https://adsb.lol" target="_blank" rel="noopener noreferrer" className="hover:underline">ADSB.lol Website</a></li>
-            <li><a href="https://api.adsb.lol" target="_blank" rel="noopener noreferrer" className="hover:underline">ADSB.lol API Documentation</a></li>
-            <li><a href="https://adsb.lol/privacy" target="_blank" rel="noopener noreferrer" className="hover:underline">ADSB.lol Privacy & License Information</a></li>
-            <li><a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noopener noreferrer" className="hover:underline">Open Database License (ODbL) 1.0</a></li>
-          </ul>
-        </section>
+    <div className="flex flex-col min-h-screen bg-[#0a0c10] text-foreground">
+      <Header variant="full" />
+      
+      <main className="flex-1 max-w-4xl mx-auto px-6 py-24 w-full">
+        <h1 className="text-4xl font-black mb-8 text-white tracking-tight">Data Sources & Attribution</h1>
         
-        <section className="bg-slate-800 rounded-xl p-6 border border-white/5 shadow-xl">
-          <h2 className="text-xl font-bold text-gray-200 mb-4">OpenSky Network</h2>
-          <p className="text-gray-300 text-sm">
-            Certain historical aircraft path integrations may fall back to the OpenSky Network. Averyn does not use OpenSky Network for live global tracking. 
-          </p>
-        </section>
-      </div>
+        <p className="text-gray-400 text-lg mb-12">
+          Averyn is built on the shoulders of giants. We aggregate data from open communities and premium APIs to provide a comprehensive view of global aviation.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-black/40 border border-white/10 rounded-2xl p-6">
+            <div className="w-10 h-10 rounded-full bg-yellow-500/10 flex items-center justify-center mb-4">
+              <Database className="w-5 h-5 text-yellow-500" />
+            </div>
+            <h3 className="font-bold text-white mb-2 text-lg">ADSB.lol</h3>
+            <p className="text-sm text-gray-400 mb-4">Our primary source for real-time, unfiltered ADS-B telemetry. Powered by a global community of SDR enthusiasts.</p>
+            <a href="https://adsb.lol" target="_blank" rel="noreferrer" className="text-yellow-400 hover:underline text-sm font-medium">Visit ADSB.lol →</a>
+          </div>
+
+          <div className="bg-black/40 border border-white/10 rounded-2xl p-6">
+            <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center mb-4">
+              <Cloud className="w-5 h-5 text-blue-500" />
+            </div>
+            <h3 className="font-bold text-white mb-2 text-lg">Open-Meteo</h3>
+            <p className="text-sm text-gray-400 mb-4">Provides the live meteorological data (temperature, wind, weather codes) at aircraft coordinates.</p>
+            <a href="https://open-meteo.com" target="_blank" rel="noreferrer" className="text-blue-400 hover:underline text-sm font-medium">Visit Open-Meteo →</a>
+          </div>
+
+          <div className="bg-black/40 border border-white/10 rounded-2xl p-6">
+            <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
+              <MapPin className="w-5 h-5 text-green-500" />
+            </div>
+            <h3 className="font-bold text-white mb-2 text-lg">AeroDataBox</h3>
+            <p className="text-sm text-gray-400 mb-4">Premium routing engine used to determine origin and destination airports based on live callsigns.</p>
+          </div>
+
+          <div className="bg-black/40 border border-white/10 rounded-2xl p-6">
+            <div className="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center mb-4">
+              <Zap className="w-5 h-5 text-purple-500" />
+            </div>
+            <h3 className="font-bold text-white mb-2 text-lg">Groq & Llama 3</h3>
+            <p className="text-sm text-gray-400 mb-4">The inference engine and LLM model powering SkyLord, enabling sub-second natural language analysis.</p>
+          </div>
+        </div>
+      </main>
+
+      <Footer />
     </div>
   );
 }

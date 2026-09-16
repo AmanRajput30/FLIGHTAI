@@ -8,7 +8,7 @@ import { socket } from '@/lib/socket';
 import axios from 'axios';
 import DataAttribution from './DataAttribution';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-backend.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-hxbd.onrender.com';
 
 const CATEGORIES = {
   COMMERCIAL: 'COMMERCIAL',

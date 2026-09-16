@@ -1,0 +1,21 @@
+name: Keep Alive Cron
+
+# NOTE: GitHub Actions scheduled workflows are not guaranteed to run exactly on time 
+# (they can be delayed several minutes under load). 
+# Additionally, they are automatically disabled after 60 days of repository inactivity.
+# If that happens, simply push a new commit or manually re-enable the workflow in the Actions tab.
+
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Render Backend Healthz
+        run: |
+          # Using curl -f to fail the job (exit with non-zero code) if the HTTP status is an error (>= 400).
+          # This ensures a GitHub notification is sent if the backend is genuinely down.
+          curl -f https://flightai-hxbd.onrender.com/healthz

@@ -5,7 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-backend.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-hxbd.onrender.com";
 
 export default function ProfileSettingsPage() {
   const { user, refreshUser } = useAuth();

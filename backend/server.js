@@ -61,12 +61,21 @@ const corsOptions = {
   credentials: true
 };
 
+const pinoHttp = require('pino-http');
+const logger = require('pino')({
+  transport: {
+    target: 'pino-pretty',
+    options: { colorize: true }
+  }
+});
+
 const io = new Server(server, { 
   cors: corsOptions
 });
 
 app.use(helmet());
 app.use(cors(corsOptions));
+app.use(pinoHttp({ logger }));
 app.use(express.json());
 app.use(cookieParser());
 app.set('io', io);
@@ -98,6 +107,11 @@ const authLimiter = rateLimit({
 // Mount auth routes (with rate limiter)
 app.use('/api/auth', authLimiter, csrfProtection, authRoute);
 app.use('/api/user', csrfProtection, userRoute);
+
+// Health check endpoint for keep-alive cron
+app.get('/healthz', (req, res) => {
+  res.status(200).json({ status: "ok", uptime: process.uptime() });
+});
 
 // Rate Limiters
 const searchLimiter = rateLimit({
@@ -145,6 +159,43 @@ app.get('/api/search/:query', searchLimiter, requireAuth, async (req, res) => {
   } catch (error) {
     console.error('Search Error:', error.message);
     res.status(500).json({ error: "Failed to perform search." });
+  }
+});
+
+// Contact Route
+const { Resend } = require('resend');
+const resend = new Resend(process.env.RESEND_API_KEY);
+
+const contactLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 5,
+  message: { error: 'Too many contact requests. Please try again later.' }
+});
+
+app.post('/api/contact', contactLimiter, async (req, res) => {
+  try {
+    const { name, email, category, message } = req.body;
+    if (!name || !email || !message) {
+      return res.status(400).json({ error: 'Name, email, and message are required.' });
+    }
+
+    if (!process.env.RESEND_API_KEY) {
+      console.warn('RESEND_API_KEY not set. Mocking contact email.');
+      return res.json({ success: true, mocked: true });
+    }
+
+    await resend.emails.send({
+      from: 'Averyn Contact <onboarding@resend.dev>',
+      to: 'support@averyn.in', // User's email
+      replyTo: email,
+      subject: `[Averyn] New Contact: ${category} from ${name}`,
+      text: `Name: ${name}\nEmail: ${email}\nCategory: ${category}\n\nMessage:\n${message}`,
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Contact Form Error:', error);
+    res.status(500).json({ error: 'Failed to send message.' });
   }
 });
 

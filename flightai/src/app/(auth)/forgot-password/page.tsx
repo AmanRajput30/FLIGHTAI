@@ -1,11 +1,11 @@
-﻿"use client";
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import { AlertCircle, CheckCircle2, Loader2, ArrowLeft } from "lucide-react";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-backend.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-hxbd.onrender.com";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
