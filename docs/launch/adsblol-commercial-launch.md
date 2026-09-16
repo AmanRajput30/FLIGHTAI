@@ -40,8 +40,7 @@
 > 
 > **Questions:**
 > 1. Are there any specific API rate limits or request patterns you prefer we adhere to for production commercial use?
-> 2. Do you currently require or provide dedicated API keys for commercial clients?
-> 3. Are there any special conditions we should be aware of regarding attribution formatting or feeder contributions?
+> 2. Are there any special conditions we should be aware of regarding attribution formatting or feeder contributions?
 > 
 > We are committed to responsible API usage and compliance with the Open Database License (ODbL) 1.0. 
 > 
