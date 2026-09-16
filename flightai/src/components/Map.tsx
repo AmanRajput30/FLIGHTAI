@@ -6,6 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { socket } from '@/lib/socket';
 import axios from 'axios';
+import DataAttribution from './DataAttribution';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-backend.onrender.com';
 
@@ -210,18 +211,37 @@ function MarkerLayer({ flights, selectedFlightId, routeData, onFlightSelect, onF
     let timeoutId: NodeJS.Timeout;
     const updateBounds = () => {
       clearTimeout(timeoutId);
-      // Debounce the state update to ensure it never triggers a synchronous infinite render loop
       timeoutId = setTimeout(() => {
-        setBounds(map.getBounds().pad(1.0));
-        setZoom(map.getZoom());
-      }, 150);
+        const currentBounds = map.getBounds().pad(0.2); // Smaller pad to avoid over-fetching
+        const currentZoom = map.getZoom();
+        setBounds(currentBounds);
+        setZoom(currentZoom);
+        
+        if (currentZoom >= 5) {
+          socket.emit('viewport_update', {
+            minLat: currentBounds.getSouth(),
+            maxLat: currentBounds.getNorth(),
+            minLng: currentBounds.getWest(),
+            maxLng: currentBounds.getEast()
+          });
+        }
+      }, 750); // 750ms debounce
     };
     
     map.on('moveend', updateBounds);
     map.on('zoomend', updateBounds);
     
+    // Initial fetch
+    updateBounds();
+    
+    // Periodic refresh
+    const intervalId = setInterval(() => {
+       updateBounds();
+    }, 5000);
+    
     return () => {
       clearTimeout(timeoutId);
+      clearInterval(intervalId);
       map.off('moveend', updateBounds);
       map.off('zoomend', updateBounds);
     };
@@ -277,6 +297,7 @@ interface MapProps {
 const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, routeData, targetPos, mapMode = 'dark', performanceMode = false }: MapProps) => {
   const [flights, setFlights] = useState<any[]>([]);
   const [flightPath, setFlightPath] = useState<[number, number][]>([]);
+  const [isZoomedOut, setIsZoomedOut] = useState(false);
 
   useEffect(() => {
     socket.on('flights_update', (updatedFlights: any[]) => {
@@ -314,6 +335,12 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
         maxBoundsViscosity={1.0}
         style={{ width: '100%', height: '100%', background: mapMode === 'satellite' ? '#020304' : '#0d1117' }}
         zoomControl={false}
+        whenReady={(mapEvent) => {
+           const map = mapEvent.target;
+           const checkZoom = () => setIsZoomedOut(map.getZoom() < 5);
+           checkZoom();
+           map.on('zoomend', checkZoom);
+        }}
       >
         <MapController targetPos={targetPos || null} />
         
@@ -340,7 +367,18 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
         <MarkerLayer flights={flights} selectedFlightId={selectedFlightId} routeData={routeData} onFlightSelect={onFlightSelect} onFlightDeselect={onFlightDeselect} performanceMode={performanceMode} />
       </MapContainer>
       
+      {isZoomedOut && (
+        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[1000] pointer-events-none">
+          <div className="bg-slate-900/90 backdrop-blur-md border border-amber-500/30 text-amber-400 px-6 py-2.5 rounded-full shadow-lg font-medium text-sm flex items-center space-x-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+            </svg>
+            <span>Zoom in to see live aircraft</span>
+          </div>
+        </div>
+      )}
 
+      <DataAttribution />
       
       <style jsx global>{`
         .leaflet-container { background: #0d1117 !important; }

@@ -122,15 +122,9 @@ app.get('/api/search/:query', searchLimiter, requireAuth, async (req, res) => {
     const query = rawQuery.toLowerCase().trim();
     if (!query) return res.json(null);
     
-    // Pass 1: Scan live flights cache
-    if (flightCache && flightCache.length > 0) {
-      const match = flightCache.find(f => 
-        (f.flightNumber && f.flightNumber.toLowerCase().includes(query)) ||
-        (f.id && f.id.toLowerCase() === query) ||
-        (f.airline && f.airline.toLowerCase().includes(query))
-      );
-      if (match) return res.json({ type: 'flight', data: match });
-    }
+    // Global Unified Search
+    // Since we no longer cache all live flights, search relies purely on LLM Airport Geocoding
+    // (A real global flight search would require a provider global API or database)
     
     // Pass 2: Fallback to LLM Airport Geocoding
     const response = await openai.chat.completions.create({
@@ -325,8 +319,6 @@ app.get('/api/route/:flightNumber', routeLimiter, requireAuth, async (req, res) 
 app.get('/api/flight-path/:icao24', async (req, res) => {
   try {
     const { icao24 } = req.params;
-    const flight = flightCache.find(f => f.id === icao24);
-    
     let path = [];
     let isSynthetic = false;
 
@@ -340,9 +332,7 @@ app.get('/api/flight-path/:icao24', async (req, res) => {
       console.log(`OpenSky track failed for ${icao24}, using fallback.`);
     }
 
-    // 2. If no track, and we have a flight number, try to get route and synthesize a planned path
-    if (path.length === 0 && flight && flight.flightNumber !== 'Unknown') {
-      const fn = flight.flightNumber.trim().toUpperCase();
+    // 2. If no track, we could synthesize a route (removed legacy logic that relied on flightCache)
       let route = routeCache.get(fn);
       
       // If not in cache, try to fetch it quickly (or wait)
@@ -372,21 +362,7 @@ app.get('/api/flight-path/:icao24', async (req, res) => {
           path.push([Date.now()/1000, lat, lng]);
         }
       }
-    }
-
-    // 3. Last fallback: local synthetic trajectory (what was there before)
-    if (path.length === 0 && flight) {
-        isSynthetic = true;
-        const headingRad = flight.heading * (Math.PI / 180);
-        let curLat = flight.lat;
-        let curLng = flight.lng;
-        for (let i = 0; i < 20; i++) {
-            path.push([Date.now()/1000 - (i*60), curLat, curLng]);
-            curLat -= Math.cos(headingRad) * 0.1;
-            curLng -= Math.sin(headingRad) * 0.1;
-        }
-        path = path.reverse();
-    }
+    // Legacy fallback removed because flightCache is no longer available
 
     res.json({ icao24, path, isSynthetic });
   } catch (err) {
@@ -398,109 +374,6 @@ app.get('/api/flight-path/:icao24', async (req, res) => {
 app.get('/api/flight-track/:icao24', async (req, res) => {
   res.redirect(`/api/flight-path/${req.params.icao24}`);
 });
-
-let flightCache = [];
-let lastUpdatedAt = 0;
-
-let openSkyRateLimited = false;
-let openSkyLimitedAt = 0;
-
-async function fetchFromOpenSky() {
-  try {
-    const config = (process.env.OPENSKY_USERNAME && process.env.OPENSKY_PASSWORD) 
-        ? { auth: { username: process.env.OPENSKY_USERNAME, password: process.env.OPENSKY_PASSWORD } } 
-        : {};
-    config.headers = { 'User-Agent': 'SkyIntel/1.0', 'Accept': 'application/json' };
-    config.timeout = 15000;
-
-    const res = await axios.get('https://opensky-network.org/api/states/all', config);
-    if (res.data && res.data.states) {
-      const flights = res.data.states
-        .filter(s => s[5] !== null && s[6] !== null)
-        .map(s => ({
-          id: s[0],
-          flightNumber: s[1] ? s[1].trim() : 'Unknown',
-          airline: s[2] || 'Private/Unknown',
-          origin: 'N/A', destination: 'N/A',
-          lat: s[6], lng: s[5],
-          altitude: s[7] != null ? Math.round(s[7] * 3.28084) : null,
-          speed: s[9] != null ? Math.round(s[9] * 3.6) : null,
-          heading: s[10] || 0,
-          verticalRate: s[11] || 0,
-          lastContact: s[4],
-          isLive: true,
-          source: 'opensky'
-        }));
-      console.log(`[OpenSky] Fetched ${flights.length} flights`);
-      return flights;
-    }
-  } catch (err) {
-    console.error('[OpenSky] Error:', err.message);
-  }
-  return [];
-}
-
-async function fetchFromADSBLol() {
-  try {
-    const res = await axios.get('https://api.adsb.lol/v2/point/0/0/25000', { timeout: 20000 });
-    if (res.data && res.data.ac) {
-      const flights = res.data.ac
-        .filter(s => s.lat !== undefined && s.lon !== undefined)
-        .map(s => ({
-          id: s.hex || 'Unknown',
-          flightNumber: s.flight ? s.flight.trim() : 'Unknown',
-          airline: s.t || 'Private/Unknown',
-          origin: 'N/A', destination: 'N/A',
-          lat: s.lat, lng: s.lon,
-          altitude: s.alt_baro != null ? s.alt_baro : null,
-          speed: s.gs != null ? Math.round(s.gs * 1.852) : null,
-          heading: s.track || 0,
-          verticalRate: s.baro_rate ? Math.round(s.baro_rate * 0.00508) : 0,
-          lastContact: s.seen ? Math.floor(Date.now()/1000) - Math.round(s.seen) : Math.floor(Date.now()/1000),
-          isLive: true,
-          source: 'adsblol'
-        }));
-      console.log(`[ADSB.lol] Fetched ${flights.length} flights`);
-      return flights;
-    }
-  } catch (err) {
-    console.error('[ADSB.lol] Error:', err.message);
-  }
-  return [];
-}
-
-function mergeFlightData(sources) {
-  const merged = new Map();
-  // Add all flights, deduplicating by ICAO24 hex (id). Later sources fill gaps.
-  for (const flights of sources) {
-    for (const f of flights) {
-      if (!merged.has(f.id)) {
-        merged.set(f.id, f);
-      }
-    }
-  }
-  return Array.from(merged.values());
-}
-
-async function fetchLiveFlights() {
-  // Fetch from all available sources in parallel
-  const [openSkyFlights, adsbLolFlights] = await Promise.all([
-    fetchFromOpenSky(),
-    fetchFromADSBLol()
-  ]);
-
-  // Merge: OpenSky first (higher quality data), ADSB.lol fills gaps
-  const merged = mergeFlightData([openSkyFlights, adsbLolFlights]);
-
-  if (merged.length > 0) {
-    flightCache = merged;
-    lastUpdatedAt = Date.now();
-    console.log(`[Fusion] Total unique flights: ${merged.length} (OpenSky: ${openSkyFlights.length}, ADSB.lol: ${adsbLolFlights.length})`);
-    io.emit('flights_update', flightCache);
-  } else {
-    console.warn('[Fusion] No flights from any source!');
-  }
-}
 
 // Endpoint for Hex (Registration) lookup
 app.get('/api/aircraft/:hex', requireAuth, async (req, res) => {
@@ -514,7 +387,7 @@ app.get('/api/aircraft/:hex', requireAuth, async (req, res) => {
   try {
     const response = await axios.get(`https://api.adsbdb.com/v0/aircraft/${hex}`, {
       timeout: 5000,
-      headers: { 'User-Agent': 'SkyIntel/1.0' }
+      headers: { 'User-Agent': 'Averyn/1.0' }
     });
     
     if (response.data && response.data.response && response.data.response.aircraft) {
@@ -528,36 +401,7 @@ app.get('/api/aircraft/:hex', requireAuth, async (req, res) => {
   }
 });
 
-async function fetchLiveFlightsLoop() {
-  await fetchLiveFlights();
-  setTimeout(fetchLiveFlightsLoop, 60000);
-}
-
-
-setInterval(() => {
-  if (flightCache.length === 0) return;
-
-  const isStale = (Date.now() - lastUpdatedAt) > 120000;
-  
-  if (isStale) {
-    io.emit('system_status', 'stale');
-    return; // Freeze interpolation to prevent zombie planes flying off the map
-  }
-
-  io.emit('system_status', 'live');
-
-  flightCache = flightCache.map(flight => {
-    if (flight.speed > 0) {
-      const headingRad = flight.heading * (Math.PI / 180);
-      const distanceDeltaKm = (flight.speed / 3600);
-      let newLat = flight.lat + (Math.cos(headingRad) * (distanceDeltaKm / 111) * 2);
-      let newLng = flight.lng + (Math.sin(headingRad) * (distanceDeltaKm / (111 * Math.cos(flight.lat * Math.PI/180))) * 2);
-      return { ...flight, lat: newLat, lng: newLng };
-    }
-    return flight;
-  });
-  io.emit('flights_update', flightCache);
-}, 2000);
+const flightDataService = require('./services/FlightDataService');
 
 const socketConnections = new Map();
 
@@ -573,8 +417,23 @@ io.on('connection', (socket) => {
   
   socketConnections.set(ip, currentCount + 1);
 
-  socket.emit('system_status', (Date.now() - lastUpdatedAt) > 120000 ? 'stale' : 'live');
-  socket.emit('flights_update', flightCache);
+  socket.emit('system_status', 'live');
+  
+  // Listen for viewport updates from clients
+  socket.on('viewport_update', async (bounds) => {
+    if (!bounds || !bounds.minLat) return;
+    try {
+      const flights = await flightDataService.getFlightsInViewport(
+        bounds.minLat,
+        bounds.minLng,
+        bounds.maxLat,
+        bounds.maxLng
+      );
+      socket.emit('flights_update', flights);
+    } catch (e) {
+      console.error('Failed to get flights for viewport:', e.message);
+    }
+  });
 
   socket.on('disconnect', () => {
     const count = socketConnections.get(ip) || 0;
@@ -585,6 +444,4 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, async () => {
   console.log(`Backend server running on port ${PORT}`);
-  // Start the polling loop
-  fetchLiveFlightsLoop();
 });

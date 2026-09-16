@@ -39,8 +39,11 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">4. Third-Party Services</h2>
+            <p className="mb-2">
+              SkyIntel utilizes third-party APIs (such as ADSB.lol and Groq LLM infrastructure) to deliver real-time data and AI capabilities. When interacting with SkyLord AI, your prompts are processed securely via these partners in accordance with their strict privacy standards.
+            </p>
             <p>
-              SkyIntel utilizes third-party APIs (such as OpenSky Network, ADSB.lol, and Groq LLM infrastructure) to deliver real-time data and AI capabilities. When interacting with SkyLord AI, your prompts are processed securely via these partners in accordance with their strict privacy standards.
+              <strong>Open Data APIs:</strong> All live flight data requests to ADSB.lol are processed server-side through our backend. We do not transmit your personal information, user accounts, authentication tokens, or end-user identifiers to ADSB.lol.
             </p>
           </section>
 

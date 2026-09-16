@@ -24,40 +24,53 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">2. Description of Service</h2>
-            <p>
-              SkyIntel provides real-time aviation tracking, flight path analysis, and AI-assisted data intelligence. The data presented on this platform is aggregated from third-party networks (including OpenSky Network and ADSB.lol) and is provided for informational and entertainment purposes only. 
+            <h2 className="text-xl font-semibold text-white mb-3">2. Description of Service & Third-Party Data</h2>
+            <p className="mb-2">
+              SkyIntel provides real-time aviation tracking, flight path analysis, and AI-assisted data intelligence. Certain aviation data comes from third-party and open-data providers.
             </p>
-            <p className="mt-2 text-yellow-400/90 font-medium">
-              WARNING: SkyIntel data must NOT be used for real-world navigation, air traffic control, or safety-critical operations.
+            <p className="mb-2">
+              <strong>ADSB.lol:</strong> SkyIntel uses live aircraft information obtained from ADSB.lol.
             </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-white mb-3">3. User Accounts</h2>
             <p>
-              To access advanced features (including the SkyLord AI Assistant), you must create an account. You are responsible for maintaining the confidentiality of your account credentials. You agree to notify us immediately of any unauthorized use of your account.
+              <strong>Licensing:</strong> Applicable third-party and open-data components remain subject to their respective licenses. ADSB.lol's public database and API data is made available under the Open Database License (ODbL) 1.0. 
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">4. API and Fair Use</h2>
+            <h2 className="text-xl font-semibold text-white mb-3">3. Accuracy & Availability</h2>
+            <p className="mb-2">
+              <strong>Accuracy:</strong> Aircraft information can be delayed, incomplete, unavailable, or inaccurate. SkyIntel does not guarantee the accuracy, completeness, or timeliness of flight data, radar positions, or AI-generated insights.
+            </p>
             <p>
-              Usage of the SkyLord AI Assistant is subject to fair use limits to prevent abuse. Automated scraping, bulk data extraction, or bypassing rate limits is strictly prohibited and will result in immediate account termination.
+              <strong>Availability:</strong> We do not guarantee continuous third-party data availability. The Service is provided "AS IS" and "AS AVAILABLE".
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">5. Disclaimer of Warranties</h2>
-            <p>
-              The Service is provided "AS IS" and "AS AVAILABLE" without warranties of any kind. SkyIntel does not guarantee the accuracy, completeness, or timeliness of flight data, radar positions, or AI-generated insights.
+            <h2 className="text-xl font-semibold text-rose-500 mb-3">4. No Safety-Critical Use</h2>
+            <p className="text-rose-400 font-medium">
+              You are strictly prohibited from relying on SkyIntel for navigation, air traffic control, collision avoidance, flight operations, emergency operations, or any other safety-critical decisions.
             </p>
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-white mb-3">6. Changes to Terms</h2>
+            <h2 className="text-xl font-semibold text-white mb-3">5. Intellectual Property</h2>
             <p>
-              We reserve the right to modify these terms at any time. We will notify users of any significant changes via email or prominent notice on the platform. Continued use of the Service after changes constitutes acceptance of the new terms.
+              SkyIntel software, branding, and proprietary functionality (including the SkyLord AI Assistant) remain the exclusive property of SkyIntel. This is clearly distinguished from third-party and open data, which remain subject to their respective licenses.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white mb-3">6. API and Fair Use</h2>
+            <p>
+              Usage of the SkyLord AI Assistant and mapping tools is subject to fair use limits. Automated scraping, bulk data extraction, or bypassing rate limits is strictly prohibited and will result in immediate account termination.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-semibold text-white mb-3">7. Changes to Terms</h2>
+            <p>
+              We reserve the right to modify these terms at any time. Continued use of the Service after changes constitutes acceptance of the new terms.
             </p>
           </section>
 
