@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
+import { CockpitButton } from "@/components/ui/CockpitButton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-hxbd.onrender.com";
 
@@ -84,7 +85,7 @@ export default function RegisterPage() {
     <div className="flex flex-col">
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-bold text-white mb-2">Create Account</h1>
-        <p className="text-sm text-gray-400">Join SkyIntel for advanced flight tracking</p>
+        <p className="text-sm text-gray-400">Join Averyn for advanced flight tracking</p>
       </div>
 
       {error && (
@@ -113,46 +114,46 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">Full Name</label>
+              <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Full Name</label>
               <input
                 type="text"
                 name="name"
                 required
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all"
+                className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)] text-sm"
                 placeholder="John Doe"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">Username</label>
+              <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Username</label>
               <input
                 type="text"
                 name="username"
                 required
                 value={formData.username}
                 onChange={handleChange}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all"
+                className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)] text-sm"
                 placeholder="johndoe123"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">Email Address</label>
+            <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Email Address</label>
             <input
               type="email"
               name="email"
               required
               value={formData.email}
               onChange={handleChange}
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all"
+              className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)] text-sm"
               placeholder="pilot@example.com"
             />
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">Password</label>
+            <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? "text" : "password"}
@@ -160,13 +161,13 @@ export default function RegisterPage() {
                 required
                 value={formData.password}
                 onChange={handleChange}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all pr-12"
+                className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all pr-12 font-[family-name:var(--font-labels)] text-sm"
                 placeholder="••••••••"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors p-1"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-instrument-grey)] hover:text-[var(--color-instrument-white)] transition-colors p-1"
               >
                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -178,10 +179,10 @@ export default function RegisterPage() {
                 {[1, 2, 3, 4].map((i) => (
                   <div 
                     key={i} 
-                    className={`flex-1 rounded-full ${
+                    className={`flex-1 rounded-[2px] ${
                       i <= strength 
-                        ? strength <= 1 ? 'bg-red-500' : strength === 2 ? 'bg-yellow-500' : 'bg-green-500'
-                        : 'bg-white/10'
+                        ? strength <= 1 ? 'bg-[var(--color-warning-red)]' : strength === 2 ? 'bg-[var(--color-caution-amber)]' : 'bg-[var(--color-horizon-blue)]'
+                        : 'bg-[#111]'
                     }`}
                   ></div>
                 ))}
@@ -190,14 +191,14 @@ export default function RegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">Confirm Password</label>
+            <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Confirm Password</label>
             <input
               type="password"
               name="confirmPassword"
               required
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={`w-full bg-black/40 border ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-red-500/50 focus:border-red-500' : 'border-white/10 focus:border-yellow-500'} rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 transition-all`}
+              className={`w-full bg-[var(--color-cockpit-black)] border ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-[var(--color-warning-red)] focus:border-[var(--color-warning-red)]' : 'border-[var(--color-instrument-grey)] focus:border-[var(--color-horizon-blue)]'} rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:ring-1 transition-all font-[family-name:var(--font-labels)] text-sm`}
               placeholder="••••••••"
             />
           </div>
@@ -210,40 +211,41 @@ export default function RegisterPage() {
                   name="termsAccepted"
                   checked={formData.termsAccepted}
                   onChange={handleChange}
-                  className="peer appearance-none w-5 h-5 border-2 border-gray-600 rounded cursor-pointer checked:bg-yellow-500 checked:border-yellow-500 transition-all"
+                  className="peer appearance-none w-5 h-5 border border-[var(--color-instrument-grey)] rounded-[2px] cursor-pointer checked:bg-[var(--color-horizon-blue)] checked:border-[var(--color-horizon-blue)] transition-all"
                 />
-                <svg className="absolute w-3 h-3 text-black opacity-0 peer-checked:opacity-100 pointer-events-none" viewBox="0 0 14 10" fill="none">
+                <svg className="absolute w-3 h-3 text-[var(--color-cockpit-black)] opacity-0 peer-checked:opacity-100 pointer-events-none" viewBox="0 0 14 10" fill="none">
                   <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <span className="text-xs text-gray-400 leading-tight">
-                I agree to the <Link href="/terms" className="text-yellow-500 hover:underline" target="_blank">Terms of Service</Link> and <Link href="/privacy" className="text-yellow-500 hover:underline" target="_blank">Privacy Policy</Link>, and consent to the processing of my data.
+              <span className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] leading-tight uppercase tracking-widest">
+                I agree to the <Link href="/terms" className="text-[var(--color-horizon-blue)] hover:text-white transition-colors" target="_blank">Terms</Link> and <Link href="/privacy" className="text-[var(--color-horizon-blue)] hover:text-white transition-colors" target="_blank">Privacy Policy</Link>
               </span>
             </label>
           </div>
 
-          <button
+          <CockpitButton
             type="submit"
+            variant="action"
             disabled={isLoading || (formData.password !== formData.confirmPassword && formData.confirmPassword.length > 0)}
-            className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3.5 rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-4 flex items-center justify-center"
+            className="w-full mt-4 justify-center bg-[var(--color-horizon-blue)] text-white border-[var(--color-horizon-blue)]"
           >
             {isLoading ? (
               <>
-                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Creating Account...
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                REGISTERING...
               </>
             ) : (
-              "Create Account"
+              "CREATE ACCOUNT"
             )}
-          </button>
+          </CockpitButton>
         </form>
       )}
 
-      <div className="mt-6 pt-6 border-t border-white/5 text-center">
-        <p className="text-gray-400 text-sm">
-          Already have an account?{" "}
-          <Link href="/login" className="text-white font-semibold hover:text-yellow-400 transition-colors">
-            Sign in
+      <div className="mt-6 pt-6 border-t border-[var(--color-instrument-grey)] text-center">
+        <p className="text-[10px] text-[var(--color-instrument-grey)] font-[family-name:var(--font-labels)] uppercase tracking-widest">
+          Active clearance?{" "}
+          <Link href="/login" className="text-[var(--color-instrument-white)] font-bold hover:text-[var(--color-horizon-blue)] transition-colors ml-1">
+            SIGN IN
           </Link>
         </p>
       </div>

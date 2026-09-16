@@ -1,123 +1,97 @@
 @import "tailwindcss";
 
 @theme {
-  --color-background: #09090b;
-  --color-foreground: #fafafa;
-  --color-card: #18181f;
-  --color-card-border: #2e2e38;
-  --color-subtle: #27272a;
-  --color-accent: #3b82f6;
-  --color-border: #27272a;
-  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  /* True black base */
+  --color-cockpit-black: #000000;
+  
+  /* Horizon Interactive & Accents */
+  --color-horizon-blue: #0088CC;
+  --color-horizon-brown: #5C3D2E;
+  
+  /* Typography & Lines */
+  --color-instrument-white: #E8EDF0;
+  --color-instrument-grey: #8A94A0;
+  
+  /* Status */
+  --color-caution-amber: #FFB300;
+  --color-warning-red: #E8453C;
+
+  /* Typography */
+  --font-numerals: 'Oswald', 'Bebas Neue', sans-serif;
+  --font-labels: 'Archivo', system-ui, sans-serif;
+  
+  /* Fallback mapping for existing classes during transition */
+  --color-background: var(--color-cockpit-black);
+  --color-foreground: var(--color-instrument-white);
+  --color-card: #050505; /* slightly lifted black */
+  --color-border: rgba(138, 148, 160, 0.45);
+  --color-primary: var(--color-horizon-blue);
+  --color-muted-foreground: var(--color-instrument-grey);
 }
 
 @layer base {
-  :root {
-    --background: #09090b;
-    --foreground: #fafafa;
-    --card: #18181f;
-    --card-foreground: #fafafa;
-    --border: #27272a;
-    --input: #27272a;
-    --primary: #3b82f6;
-    --primary-foreground: #f8fafc;
-    --muted: #27272a;
-    --muted-foreground: #a1a1aa;
-    --accent: #27272a;
-    --accent-foreground: #fafafa;
-    --destructive: #ef4444;
-    --destructive-foreground: #f8fafc;
-    --ring: #3b82f6;
-    --radius: 0.75rem;
-  }
-}
-
-@layer base {
-  * {
-    border-color: var(--border);
-  }
   body {
-    background-color: var(--background);
-    color: var(--foreground);
-    font-feature-settings: "rlig" 1, "calt" 1;
+    background-color: var(--color-cockpit-black);
+    color: var(--color-instrument-white);
+    font-family: var(--font-labels);
     overflow: hidden;
   }
 }
 
-.glass {
-  background: rgba(24, 24, 31, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+/* ── PFD Hard-Edged Panels ── */
+.glass, .glass-panel {
+  background: var(--color-cockpit-black);
+  border: 1px solid rgba(138, 148, 160, 0.45);
+  box-shadow: inset 0 1px 0 rgba(232, 237, 240, 0.1);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border-radius: 4px; /* Minimal radius */
 }
 
-.glass-panel {
-  background: linear-gradient(180deg, rgba(39, 39, 42, 0.3) 0%, rgba(24, 24, 31, 0.2) 100%);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-}
-
-/* ── Selection Glow (replaces aggressive radar pulse) ── */
+/* ── Selection Indicator (replaces aggressive radar pulse) ── */
 .selection-glow {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(56, 189, 248, 0.35) 0%, rgba(56, 189, 248, 0.08) 50%, transparent 70%);
-  animation: selectionBreath 2.5s ease-in-out infinite;
+  border: 1px solid var(--color-horizon-blue);
+  background: transparent;
   pointer-events: none;
   z-index: -1;
 }
 
-@keyframes selectionBreath {
-  0%, 100% {
-    width: 36px;
-    height: 36px;
-    opacity: 0.8;
-  }
-  50% {
-    width: 48px;
-    height: 48px;
-    opacity: 1;
-  }
-}
-
 /* ── Hover Glow on Aircraft ── */
 .custom-plane-icon {
-  transition: filter 0.4s ease, opacity 0.4s ease;
+  transition: opacity 0.1s ease;
   cursor: pointer;
 }
 
 .custom-plane-icon:hover svg {
-  filter: drop-shadow(0 0 8px #fbbf24) drop-shadow(0 0 16px rgba(251, 191, 36, 0.4));
+  filter: drop-shadow(0 0 2px var(--color-caution-amber));
 }
 
-/* ── Selected Aircraft Glow (clean cyan instead of red) ── */
+/* ── Selected Aircraft (clean blue outline instead of soft cyan glow) ── */
 .selected-plane svg {
-  filter: drop-shadow(0 0 10px #38bdf8) drop-shadow(0 0 22px rgba(56, 189, 248, 0.5));
+  filter: drop-shadow(0 0 4px var(--color-horizon-blue));
 }
 
 /* ── Dimmed/Shadow effect for unselected planes when a target is acquired ── */
 .dimmed-plane {
-  opacity: 0.25 !important;
-  filter: saturate(0.2) brightness(0.5) !important;
-  transition: opacity 0.4s ease, filter 0.4s ease !important;
+  opacity: 0.3 !important;
+  transition: opacity 0.1s ease !important;
 }
 
 .dimmed-plane:hover {
-  opacity: 0.7 !important;
-  filter: saturate(0.6) brightness(0.8) !important;
+  opacity: 0.8 !important;
 }
 
 /* ── Modal Scale-In Animation ── */
 @keyframes scaleIn {
   0% {
-    transform: scale(0.8);
+    transform: scale(0.95);
     opacity: 0;
   }
   100% {
@@ -128,10 +102,9 @@
 
 /* ── Tracking Context Bar ── */
 .tracking-bar {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.12) 0%, rgba(245, 158, 11, 0.06) 100%);
-  border: 1px solid rgba(251, 191, 36, 0.25);
-  backdrop-filter: blur(12px);
-  animation: trackBarSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  background: #050505;
+  border: 1px solid rgba(138, 148, 160, 0.45);
+  border-radius: 2px;
 }
 
 @keyframes trackBarSlideIn {

@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // 2. Fetch User
       const res = await axios.get(`${API_URL}/api/auth/me`);
       setUser(res.data.user);
-    } catch (error) {
+    } catch (err) {
       setUser(null);
     } finally {
       setLoading(false);
@@ -89,7 +89,11 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    refreshUser();
+    // Avoid calling setState synchronously in effect
+    const init = async () => {
+      await refreshUser();
+    };
+    init();
   }, []);
 
   // Simple route protection logic

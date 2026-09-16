@@ -4,15 +4,17 @@ import { Database, Zap, MapPin, Cloud } from 'lucide-react';
 
 export default function DataSourcesPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0c10] text-foreground">
+    <div className="flex flex-col min-h-screen bg-[var(--color-cockpit-black)] text-foreground">
       <Header variant="full" />
       
       <main className="flex-1 max-w-4xl mx-auto px-6 py-24 w-full">
-        <h1 className="text-4xl font-black mb-8 text-white tracking-tight">Data Sources & Attribution</h1>
+        <h1 className="text-3xl font-black mb-8 text-white flex items-center gap-3">
+          <Database className="w-8 h-8 text-blue-400" /> Data Sources
+        </h1>
         
-        <p className="text-gray-400 text-lg mb-12">
+        <div className="prose prose-invert prose-sm text-gray-400 mb-12">
           Averyn is built on the shoulders of giants. We aggregate data from open communities and premium APIs to provide a comprehensive view of global aviation.
-        </p>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-black/40 border border-white/10 rounded-2xl p-6">

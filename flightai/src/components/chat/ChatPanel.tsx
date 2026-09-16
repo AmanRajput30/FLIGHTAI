@@ -9,6 +9,7 @@ import { useFlightStore } from '@/store/useFlightStore';
 import { chatApi, userApi } from '@/lib/api';
 import Link from 'next/link';
 import { ChatMessage } from '@/types';
+import { CockpitButton } from '../ui/CockpitButton';
 
 export default function ChatPanel() {
   const { user, loading: authLoading } = useAuth();
@@ -88,114 +89,122 @@ export default function ChatPanel() {
   };
 
   return (
-    <div className="w-[400px] h-full flex flex-col glass-panel border-l border-t-0 z-10 shadow-[-2px_0_20px_rgba(0,0,0,0.5)] bg-card/95">
-      <div className="p-5 border-b border-white/5">
-        <h2 className="font-semibold text-xl">Hello, <span className="text-yellow-400">{user?.username || user?.name?.split(' ')[0] || 'Guest'}</span></h2>
-        <p className="text-sm text-muted-foreground mt-1">Ready to assist with flight data.</p>
+    <div className="w-[400px] h-full flex flex-col bg-[var(--color-cockpit-black)] border-l border-[var(--color-instrument-grey)] z-10 shadow-[-2px_0_20px_rgba(0,0,0,0.8)]">
+      <div className="p-4 border-b border-[var(--color-instrument-grey)] bg-[#050505]">
+        <h2 className="font-[family-name:var(--font-labels)] text-xs text-[var(--color-instrument-grey)] uppercase tracking-widest">
+          Operator ID: <span className="text-[var(--color-instrument-white)]">{user?.username || user?.name?.split(' ')[0] || 'GUEST'}</span>
+        </h2>
       </div>
 
       {/* —— Tracking Context Bar —— */}
       {focusedFlightId && selectedFlight && selectedFlight.id === focusedFlightId && (
-        <div className="tracking-bar mx-3 mt-3 rounded-xl px-4 py-2.5 flex items-center gap-3">
-          <span className="relative flex h-2.5 w-2.5 shrink-0">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-500"></span>
+        <div className="tracking-bar mx-4 mt-4 border border-[var(--color-horizon-blue)] bg-[#001a26] p-3 flex items-center gap-3 relative">
+          <div className="absolute top-0 left-0 w-1 h-full bg-[var(--color-horizon-blue)]"></div>
+          <span className="relative flex h-2 w-2 shrink-0 ml-1">
+            <span className="animate-ping absolute inline-flex h-full w-full bg-[var(--color-horizon-blue)] opacity-75"></span>
+            <span className="relative inline-flex h-2 w-2 bg-[var(--color-horizon-blue)]"></span>
           </span>
           <div className="flex-1 min-w-0">
-            <span className="text-[10px] text-yellow-400/70 uppercase tracking-widest font-semibold">Currently Tracking</span>
-            <div className="font-bold text-yellow-300 text-sm truncate">{selectedFlight.flightNumber || selectedFlight.id}</div>
+            <span className="text-[10px] text-[var(--color-horizon-blue)] uppercase tracking-widest font-[family-name:var(--font-labels)]">Target Lock</span>
+            <div className="font-[family-name:var(--font-numerals)] text-2xl text-[var(--color-instrument-white)] truncate tracking-wide">{selectedFlight.flightNumber || selectedFlight.id}</div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            <button onClick={handleFocusFlight} className="tracking-bar-btn bg-yellow-500/15 text-yellow-400 hover:bg-yellow-500/25 border-yellow-500/20" title="Focus map">
-              <Crosshair className="w-3.5 h-3.5 inline -mt-0.5 mr-0.5" />Focus
-            </button>
-            <button onClick={handleUntrack} className="tracking-bar-btn bg-red-500/10 text-red-400 hover:bg-red-500/20 border-red-500/20" title="Untrack">
-              <X className="w-3.5 h-3.5 inline -mt-0.5" />
-            </button>
+            <CockpitButton onClick={handleFocusFlight} variant="action" title="Focus map" className="!text-[10px] !px-2 !py-1 bg-[var(--color-horizon-blue)] border-[var(--color-horizon-blue)]">
+              <Crosshair size={12} strokeWidth={2} className="mr-1" />Focus
+            </CockpitButton>
+            <CockpitButton onClick={handleUntrack} variant="action" title="Untrack" className="!text-[10px] !px-2 !py-1 bg-[#1a1a1a] text-[var(--color-warning-red)] border-[var(--color-warning-red)] hover:bg-[#2a2a2a] hover:border-[var(--color-warning-red)]">
+              <X size={12} strokeWidth={2} />
+            </CockpitButton>
           </div>
         </div>
       )}
 
       {/* —— Context Indicator —— */}
       {focusedFlightId && selectedFlight && selectedFlight.id === focusedFlightId && (
-        <div className="context-indicator mx-5 mt-2.5 flex items-center gap-2 text-[11px] text-yellow-400/60 font-medium">
-          <Radio className="w-3 h-3 text-yellow-500/50" />
-          <span>SkyLord is analyzing <span className="text-yellow-400 font-bold">{selectedFlight.flightNumber || selectedFlight.id}</span></span>
+        <div className="context-indicator mx-4 mt-2 flex items-center gap-2 text-[10px] text-[var(--color-instrument-grey)] font-[family-name:var(--font-labels)] uppercase tracking-widest">
+          <Radio size={12} className="text-[var(--color-horizon-blue)] animate-pulse" />
+          <span>Intercepting data for <span className="text-[var(--color-instrument-white)]">{selectedFlight.flightNumber || selectedFlight.id}</span></span>
         </div>
       )}
       
-      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-4 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4 scrollbar-thin">
           {messages.map((msg, idx) => (
-            <div key={idx} className={cn("flex flex-col gap-1 w-[85%]", msg.role === 'user' ? "self-end items-end" : "self-start")}>
-              <div className={cn("text-sm p-4 rounded-2xl leading-relaxed shadow-sm", 
+            <div key={idx} className={cn("flex flex-col gap-1 w-[90%]", msg.role === 'user' ? "self-end items-end" : "self-start")}>
+              <div className="text-[10px] font-mono text-[var(--color-instrument-grey)] mb-0.5">
+                {msg.role === 'user' ? 'TX_OPERATOR' : 'RX_SKYLORD'}
+              </div>
+              <div className={cn("text-sm p-3 leading-relaxed shadow-none font-[family-name:var(--font-labels)]", 
                 msg.role === 'user' 
-                  ? "bg-yellow-500/20 border border-yellow-500/30 rounded-tr-sm text-yellow-50" 
+                  ? "bg-[var(--color-horizon-blue)] text-white" 
                   : msg.isError 
-                    ? "bg-red-500/10 border border-red-500/30 text-red-200 rounded-tl-sm flex gap-2 items-start"
-                    : "bg-white/5 border border-white/10 rounded-tl-sm text-gray-200"
+                    ? "bg-[#1a0000] border border-[var(--color-warning-red)] text-[var(--color-warning-red)] flex gap-2 items-start"
+                    : "bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] text-[var(--color-instrument-white)]"
               )}>
-                {msg.isError && <AlertCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />}
+                {msg.isError && <AlertCircle size={14} strokeWidth={2} className="mt-0.5 shrink-0" />}
                 <div>{msg.content}</div>
               </div>
               {/* —— Flight Reference Badges —— */}
               {msg.role === 'assistant' && msg.referencedFlights && msg.referencedFlights.length > 0 && (
                 <div className="flex flex-wrap gap-2 mt-1">
                   {msg.referencedFlights.map((ref, rIdx) => (
-                    <button key={rIdx} className="flight-badge" onClick={() => handleFlightBadgeClick(ref)}>
-                      <Plane className="w-3.5 h-3.5" />
+                    <CockpitButton key={rIdx} variant="selector" onClick={() => handleFlightBadgeClick(ref)}>
+                      <Plane size={14} strokeWidth={1.5} className="mr-1" />
                       {ref}
-                    </button>
+                    </CockpitButton>
                   ))}
                 </div>
               )}
             </div>
           ))}
           {loading && (
-            <div className="self-start text-sm p-3.5 bg-white/5 rounded-2xl rounded-tl-sm border border-white/5 w-16 flex justify-center"><span className="animate-pulse">...</span></div>
+            <div className="self-start text-sm p-3 bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] w-16 flex justify-center text-[var(--color-instrument-white)]">
+              <span className="animate-pulse font-mono">...</span>
+            </div>
           )}
           <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-5 mt-auto bg-black/20 border-t border-white/5">
+      <div className="p-4 mt-auto bg-[#050505] border-t border-[var(--color-instrument-grey)]">
         {authLoading ? (
-            <div className="h-12 flex items-center justify-center"><div className="w-5 h-5 rounded-full border-2 border-yellow-500 border-t-transparent animate-spin"></div></div>
+            <div className="h-10 flex items-center justify-center"><div className="w-4 h-4 rounded-full border-2 border-[var(--color-horizon-blue)] border-t-transparent animate-spin"></div></div>
         ) : user ? (
           user.isEmailVerified ? (
-            <div className="relative group flex items-center">
+            <div className="relative group flex items-center h-10">
               <input 
                 type="text" value={inputValue} onChange={e => setInputValue(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Ask AI an aviation question..."
-                className="w-full bg-black/60 border border-white/10 rounded-xl py-3 pl-4 pr-12 text-sm outline-none focus:border-yellow-400/50 focus:ring-1 focus:ring-yellow-400/50 transition-all placeholder:text-muted-foreground/50 text-white"
+                placeholder="Transmit query..."
+                className="w-full h-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] pl-3 pr-10 text-sm outline-none focus:border-[var(--color-horizon-blue)] transition-all placeholder:text-[var(--color-instrument-grey)] text-[var(--color-instrument-white)] font-[family-name:var(--font-labels)]"
               />
-              <div className="absolute right-2 flex items-center">
-                <button onClick={handleSendMessage} className="w-8 h-8 rounded-lg bg-yellow-500 text-black flex items-center justify-center hover:bg-yellow-400 transition-colors">
-                  <Send className="w-4 h-4 ml-0.5" />
-                </button>
+              <div className="absolute right-1 flex items-center h-8">
+                <CockpitButton onClick={handleSendMessage} variant="action" className="h-full !px-3 bg-[var(--color-horizon-blue)] border-[var(--color-horizon-blue)] text-white hover:bg-[var(--color-horizon-blue)]">
+                  <Send size={14} strokeWidth={2} />
+                </CockpitButton>
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-                <p className="text-sm text-yellow-500 font-medium mb-3">Verify your email to unlock SkyLord AI Assistant</p>
+            <div className="flex flex-col items-center justify-center text-center p-4 bg-[#1a0000] border border-[var(--color-warning-red)]">
+                <p className="text-[10px] text-[var(--color-warning-red)] uppercase tracking-widest font-[family-name:var(--font-labels)] mb-3">Verification Required</p>
                 {resendSuccess ? (
-                  <div className="text-sm text-green-400 font-medium py-2.5">Check your inbox for a new verification link!</div>
+                  <div className="text-sm text-[var(--color-horizon-blue)] font-bold py-2.5 uppercase tracking-wide">Check your inbox for a new link!</div>
                 ) : (
-                  <button 
+                  <CockpitButton 
                     onClick={handleResendVerification} 
                     disabled={isResending}
-                    className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2.5 rounded-lg transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    variant="action"
+                    className="w-full bg-[var(--color-horizon-blue)] border-[var(--color-horizon-blue)]"
                   >
-                    {isResending ? 'Sending...' : 'Resend Verification Email'}
-                  </button>
+                    {isResending ? 'Sending...' : 'Resend Verification'}
+                  </CockpitButton>
                 )}
                 {resendError && <p className="text-xs text-red-400 mt-2">{resendError}</p>}
             </div>
           )
         ) : (
-          <div className="flex flex-col items-center justify-center text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-              <p className="text-sm text-yellow-500 font-medium mb-3">Create a free account to unlock SkyLord AI Assistant</p>
-              <Link href="/register" className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-2.5 rounded-lg transition-colors text-sm">
+          <div className="flex flex-col items-center justify-center text-center p-4 bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)]">
+              <p className="text-[10px] text-[var(--color-instrument-grey)] font-[family-name:var(--font-labels)] uppercase tracking-widest mb-3">Authentication Required</p>
+              <CockpitButton as={Link} href="/register" variant="action" className="w-full bg-[var(--color-horizon-blue)] border-[var(--color-horizon-blue)]">
                 Create Account
-              </Link>
+              </CockpitButton>
           </div>
         )}
       </div>

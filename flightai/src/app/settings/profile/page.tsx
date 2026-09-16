@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { CockpitButton } from "@/components/ui/CockpitButton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-hxbd.onrender.com";
 
@@ -82,79 +83,81 @@ export default function ProfileSettingsPage() {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 max-w-xl pb-10">
         <div>
-          <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Email Address</label>
+          <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">Email Address</label>
           <div className="flex items-center gap-3">
             <input
               type="text"
               disabled
               value={user.email}
-              className="flex-1 bg-black/20 border border-white/5 rounded-xl px-4 py-3 text-gray-400 cursor-not-allowed"
+              className="flex-1 bg-black/20 border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-grey)] cursor-not-allowed font-[family-name:var(--font-labels)] text-sm"
             />
             {user.isEmailVerified ? (
-              <span className="px-3 py-1.5 rounded-full bg-green-500/10 text-green-400 text-xs font-bold whitespace-nowrap">Verified</span>
+              <span className="px-3 py-1.5 border border-green-500 bg-green-500/10 text-green-400 text-[10px] font-bold whitespace-nowrap uppercase tracking-widest font-[family-name:var(--font-labels)]">Verified</span>
             ) : (
-              <button 
+              <CockpitButton 
                 type="button"
+                variant="action"
                 onClick={handleResendVerification}
                 disabled={isResending || resendSuccess}
-                className="px-3 py-1.5 rounded-full bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-400 text-xs font-bold whitespace-nowrap transition-colors disabled:opacity-50"
+                className="whitespace-nowrap"
               >
-                {isResending ? 'Sending...' : resendSuccess ? 'Sent!' : 'Unverified (Resend)'}
-              </button>
+                {isResending ? 'SENDING...' : resendSuccess ? 'SENT!' : 'UNVERIFIED (RESEND)'}
+              </CockpitButton>
             )}
           </div>
-          {resendError && <p className="text-xs text-red-400 mt-2">{resendError}</p>}
-          <p className="text-xs text-gray-500 mt-2">Email address cannot be changed currently.</p>
+          {resendError && <p className="text-xs text-[var(--color-warning-red)] mt-2 font-[family-name:var(--font-labels)]">{resendError}</p>}
+          <p className="text-[10px] text-[var(--color-instrument-grey)] mt-2 font-[family-name:var(--font-labels)] uppercase tracking-widest">Email address cannot be changed currently.</p>
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Display Name</label>
+          <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">Display Name</label>
           <input
             type="text"
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all"
+            className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)] text-sm"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Avatar URL</label>
+          <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">Avatar URL</label>
           <input
             type="url"
             value={formData.avatar}
             onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all"
+            className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)] text-sm"
             placeholder="https://example.com/avatar.jpg"
           />
-          <p className="text-xs text-gray-500 mt-2">Link to a public image to use as your avatar.</p>
+          <p className="text-[10px] text-[var(--color-instrument-grey)] mt-2 font-[family-name:var(--font-labels)] uppercase tracking-widest">Link to a public image to use as your avatar.</p>
         </div>
 
         <div>
-          <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Bio</label>
+          <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">Bio</label>
           <textarea
             rows={4}
             value={formData.bio}
             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all resize-none"
+            className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all resize-none font-[family-name:var(--font-labels)] text-sm"
             placeholder="A short bio about your aviation interests..."
           />
         </div>
 
-        <button
+        <CockpitButton
           type="submit"
+          variant="action"
           disabled={isLoading}
-          className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3.5 px-6 rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-2 w-fit flex items-center"
+          className="mt-2 w-fit"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Saving...
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              SAVING...
             </>
           ) : (
-            "Save Changes"
+            "SAVE CHANGES"
           )}
-        </button>
+        </CockpitButton>
       </form>
     </div>
   );

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { AlertCircle, Eye, EyeOff, Loader2 } from "lucide-react";
+import { CockpitButton } from "@/components/ui/CockpitButton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-hxbd.onrender.com";
 
@@ -43,7 +44,7 @@ export default function LoginPage() {
     <div className="flex flex-col">
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
-        <p className="text-sm text-gray-400">Sign in to your SkyIntel account</p>
+        <p className="text-sm text-gray-400">Sign in to your Averyn account</p>
       </div>
 
       {error && (
@@ -55,32 +56,32 @@ export default function LoginPage() {
 
       <form onSubmit={handleLogin} className="flex flex-col gap-4">
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">Email or Username</label>
+          <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Email or Username</label>
           <input
             type="text"
             required
             value={identifier}
             onChange={(e) => setIdentifier(e.target.value)}
-            className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all"
+            className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)]"
             placeholder="pilot@example.com"
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-400 mb-1.5 uppercase tracking-wider">Password</label>
+          <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Password</label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all pr-12"
+              className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all pr-12 font-[family-name:var(--font-labels)]"
               placeholder="••••••••"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors p-1"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-instrument-grey)] hover:text-[var(--color-instrument-white)] transition-colors p-1"
             >
               {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -94,41 +95,42 @@ export default function LoginPage() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={(e) => setRememberMe(e.target.checked)}
-                className="peer appearance-none w-5 h-5 border-2 border-gray-600 rounded cursor-pointer checked:bg-yellow-500 checked:border-yellow-500 transition-all"
+                className="peer appearance-none w-5 h-5 border border-[var(--color-instrument-grey)] rounded-[2px] cursor-pointer checked:bg-[var(--color-horizon-blue)] checked:border-[var(--color-horizon-blue)] transition-all"
               />
-              <svg className="absolute w-3 h-3 text-black opacity-0 peer-checked:opacity-100 pointer-events-none" viewBox="0 0 14 10" fill="none">
+              <svg className="absolute w-3 h-3 text-[var(--color-cockpit-black)] opacity-0 peer-checked:opacity-100 pointer-events-none" viewBox="0 0 14 10" fill="none">
                 <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
             </div>
-            <span className="text-sm text-gray-400 group-hover:text-gray-300 transition-colors">Remember me</span>
+            <span className="text-[10px] text-[var(--color-instrument-grey)] font-[family-name:var(--font-labels)] group-hover:text-[var(--color-instrument-white)] transition-colors uppercase tracking-widest">Remember me</span>
           </label>
           
-          <Link href="/forgot-password" className="text-sm text-yellow-500 hover:text-yellow-400 transition-colors">
+          <Link href="/forgot-password" className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-horizon-blue)] hover:text-white transition-colors uppercase tracking-widest">
             Forgot password?
           </Link>
         </div>
 
-        <button
+        <CockpitButton
           type="submit"
+          variant="action"
           disabled={isLoading}
-          className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3.5 rounded-xl transition-all disabled:opacity-70 disabled:cursor-not-allowed mt-4 flex items-center justify-center"
+          className="w-full mt-4 justify-center bg-[var(--color-horizon-blue)] text-white border-[var(--color-horizon-blue)]"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Signing in...
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              AUTHENTICATING...
             </>
           ) : (
-            "Sign In"
+            "SIGN IN"
           )}
-        </button>
+        </CockpitButton>
       </form>
 
-      <div className="mt-8 pt-6 border-t border-white/5 text-center">
-        <p className="text-gray-400 text-sm">
-          Don't have an account?{" "}
-          <Link href="/register" className="text-white font-semibold hover:text-yellow-400 transition-colors">
-            Create account
+      <div className="mt-8 pt-6 border-t border-[var(--color-instrument-grey)] text-center">
+        <p className="text-[var(--color-instrument-grey)] text-[10px] font-[family-name:var(--font-labels)] uppercase tracking-widest">
+          No active clearance?{" "}
+          <Link href="/register" className="text-[var(--color-instrument-white)] font-bold hover:text-[var(--color-horizon-blue)] transition-colors ml-1">
+            REQUEST ACCESS
           </Link>
         </p>
       </div>

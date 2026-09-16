@@ -31,7 +31,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* Brand */}
       <Link href="/" className="flex items-center gap-2 mb-8 z-10 hover:scale-105 transition-transform">
         <Plane className="w-8 h-8 text-yellow-400" />
-        <span className="font-bold text-3xl tracking-tight text-white">SkyIntel</span>
+        <span className="font-bold text-3xl tracking-tight text-white">Averyn</span>
       </Link>
 
       {/* Content Form */}
@@ -42,7 +42,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       <div className="mt-8 flex flex-col sm:flex-row items-center gap-2 sm:gap-6 text-sm text-gray-500 z-10">
-        <span>&copy; {new Date().getFullYear()} SkyIntel Aviation. All rights reserved.</span>
+        <span>&copy; {new Date().getFullYear()} Averyn Aviation. All rights reserved.</span>
         <div className="flex gap-4">
           <Link href="/terms" className="hover:text-yellow-400 transition-colors">Terms</Link>
           <Link href="/privacy" className="hover:text-yellow-400 transition-colors">Privacy</Link>

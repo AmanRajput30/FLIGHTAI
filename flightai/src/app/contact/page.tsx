@@ -5,6 +5,7 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Send, AlertCircle, CheckCircle2 } from 'lucide-react';
 import axios from 'axios';
+import { CockpitButton } from '@/components/ui/CockpitButton';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-hxbd.onrender.com';
 
@@ -34,61 +35,62 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0c10] text-foreground">
+    <div className="flex flex-col min-h-screen bg-[var(--color-cockpit-black)] text-[var(--color-instrument-white)] font-[family-name:var(--font-labels)]">
       <Header variant="full" />
       
       <main className="flex-1 max-w-2xl mx-auto px-6 py-24 w-full">
-        <h1 className="text-4xl font-black mb-4 text-white tracking-tight">Contact Us</h1>
-        <p className="text-gray-400 mb-10">
-          Have a question about our data, found a bug, or want to partner with us? Send us a message and we'll get back to you as soon as possible. Alternatively, you can email us directly at <a href="mailto:support@averyn.in" className="text-yellow-400 hover:underline">support@averyn.in</a>.
+        <h1 className="text-4xl font-black mb-4 text-[var(--color-instrument-white)] uppercase tracking-widest border-b border-[var(--color-instrument-grey)] pb-6">CONTACT US</h1>
+        <p className="text-[10px] text-[var(--color-instrument-grey)] mb-10 uppercase tracking-widest pt-6">
+          Have a question about our data, found a bug, or want to partner with us? Send us a message and we'll get back to you as soon as possible. Alternatively, you can email us directly at <a href="mailto:support@averyn.in" className="text-[var(--color-horizon-blue)] hover:text-white transition-colors">support@averyn.in</a>.
         </p>
 
         {status === 'success' ? (
-          <div className="bg-green-500/10 border border-green-500/30 rounded-xl p-8 text-center flex flex-col items-center">
+          <div className="bg-green-500/10 border border-green-500/30 rounded-[2px] p-8 text-center flex flex-col items-center">
             <CheckCircle2 className="w-12 h-12 text-green-400 mb-4" />
             <h2 className="text-2xl font-bold text-white mb-2">Message Sent!</h2>
-            <p className="text-gray-400">Thanks for reaching out. We've received your message and will respond shortly.</p>
-            <button 
+            <p className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] uppercase tracking-widest">Thanks for reaching out. We've received your message and will respond shortly.</p>
+            <CockpitButton 
+              variant="default"
               onClick={() => setStatus('idle')}
-              className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors font-medium"
+              className="mt-6"
             >
-              Send another message
-            </button>
+              SEND ANOTHER MESSAGE
+            </CockpitButton>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label htmlFor="name" className="text-sm font-medium text-gray-300">Name</label>
+                <label htmlFor="name" className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] uppercase tracking-widest">Name</label>
                 <input 
                   type="text" 
                   id="name" 
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-yellow-400/50 outline-none transition-colors"
+                  className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-sm text-[var(--color-instrument-white)] focus:border-[var(--color-horizon-blue)] outline-none transition-colors"
                 />
               </div>
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-300">Email Address</label>
+                <label htmlFor="email" className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] uppercase tracking-widest">Email Address</label>
                 <input 
                   type="email" 
                   id="email" 
                   required
                   value={formData.email}
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-yellow-400/50 outline-none transition-colors"
+                  className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-sm text-[var(--color-instrument-white)] focus:border-[var(--color-horizon-blue)] outline-none transition-colors"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="category" className="text-sm font-medium text-gray-300">Category</label>
+              <label htmlFor="category" className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] uppercase tracking-widest">Category</label>
               <select 
                 id="category"
                 value={formData.category}
                 onChange={(e) => setFormData({...formData, category: e.target.value})}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-yellow-400/50 outline-none transition-colors appearance-none"
+                className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-sm text-[var(--color-instrument-white)] focus:border-[var(--color-horizon-blue)] outline-none transition-colors"
               >
                 <option value="Bug">Report a Bug</option>
                 <option value="Data accuracy">Data Accuracy Issue</option>
@@ -99,35 +101,37 @@ export default function ContactPage() {
             </div>
 
             <div className="space-y-2">
-              <label htmlFor="message" className="text-sm font-medium text-gray-300">Message</label>
+              <label htmlFor="message" className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] uppercase tracking-widest">Message</label>
               <textarea 
                 id="message" 
                 required
                 rows={6}
                 value={formData.message}
                 onChange={(e) => setFormData({...formData, message: e.target.value})}
-                className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-sm text-white focus:border-yellow-400/50 outline-none transition-colors resize-none"
+                className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-sm text-[var(--color-instrument-white)] focus:border-[var(--color-horizon-blue)] outline-none transition-colors resize-none"
               ></textarea>
             </div>
 
             {status === 'error' && (
-              <div className="flex items-center gap-2 text-red-400 text-sm bg-red-500/10 p-3 rounded-lg border border-red-500/20">
+              <div className="flex items-center gap-2 text-[var(--color-warning-red)] text-[10px] bg-red-500/10 p-3 rounded-[2px] border border-red-500/20 font-[family-name:var(--font-labels)] uppercase tracking-widest">
                 <AlertCircle className="w-4 h-4" />
                 {errorMessage}
               </div>
             )}
 
-            <button 
+            <CockpitButton 
               type="submit"
+              variant="action"
               disabled={status === 'loading'}
-              className="w-full bg-yellow-500 hover:bg-yellow-400 text-black font-bold py-3.5 rounded-xl transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full bg-[var(--color-horizon-blue)] text-white border-[var(--color-horizon-blue)] justify-center"
             >
               {status === 'loading' ? (
-                <div className="w-5 h-5 rounded-full border-2 border-black/20 border-t-black animate-spin"></div>
+                <div className="w-4 h-4 rounded-full border border-white border-t-transparent animate-spin mr-2"></div>
               ) : (
-                <>Send Message <Send className="w-4 h-4" /></>
+                <Send className="w-4 h-4 mr-2" />
               )}
-            </button>
+              {status === 'loading' ? 'SENDING...' : 'SEND MESSAGE'}
+            </CockpitButton>
           </form>
         )}
       </main>

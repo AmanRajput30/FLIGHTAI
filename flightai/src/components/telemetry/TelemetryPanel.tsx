@@ -1,18 +1,52 @@
 "use client";
 
-import { Activity, MapPin, Plane, Flag, ArrowUp, Compass, Zap, Cloud, Thermometer, Wind, Navigation } from 'lucide-react';
+import { Activity, MapPin, Plane, Flag, Cloud, Thermometer, Wind, Navigation } from 'lucide-react';
 import { useFlightStore } from '@/store/useFlightStore';
 
-function MetricCard({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
+interface MetricCardProps {
+  label: string;
+  value: string | number;
+  unit?: string;
+  warning?: boolean;
+  headingValue?: number | null;
+}
+
+function MetricCard({ label, value, unit, warning, headingValue }: MetricCardProps) {
+  const isUnknown = value === 'Unknown' || value == null;
+  const displayValue = isUnknown ? '---' : value;
+
   return (
-    <div className="bg-black/30 rounded-2xl p-4 border border-white/5 flex flex-col gap-2 relative overflow-hidden group">
-      <div className="w-6 h-6 rounded-full bg-white/5 flex items-center justify-center mb-1">
-        {icon}
-      </div>
-      <div>
-        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">{label}</p>
-        <p className="font-bold text-lg text-white">{value}</p>
-      </div>
+    <div className="bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] p-3 flex flex-col justify-between h-24 relative overflow-hidden group">
+      <p className="text-[10px] text-[var(--color-instrument-grey)] uppercase tracking-widest font-[family-name:var(--font-labels)]">{label}</p>
+      
+      {headingValue != null && !isUnknown ? (
+        <div className="flex items-end gap-3 h-full pb-1">
+          {/* Compass Graphic */}
+          <div className="w-10 h-10 border-2 border-[var(--color-instrument-grey)] rounded-full relative flex items-center justify-center shrink-0">
+             <div className="absolute top-0 w-1 h-2 bg-[var(--color-warning-red)] -mt-1 z-10" />
+             <div 
+               className="w-full h-full absolute transition-transform duration-500 ease-out"
+               style={{ transform: `rotate(${headingValue}deg)` }}
+             >
+                <div className="w-[2px] h-4 bg-[var(--color-instrument-white)] absolute top-1 left-1/2 -translate-x-1/2" />
+             </div>
+             <span className="text-[10px] text-[var(--color-instrument-grey)] font-[family-name:var(--font-numerals)]">{Math.round(headingValue)}</span>
+          </div>
+          <div className="flex items-baseline">
+            <span className={`font-[family-name:var(--font-numerals)] text-3xl leading-none tracking-wide ${warning ? 'text-[var(--color-caution-amber)]' : 'text-[var(--color-instrument-white)]'}`}>
+              {displayValue}
+            </span>
+            {unit && <span className="text-[var(--color-instrument-grey)] text-[10px] ml-1 font-[family-name:var(--font-labels)] uppercase tracking-widest">{unit}</span>}
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-baseline mt-auto pb-1">
+          <span className={`font-[family-name:var(--font-numerals)] text-4xl leading-none tracking-wide ${warning && !isUnknown ? 'text-[var(--color-caution-amber)]' : 'text-[var(--color-instrument-white)]'}`}>
+            {displayValue}
+          </span>
+          {unit && !isUnknown && <span className="text-[var(--color-instrument-grey)] text-[10px] ml-1.5 font-[family-name:var(--font-labels)] uppercase tracking-widest">{unit}</span>}
+        </div>
+      )}
     </div>
   )
 }
@@ -29,9 +63,9 @@ export default function TelemetryPanel() {
     weatherData 
   } = useFlightStore();
 
-  const timeAgo = (unixTimestamp: number) => {
+  const timeAgo = (unixTimestamp: number, now: number) => {
     if (!unixTimestamp) return 'Just now';
-    const seconds = Math.floor(Date.now()/1000 - unixTimestamp);
+    const seconds = Math.floor(now/1000 - unixTimestamp);
     if (seconds < 60) return `${seconds}s ago`;
     return `${Math.floor(seconds/60)}m ago`;
   };
@@ -222,11 +256,30 @@ export default function TelemetryPanel() {
             )}
 
             {/* Metric Grid */}
-            <div className="grid grid-cols-2 gap-3">
-              <MetricCard icon={<ArrowUp className="w-4 h-4 text-primary" />} label="Altitude" value={selectedFlight.altitude != null ? `${selectedFlight.altitude.toLocaleString()} ft` : 'Unknown'} />
-              <MetricCard icon={<Activity className="w-4 h-4 text-green-400" />} label="Ground Speed" value={selectedFlight.speed != null ? `${selectedFlight.speed} km/h` : 'Unknown'} />
-              <MetricCard icon={<Compass className="w-4 h-4 text-purple-400" />} label="True Heading" value={selectedFlight.heading != null ? `${Math.round(selectedFlight.heading)}°` : 'Unknown'} />
-              <MetricCard icon={<Zap className="w-4 h-4 text-yellow-400" />} label="Vertical Rate" value={selectedFlight.verticalRate != null ? `${selectedFlight.verticalRate} m/s` : 'Level'} />
+            <div className="grid grid-cols-2 gap-2">
+              <MetricCard 
+                label="Altitude" 
+                value={selectedFlight.altitude != null ? selectedFlight.altitude.toLocaleString() : 'Unknown'} 
+                unit="ft"
+                warning={selectedFlight.altitude != null && selectedFlight.altitude < 10000 && selectedFlight.altitude > 0}
+              />
+              <MetricCard 
+                label="Ground Speed" 
+                value={selectedFlight.speed != null ? selectedFlight.speed : 'Unknown'} 
+                unit="kts"
+                warning={selectedFlight.speed != null && selectedFlight.speed < 150 && selectedFlight.altitude > 0}
+              />
+              <MetricCard 
+                label="Heading" 
+                value={selectedFlight.heading != null ? Math.round(selectedFlight.heading) : 'Unknown'}
+                unit="°"
+                headingValue={selectedFlight.heading}
+              />
+              <MetricCard 
+                label="Vertical Rate" 
+                value={selectedFlight.verticalRate != null ? (selectedFlight.verticalRate > 0 ? `+${selectedFlight.verticalRate}` : selectedFlight.verticalRate) : '0'} 
+                unit="fpm"
+              />
             </div>
 
             {/* ETA Card */}
@@ -258,7 +311,7 @@ export default function TelemetryPanel() {
                   <span className="text-sm text-gray-400">Signal Ping</span>
                   <span className="text-sm font-medium flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
-                    {timeAgo(selectedFlight.lastContact)}
+                    {timeAgo(selectedFlight.lastContact, Date.now())}
                   </span>
               </div>
             </div>

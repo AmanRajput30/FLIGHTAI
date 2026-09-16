@@ -1,10 +1,12 @@
 "use client";
 
-import { Plane, Search, Eye, Layers } from 'lucide-react';
+import { Plane, Eye, Layers } from 'lucide-react';
 import Link from 'next/link';
 import GlobalSearch from '../search/GlobalSearch';
 import UserMenu from '../UserMenu';
 import { useUIStore } from '@/store/useUIStore';
+import { CockpitButton } from '../ui/CockpitButton';
+import { usePathname } from 'next/navigation';
 
 interface HeaderProps {
   variant?: 'compact' | 'full';
@@ -12,23 +14,25 @@ interface HeaderProps {
 
 export default function Header({ variant = 'compact' }: HeaderProps) {
   const { systemStatus, mapMode, performanceMode, setMapMode, setPerformanceMode } = useUIStore();
+  const pathname = usePathname();
 
   const isCompact = variant === 'compact';
 
   return (
-    <header className={`${isCompact ? 'h-16 border-b-0' : 'h-20 border-b border-white/10'} flex items-center justify-between px-6 glass-panel z-40 relative w-full`}>
+    <header className={`h-16 border-b border-[var(--color-instrument-grey)] bg-[var(--color-cockpit-black)] z-40 relative w-full flex items-center justify-between px-6`}>
       <div className="flex items-center gap-6">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <Plane className="w-6 h-6 text-yellow-400" />
-          <span className="font-bold text-xl tracking-tight text-white">Averyn</span>
+          <Plane className="w-5 h-5 text-[var(--color-horizon-blue)]" />
+          <span className="font-bold text-lg tracking-widest text-[var(--color-instrument-white)] uppercase font-[family-name:var(--font-labels)]">Averyn</span>
+          <span className="text-[10px] text-[var(--color-horizon-blue)] font-[family-name:var(--font-numerals)] ml-1 border border-[var(--color-horizon-blue)] px-1 rounded-[2px] leading-tight">V2.0</span>
         </Link>
         {!isCompact && (
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-300">
-            <Link href="/dashboard" className="hover:text-white transition-colors">Live Map</Link>
-            <Link href="/airport" className="hover:text-white transition-colors">Airports</Link>
-            <Link href="/airline" className="hover:text-white transition-colors">Airlines</Link>
-            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
-            <Link href="/about" className="hover:text-white transition-colors">About</Link>
+            <CockpitButton as={Link} href="/dashboard" variant="selector" isActive={pathname === '/dashboard'}>Live Map</CockpitButton>
+            <CockpitButton as={Link} href="/airport" variant="selector" isActive={pathname?.startsWith('/airport')}>Airports</CockpitButton>
+            <CockpitButton as={Link} href="/airline" variant="selector" isActive={pathname?.startsWith('/airline')}>Airlines</CockpitButton>
+            <CockpitButton as={Link} href="/pricing" variant="selector" isActive={pathname === '/pricing'}>Pricing</CockpitButton>
+            <CockpitButton as={Link} href="/about" variant="selector" isActive={pathname === '/about'}>About</CockpitButton>
           </nav>
         )}
       </div>
@@ -40,36 +44,40 @@ export default function Header({ variant = 'compact' }: HeaderProps) {
       <div className="flex items-center gap-5">
         {/* Map Mode Toggle (Only show on compact map view) */}
         {isCompact && (
-          <div className="flex bg-black/40 border border-white/10 rounded-full p-1 relative">
-            <button 
+          <div className="flex relative items-center">
+            <CockpitButton
+              variant="toggle"
+              isActive={mapMode === 'dark'}
               onClick={() => { setMapMode('dark'); setPerformanceMode(false); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all z-10 flex items-center gap-1.5 ${mapMode === 'dark' ? 'bg-white/10 text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+              className="rounded-r-none border-r-0"
             >
-              <Eye className="w-3.5 h-3.5" /> Dark
-            </button>
-            <button 
+              <Eye size={14} strokeWidth={2} className="mr-1" /> Dark
+            </CockpitButton>
+            <CockpitButton
+              variant="toggle"
+              isActive={mapMode === 'satellite'}
               onClick={() => { setMapMode('satellite'); setPerformanceMode(false); }}
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all z-10 flex items-center gap-1.5 ${mapMode === 'satellite' ? 'bg-white/10 text-white shadow-sm' : 'text-gray-400 hover:text-white'} ${performanceMode ? 'opacity-50 cursor-not-allowed' : ''}`}
               disabled={performanceMode}
               title={performanceMode ? "Disabled due to low FPS" : "Esri World Imagery"}
+              className="rounded-l-none"
             >
-              <Layers className="w-3.5 h-3.5" /> Premium
-            </button>
+              <Layers size={14} strokeWidth={2} className="mr-1" /> Premium
+            </CockpitButton>
             {performanceMode && (
-               <span className="absolute -bottom-5 right-0 text-[9px] text-red-400 whitespace-nowrap">Performance Mode Active (Low FPS)</span>
+               <span className="absolute -bottom-5 right-0 text-[9px] text-[var(--color-warning-red)] whitespace-nowrap font-bold">FPS GUARDIAN ACTIVE</span>
             )}
           </div>
         )}
 
         {isCompact && (
           systemStatus === 'live' ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-medium">
-              <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span><span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span></span>
-              LIVE
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-[#050505] border border-[var(--color-instrument-grey)] text-[var(--color-horizon-blue)] text-[10px] font-bold uppercase tracking-widest font-[family-name:var(--font-labels)]">
+              <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full bg-[var(--color-horizon-blue)] opacity-75"></span><span className="relative inline-flex h-2 w-2 bg-[var(--color-horizon-blue)]"></span></span>
+              SYSTEM LIVE
             </div>
           ) : (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 text-xs font-medium">
-              <span className="relative flex h-2 w-2"><span className="relative inline-flex rounded-full h-2 w-2 bg-yellow-500"></span></span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-[#1a0000] border border-[var(--color-warning-red)] text-[var(--color-warning-red)] text-[10px] font-bold uppercase tracking-widest font-[family-name:var(--font-labels)]">
+              <span className="relative flex h-2 w-2"><span className="relative inline-flex h-2 w-2 bg-[var(--color-warning-red)]"></span></span>
               DEGRADED
             </div>
           )

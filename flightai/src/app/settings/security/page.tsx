@@ -5,6 +5,7 @@ import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { Loader2, Key, Monitor, ShieldAlert, Trash2, Smartphone, Laptop, CheckCircle2, AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { CockpitButton } from "@/components/ui/CockpitButton";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-hxbd.onrender.com";
 
@@ -133,22 +134,22 @@ export default function SecuritySettingsPage() {
 
         <form onSubmit={handlePasswordChange} className="flex flex-col gap-5 max-w-xl">
           <div>
-            <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Current Password</label>
-            <input type="password" required value={passData.currentPassword} onChange={(e) => setPassData({...passData, currentPassword: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" />
+            <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">Current Password</label>
+            <input type="password" required value={passData.currentPassword} onChange={(e) => setPassData({...passData, currentPassword: e.target.value})} className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] focus:border-[var(--color-horizon-blue)] focus:outline-none transition-all font-[family-name:var(--font-labels)] text-sm" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">New Password</label>
-              <input type="password" required value={passData.newPassword} onChange={(e) => setPassData({...passData, newPassword: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" />
+              <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">New Password</label>
+              <input type="password" required value={passData.newPassword} onChange={(e) => setPassData({...passData, newPassword: e.target.value})} className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] focus:border-[var(--color-horizon-blue)] focus:outline-none transition-all font-[family-name:var(--font-labels)] text-sm" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">Confirm New</label>
-              <input type="password" required value={passData.confirmPassword} onChange={(e) => setPassData({...passData, confirmPassword: e.target.value})} className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 transition-all" />
+              <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">Confirm New</label>
+              <input type="password" required value={passData.confirmPassword} onChange={(e) => setPassData({...passData, confirmPassword: e.target.value})} className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] focus:border-[var(--color-horizon-blue)] focus:outline-none transition-all font-[family-name:var(--font-labels)] text-sm" />
             </div>
           </div>
-          <button type="submit" disabled={loadingPass} className="bg-white/10 hover:bg-white/20 text-white font-bold py-3 px-6 rounded-xl transition-all disabled:opacity-50 mt-1 w-fit flex items-center">
-            {loadingPass ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "Update Password"}
-          </button>
+          <CockpitButton type="submit" variant="action" disabled={loadingPass} className="mt-1 w-fit">
+            {loadingPass ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "UPDATE PASSWORD"}
+          </CockpitButton>
         </form>
       </section>
 
@@ -164,9 +165,9 @@ export default function SecuritySettingsPage() {
             <p className="text-gray-400 text-sm">Devices currently logged into your account.</p>
           </div>
           {sessions.length > 1 && (
-            <button onClick={handleLogoutAll} className="text-sm font-medium text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 px-4 py-2 rounded-lg transition-colors">
-              Log out of all other devices
-            </button>
+            <CockpitButton variant="selector" onClick={handleLogoutAll} className="text-[var(--color-warning-red)] hover:text-white border-[var(--color-warning-red)]">
+              LOG OUT OF ALL OTHER DEVICES
+            </CockpitButton>
           )}
         </div>
 
@@ -189,9 +190,9 @@ export default function SecuritySettingsPage() {
                   </div>
                 </div>
                 {session._id !== currentSessionId && (
-                  <button onClick={() => handleRevokeSession(session._id)} className="text-xs font-semibold text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-lg transition-all">
-                    Revoke
-                  </button>
+                  <CockpitButton variant="selector" onClick={() => handleRevokeSession(session._id)}>
+                    REVOKE
+                  </CockpitButton>
                 )}
               </div>
             ))
@@ -223,16 +224,16 @@ export default function SecuritySettingsPage() {
 
           <div className="flex flex-col gap-4">
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1.5">Type "DELETE ACCOUNT" to confirm</label>
-              <input type="text" value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all font-mono text-sm" placeholder="DELETE ACCOUNT" />
+              <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Type "DELETE ACCOUNT" to confirm</label>
+              <input type="text" value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] focus:border-[var(--color-warning-red)] focus:outline-none transition-all font-mono text-sm" placeholder="DELETE ACCOUNT" />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-500 mb-1.5">Enter Password</label>
-              <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="w-full bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all" placeholder="••••••••" />
+              <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Enter Password</label>
+              <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] focus:border-[var(--color-warning-red)] focus:outline-none transition-all" placeholder="••••••••" />
             </div>
-            <button onClick={handleDeleteAccount} disabled={loadingDelete || deleteConfirmText !== "DELETE ACCOUNT" || !deletePassword} className="mt-2 bg-red-500 hover:bg-red-600 text-white font-bold py-2.5 px-4 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-              {loadingDelete ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />} Delete My Account
-            </button>
+            <CockpitButton variant="action" onClick={handleDeleteAccount} disabled={loadingDelete || deleteConfirmText !== "DELETE ACCOUNT" || !deletePassword} className="mt-2 bg-[var(--color-warning-red)] text-white border-[var(--color-warning-red)]">
+              {loadingDelete ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />} DELETE MY ACCOUNT
+            </CockpitButton>
           </div>
         </div>
       </section>

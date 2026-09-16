@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Flight, WeatherData, RouteInfo, AircraftMetadata, AircraftPhoto } from '../types';
+import { Flight, WeatherData, RouteInfo, AircraftMetadata } from '../types';
 
 interface FlightState {
   selectedFlight: Flight | null;
@@ -11,7 +11,7 @@ interface FlightState {
   expandedRoute: 'origin' | 'destination' | null;
   targetPos: [number, number] | null;
   flights: Flight[];
-  airportData: any | null;
+  airportData: unknown | null;
 
   setSelectedFlight: (flight: Flight | null) => void;
   setFocusedFlightId: (id: string | null) => void;
@@ -22,7 +22,7 @@ interface FlightState {
   setExpandedRoute: (route: 'origin' | 'destination' | null) => void;
   setTargetPos: (pos: [number, number] | null) => void;
   setFlights: (flights: Flight[]) => void;
-  setAirportData: (data: any | null) => void;
+  setAirportData: (data: unknown | null) => void;
 }
 
 export const useFlightStore = create<FlightState>((set) => ({

@@ -4,6 +4,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { User, Shield, ArrowLeft, Loader2, LogOut } from "lucide-react";
+import { CockpitButton } from "@/components/ui/CockpitButton";
 
 export default function SettingsLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
@@ -12,8 +13,8 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0d1117] flex items-center justify-center">
-        <Loader2 className="w-8 h-8 text-yellow-500 animate-spin" />
+      <div className="min-h-screen bg-[var(--color-cockpit-black)] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-[var(--color-horizon-blue)] animate-spin" />
       </div>
     );
   }
@@ -28,20 +29,20 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
   ];
 
   return (
-    <div className="min-h-screen bg-[#0d1117] flex flex-col pt-16">
+    <div className="min-h-screen bg-[var(--color-cockpit-black)] flex flex-col pt-16 font-[family-name:var(--font-labels)]">
       {/* Settings Header */}
-      <div className="bg-[#121826] border-b border-white/5 py-8 px-6 sm:px-12">
+      <div className="bg-[#050505] border-b border-[var(--color-instrument-grey)] py-8 px-6 sm:px-12">
         <div className="max-w-5xl mx-auto flex flex-col gap-4">
-          <Link href="/" className="inline-flex items-center text-sm text-gray-400 hover:text-white transition-colors w-fit">
+          <Link href="/dashboard" className="inline-flex items-center text-[10px] text-[var(--color-instrument-grey)] font-[family-name:var(--font-labels)] uppercase tracking-widest hover:text-[var(--color-instrument-white)] transition-colors w-fit">
             <ArrowLeft className="w-4 h-4 mr-1" /> Back to Dashboard
           </Link>
           <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-full border-4 border-white/10 overflow-hidden shadow-xl">
-              <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=eab308&color=000`} alt="Profile" className="w-full h-full object-cover" />
+            <div className="w-20 h-20 rounded-none border border-[var(--color-instrument-grey)] overflow-hidden">
+              <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0088CC&color=FFF`} alt="Profile" className="w-full h-full object-cover grayscale opacity-80" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-white">{user.name}</h1>
-              <p className="text-gray-400 mt-1">@{user.username}</p>
+              <h1 className="text-3xl font-bold text-white uppercase tracking-widest">{user.name}</h1>
+              <p className="text-[var(--color-instrument-grey)] mt-1 uppercase tracking-widest">@{user.username}</p>
             </div>
           </div>
         </div>
@@ -51,7 +52,7 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
       <div className="flex-1 max-w-5xl w-full mx-auto p-6 sm:p-12 flex flex-col md:flex-row gap-8">
         {/* Settings Sidebar */}
         <div className="w-full md:w-64 shrink-0 flex flex-col gap-2">
-          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2 px-3">Account Settings</h3>
+          <h3 className="text-[10px] font-bold text-[var(--color-instrument-grey)] font-[family-name:var(--font-labels)] uppercase tracking-widest mb-2 px-3 border-b border-[var(--color-instrument-grey)] pb-2">Account Settings</h3>
           {tabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = pathname === tab.path;
@@ -59,30 +60,31 @@ export default function SettingsLayout({ children }: { children: React.ReactNode
               <Link
                 key={tab.path}
                 href={tab.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-none transition-all text-sm uppercase tracking-widest ${
                   isActive 
-                    ? "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20 shadow-sm" 
-                    : "text-gray-400 hover:bg-white/5 hover:text-white border border-transparent"
+                    ? "bg-[var(--color-horizon-blue)] text-white border border-[var(--color-horizon-blue)]" 
+                    : "text-[var(--color-instrument-grey)] border border-transparent hover:border-[var(--color-instrument-grey)]"
                 }`}
               >
-                <Icon className={`w-5 h-5 ${isActive ? "text-yellow-500" : "text-gray-500"}`} />
+                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-[var(--color-instrument-grey)]"}`} />
                 {tab.name}
               </Link>
             );
           })}
           
           {/* Logout Button */}
-          <button
+          <CockpitButton
+            variant="selector"
             onClick={logout}
-            className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300 border border-transparent mt-4 text-left"
+            className="flex items-center gap-3 justify-start px-4 py-3 border border-transparent hover:border-[var(--color-warning-red)] text-[var(--color-warning-red)] hover:text-white mt-4"
           >
-            <LogOut className="w-5 h-5 text-red-400" />
-            Log Out
-          </button>
+            <LogOut className="w-4 h-4" />
+            LOG OUT
+          </CockpitButton>
         </div>
 
         {/* Settings Content Area */}
-        <div className="flex-1 bg-black/40 border border-white/10 rounded-3xl p-6 sm:p-10 shadow-2xl relative overflow-hidden">
+        <div className="flex-1 bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] p-6 sm:p-10 relative overflow-hidden">
           {children}
         </div>
       </div>

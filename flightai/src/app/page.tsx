@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Plane, Activity, Shield, Map, ArrowRight } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import UserMenu from "@/components/UserMenu";
+import { CockpitButton } from "@/components/ui/CockpitButton";
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
@@ -20,7 +21,7 @@ export default function LandingPage() {
       <header className="h-20 flex items-center justify-between px-6 md:px-12 z-20 border-b border-white/5 bg-[#0d1117]/80 backdrop-blur-xl">
         <div className="flex items-center gap-2">
           <Plane className="w-8 h-8 text-yellow-500" />
-          <span className="font-bold text-2xl tracking-tight text-white">SkyIntel</span>
+          <span className="font-bold text-2xl tracking-tight text-white">Averyn</span>
         </div>
         
         <div className="flex items-center gap-6">
@@ -28,19 +29,19 @@ export default function LandingPage() {
             <div className="w-9 h-9 rounded-full bg-white/10 animate-pulse"></div>
           ) : user ? (
             <>
-              <Link href="/dashboard" className="hidden sm:flex items-center gap-2 text-sm font-bold text-black bg-yellow-500 hover:bg-yellow-400 px-5 py-2.5 rounded-full transition-all">
-                Go to Dashboard <ArrowRight className="w-4 h-4" />
-              </Link>
+              <CockpitButton as={Link} href="/dashboard" variant="action" className="hidden sm:flex bg-[var(--color-horizon-blue)] border-[var(--color-horizon-blue)] text-white">
+                Go to Dashboard <ArrowRight size={14} strokeWidth={1.5} className="ml-2" />
+              </CockpitButton>
               <UserMenu />
             </>
           ) : (
             <>
-              <Link href="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
+              <CockpitButton as={Link} href="/login" variant="selector" className="border-none">
                 Sign In
-              </Link>
-              <Link href="/register" className="text-sm font-bold text-black bg-yellow-500 hover:bg-yellow-400 px-5 py-2.5 rounded-full transition-all">
+              </CockpitButton>
+              <CockpitButton as={Link} href="/register" variant="action" className="bg-[var(--color-horizon-blue)] border-[var(--color-horizon-blue)] text-white">
                 Create Account
-              </Link>
+              </CockpitButton>
             </>
           )}
         </div>
@@ -65,13 +66,13 @@ export default function LandingPage() {
         </p>
         
         <div className="flex flex-col sm:flex-row items-center gap-4">
-          <Link href="/dashboard" className="flex items-center justify-center gap-2 text-lg font-bold text-black bg-yellow-500 hover:bg-yellow-400 px-8 py-4 rounded-full transition-all hover:scale-105 shadow-[0_0_30px_rgba(251,191,36,0.3)]">
-            {user ? "Open Dashboard" : "Start Tracking Now"} <ArrowRight className="w-5 h-5" />
-          </Link>
+          <CockpitButton as={Link} href="/dashboard" variant="action" className="px-8 py-4 bg-[var(--color-horizon-blue)] border-[var(--color-horizon-blue)] text-white text-lg">
+            {user ? "Open Dashboard" : "Start Tracking"} <ArrowRight size={18} strokeWidth={2} className="ml-2" />
+          </CockpitButton>
           {!user && (
-            <Link href="/login" className="flex items-center justify-center gap-2 text-lg font-bold text-white bg-white/5 hover:bg-white/10 border border-white/10 px-8 py-4 rounded-full transition-all">
+            <CockpitButton as={Link} href="/login" variant="action" className="px-8 py-4 text-lg bg-transparent hover:bg-transparent">
               Sign In to Account
-            </Link>
+            </CockpitButton>
           )}
         </div>
       </main>
@@ -108,7 +109,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="w-full text-center p-6 text-sm text-gray-500 z-10 border-t border-white/5 bg-black/50">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
-          <span>&copy; {new Date().getFullYear()} SkyIntel Aviation. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} Averyn Aviation. All rights reserved.</span>
           <div className="flex gap-4">
             <Link href="/terms" className="hover:text-yellow-400 transition-colors">Terms of Service</Link>
             <Link href="/privacy" className="hover:text-yellow-400 transition-colors">Privacy Policy</Link>

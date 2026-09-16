@@ -3,19 +3,20 @@ import Footer from '@/components/layout/Footer';
 
 export default function PrivacyPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0c10] text-foreground">
+    <div className="flex flex-col min-h-screen bg-[var(--color-cockpit-black)] text-foreground">
       <Header variant="full" />
       
-      <main className="flex-1 max-w-4xl mx-auto px-6 py-24 w-full">
-        <h1 className="text-4xl font-black mb-8 text-white tracking-tight">Privacy Policy</h1>
+      <main className="flex-1 max-w-3xl mx-auto px-6 py-24">
+        <h1 className="text-3xl font-black mb-8 text-white">Privacy Policy</h1>
         
-        <div className="prose prose-invert max-w-none text-gray-300 space-y-6">
-          <p>Last Updated: {new Date().toLocaleDateString()}</p>
+        <div className="prose prose-invert prose-sm text-gray-400">
+          <p>Last Updated: October 2024</p>
           
-          <h2 className="text-xl font-bold text-white mt-8 mb-4">1. Data We Collect</h2>
+          <h2 className="text-white mt-8 mb-4">1. Data Collection</h2>
           <p>We collect minimal data necessary to operate the Averyn platform:</p>
-          <ul className="list-disc pl-6 space-y-2">
-            <li><strong>Account Information:</strong> If you create an account, we store your email address and an encrypted password.</li>
+          <ul className="list-disc pl-6 space-y-2 mt-4">
+            <li><strong>Account Data:</strong> Email and hashed passwords for authentication.</li>
+            <li><strong>Session Data:</strong> JWT tokens stored securely to maintain login state.</li>
             <li><strong>Chat History:</strong> Interactions with SkyLord are temporarily processed by Groq's API but are not permanently logged by Averyn for training.</li>
             <li><strong>Usage Telemetry:</strong> We collect anonymous metrics (page loads, API latency) to ensure platform stability.</li>
           </ul>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import Link from 'next/link';
+import { CockpitButton } from './ui/CockpitButton';
 
 export default function CookieConsent() {
   const [show, setShow] = useState(false);
@@ -33,19 +34,20 @@ export default function CookieConsent() {
           </p>
         </div>
         <div className="flex items-center gap-3 w-full md:w-auto relative z-10">
-          <button 
+          <CockpitButton 
             onClick={handleAccept}
-            className="w-full md:w-auto px-6 py-2.5 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-xl transition-colors whitespace-nowrap"
+            variant="action"
+            className="w-full md:w-auto"
           >
             Accept & Continue
-          </button>
-          <button 
+          </CockpitButton>
+          <CockpitButton 
             onClick={handleAccept}
-            className="p-2.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+            variant="icon"
             aria-label="Close"
           >
-            <X className="w-5 h-5" />
-          </button>
+            <X size={16} strokeWidth={1.5} />
+          </CockpitButton>
         </div>
       </div>
     </div>

@@ -321,7 +321,7 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
         })
         .catch(() => setFlightPath([]));
     } else {
-      setFlightPath([]);
+      setTimeout(() => setFlightPath([]), 0);
     }
   }, [selectedFlightId]);
 
@@ -335,7 +335,8 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
         maxBoundsViscosity={1.0}
         style={{ width: '100%', height: '100%', background: mapMode === 'satellite' ? '#020304' : '#0d1117' }}
         zoomControl={false}
-        whenReady={(mapEvent) => {
+        // @ts-expect-error - react-leaflet typing issue
+        whenReady={(mapEvent: unknown) => {
            const map = mapEvent.target;
            const checkZoom = () => setIsZoomedOut(map.getZoom() < 5);
            checkZoom();

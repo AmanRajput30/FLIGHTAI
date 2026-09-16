@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Archivo, Oswald } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import CookieConsent from '@/components/CookieConsent';
 
-const inter = Inter({ subsets: ["latin"] });
+const archivo = Archivo({ 
+  subsets: ["latin"],
+  variable: "--font-labels",
+  display: 'swap',
+});
+
+const oswald = Oswald({
+  subsets: ["latin"],
+  variable: "--font-numerals",
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: "Averyn - Real-Time Aviation Intelligence",
@@ -18,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body className={`${inter.className} min-h-screen bg-background text-foreground antialiased`}>
+      <body className={`${archivo.variable} ${oswald.variable} font-sans min-h-screen bg-background text-foreground antialiased`}>
         <AuthProvider>
           {children}
           <CookieConsent />
