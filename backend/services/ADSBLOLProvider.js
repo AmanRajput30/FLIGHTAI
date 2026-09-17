@@ -73,7 +73,7 @@ class ADSBLOLProvider extends FlightDataProvider {
     }
 
     try {
-      const headers = { 'User-Agent': 'Averyn/1.0' };
+      const headers = { 'User-Agent': 'Aervyn/1.0' };
       if (this.apiKey) {
         headers['x-api-key'] = this.apiKey; // Hypothetical future header
       }

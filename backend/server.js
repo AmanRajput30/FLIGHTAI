@@ -185,10 +185,10 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
     }
 
     await resend.emails.send({
-      from: 'Averyn Contact <onboarding@resend.dev>',
-      to: 'support@averyn.in', // User's email
+      from: 'Aervyn Contact <onboarding@resend.dev>',
+      to: 'support@aervyn.in', // User's email
       replyTo: email,
-      subject: `[Averyn] New Contact: ${category} from ${name}`,
+      subject: `[Aervyn] New Contact: ${category} from ${name}`,
       text: `Name: ${name}\nEmail: ${email}\nCategory: ${category}\n\nMessage:\n${message}`,
     });
 
@@ -438,7 +438,7 @@ app.get('/api/aircraft/:hex', requireAuth, async (req, res) => {
   try {
     const response = await axios.get(`https://api.adsbdb.com/v0/aircraft/${hex}`, {
       timeout: 5000,
-      headers: { 'User-Agent': 'Averyn/1.0' }
+      headers: { 'User-Agent': 'Aervyn/1.0' }
     });
     
     if (response.data && response.data.response && response.data.response.aircraft) {

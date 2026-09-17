@@ -21,7 +21,7 @@ class FlightDataProvider {
   }
 
   /**
-   * Normalizes provider-specific aircraft data to the Averyn standard model.
+   * Normalizes provider-specific aircraft data to the Aervyn standard model.
    * @param {Object} rawData 
    * @returns {NormalizedAircraft}
    */
@@ -31,7 +31,7 @@ class FlightDataProvider {
 }
 
 /**
- * Normalized Aircraft schema defining standard fields expected by Averyn.
+ * Normalized Aircraft schema defining standard fields expected by Aervyn.
  */
 class NormalizedAircraft {
   constructor({
