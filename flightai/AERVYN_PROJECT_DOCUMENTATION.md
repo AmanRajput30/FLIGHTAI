@@ -1,7 +1,7 @@
-# Averyn - Project Documentation
+# Aervyn - Project Documentation
 
 ## 1. Project Overview
-**Name**: Averyn
+**Name**: Aervyn
 **Platform**: Web Application (Next.js 16)
 **Type**: Advanced Flight Tracking and Intelligence Dashboard
 **Objective**: To provide a real-time, highly aesthetic, and functional flight tracking interface modeled after modern Glass Cockpit / Primary Flight Displays (PFD).
@@ -16,7 +16,7 @@
 - **Build Tool**: Node.js & npm.
 
 ## 3. Design System (Glass Cockpit / PFD)
-The application adheres to a strict "Averyn Glass Cockpit" design philosophy. It shuns modern web trends like glassmorphism (blurs, soft shadows, rounded corners) in favor of functional, high-contrast, hard-edged interfaces.
+The application adheres to a strict "Aervyn Glass Cockpit" design philosophy. It shuns modern web trends like glassmorphism (blurs, soft shadows, rounded corners) in favor of functional, high-contrast, hard-edged interfaces.
 
 ### Core Principles
 - **Hard Edges**: `rounded-none` or `rounded-[2px]` maximum. No `rounded-2xl` or `rounded-3xl`.
@@ -57,7 +57,7 @@ The primary data readout interface, situated on the right side of the screen.
 - **Weather Integration**: Displays ground weather conditions (temp, wind, synopsis) below the aircraft using Open-Meteo data.
 
 ### 4.3. Top Navigation Bar (`src/components/TopNav.tsx`)
-- Displays the **AVERYN** branding.
+- Displays the **AERVYN** branding.
 - Contains the `GlobalSearch` component for finding specific flights or airports.
 - Features navigational links (Dashboard, Analytics, Fleet, Settings).
 - Includes status indicators (System Status, Server connection).
@@ -104,6 +104,6 @@ The application is configured for deployment on platforms like Vercel or Render.
 - **Start Command**: `npm start` (or `npm run dev` for local development)
 
 ## 8. Recent Updates (Phase 6)
-- **Branding Audit**: Completely removed all references to "SkyIntel" and replaced them with the official product name "Averyn".
+- **Branding Audit**: Completely removed all references to "SkyIntel" and replaced them with the official product name "Aervyn".
 - **Design System Enforcement**: Stripped all glassmorphism, rounded corners, and gradients from the `TelemetryPanel` and `Map` components, strictly enforcing the PFD aesthetic with CSS variables.
 - **TypeScript Fixes**: Resolved strict type-checking errors across the application, particularly in API responses and UI component props.

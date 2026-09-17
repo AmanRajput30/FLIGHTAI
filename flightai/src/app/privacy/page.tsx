@@ -13,11 +13,11 @@ export default function PrivacyPage() {
           <p>Last Updated: October 2024</p>
           
           <h2 className="text-white mt-8 mb-4">1. Data Collection</h2>
-          <p>We collect minimal data necessary to operate the Averyn platform:</p>
+          <p>We collect minimal data necessary to operate the Aervyn platform:</p>
           <ul className="list-disc pl-6 space-y-2 mt-4">
             <li><strong>Account Data:</strong> Email and hashed passwords for authentication.</li>
             <li><strong>Session Data:</strong> JWT tokens stored securely to maintain login state.</li>
-            <li><strong>Chat History:</strong> Interactions with SkyLord are temporarily processed by Groq's API but are not permanently logged by Averyn for training.</li>
+            <li><strong>Chat History:</strong> Interactions with SkyLord are temporarily processed by Groq's API but are not permanently logged by Aervyn for training.</li>
             <li><strong>Usage Telemetry:</strong> We collect anonymous metrics (page loads, API latency) to ensure platform stability.</li>
           </ul>
           

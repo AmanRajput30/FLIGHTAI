@@ -41,7 +41,7 @@ export default function ContactPage() {
       <main className="flex-1 max-w-2xl mx-auto px-6 py-24 w-full">
         <h1 className="text-4xl font-black mb-4 text-[var(--color-instrument-white)] uppercase tracking-widest border-b border-[var(--color-instrument-grey)] pb-6">CONTACT US</h1>
         <p className="text-[10px] text-[var(--color-instrument-grey)] mb-10 uppercase tracking-widest pt-6">
-          Have a question about our data, found a bug, or want to partner with us? Send us a message and we'll get back to you as soon as possible. Alternatively, you can email us directly at <a href="mailto:support@averyn.in" className="text-[var(--color-horizon-blue)] hover:text-white transition-colors">support@averyn.in</a>.
+          Have a question about our data, found a bug, or want to partner with us? Send us a message and we'll get back to you as soon as possible. Alternatively, you can email us directly at <a href="mailto:support@aervyn.in" className="text-[var(--color-horizon-blue)] hover:text-white transition-colors">support@aervyn.in</a>.
         </p>
 
         {status === 'success' ? (

@@ -16,7 +16,7 @@ export default function StatusPage() {
         </div>
         
         <p className="text-gray-400 mb-12">
-          Real-time status of Averyn services, data providers, and external APIs.
+          Real-time status of Aervyn services, data providers, and external APIs.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

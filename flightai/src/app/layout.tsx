@@ -17,7 +17,7 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
-  title: "Averyn - Real-Time Aviation Intelligence",
+  title: "Aervyn - Real-Time Aviation Intelligence",
   description: "Global flight tracking, deep aircraft telemetry, and AI-powered aviation insights.",
 };
 

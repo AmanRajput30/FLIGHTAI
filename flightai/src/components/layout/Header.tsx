@@ -23,7 +23,7 @@ export default function Header({ variant = 'compact' }: HeaderProps) {
       <div className="flex items-center gap-6">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <Plane className="w-5 h-5 text-[var(--color-horizon-blue)]" />
-          <span className="font-bold text-lg tracking-widest text-[var(--color-instrument-white)] uppercase font-[family-name:var(--font-labels)]">Averyn</span>
+          <span className="font-bold text-lg tracking-widest text-[var(--color-instrument-white)] uppercase font-[family-name:var(--font-labels)]">Aervyn</span>
           <span className="text-[10px] text-[var(--color-horizon-blue)] font-[family-name:var(--font-numerals)] ml-1 border border-[var(--color-horizon-blue)] px-1 rounded-[2px] leading-tight">V2.0</span>
         </Link>
         {!isCompact && (

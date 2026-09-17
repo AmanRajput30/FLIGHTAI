@@ -9,14 +9,14 @@ export default function CookieConsent() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const consent = localStorage.getItem('averyn_cookie_consent');
+    const consent = localStorage.getItem('aervyn_cookie_consent');
     if (!consent) {
       setShow(true);
     }
   }, []);
 
   const handleAccept = () => {
-    localStorage.setItem('averyn_cookie_consent', 'true');
+    localStorage.setItem('aervyn_cookie_consent', 'true');
     setShow(false);
   };
 
@@ -29,7 +29,7 @@ export default function CookieConsent() {
         <div className="flex-1 relative z-10">
           <h3 className="text-white font-bold mb-2">We respect your privacy</h3>
           <p className="text-gray-400 text-sm leading-relaxed">
-            Averyn uses cookies to ensure basic platform functionality (like authentication and sessions). We do not use third-party advertising cookies or track you across the web. 
+            Aervyn uses cookies to ensure basic platform functionality (like authentication and sessions). We do not use third-party advertising cookies or track you across the web. 
             By continuing to use our site, you agree to our <Link href="/privacy" className="text-yellow-400 hover:underline">Privacy Policy</Link> and <Link href="/terms" className="text-yellow-400 hover:underline">Terms of Service</Link>.
           </p>
         </div>

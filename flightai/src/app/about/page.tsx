@@ -13,17 +13,17 @@ export default function AboutPage() {
         
         <div className="prose prose-invert prose-lg max-w-none text-gray-300">
           <p className="lead text-xl text-gray-400 mb-12">
-            Averyn is an independent aerospace data project built to give enthusiasts, researchers, and professionals access to uncompromised real-time flight telemetry.
+            Aervyn is an independent aerospace data project built to give enthusiasts, researchers, and professionals access to uncompromised real-time flight telemetry.
           </p>
 
           <h2 className="text-2xl font-bold text-white mt-12 mb-4">Our Mission</h2>
           <p>
-            For too long, deep aviation intelligence has been locked behind expensive enterprise contracts or gated by consumer applications that prioritize ads over accuracy. Averyn was built to bridge this gap. We combine raw ADS-B data streams from a decentralized network of receivers with cutting-edge artificial intelligence to provide a comprehensive view of the skies.
+            For too long, deep aviation intelligence has been locked behind expensive enterprise contracts or gated by consumer applications that prioritize ads over accuracy. Aervyn was built to bridge this gap. We combine raw ADS-B data streams from a decentralized network of receivers with cutting-edge artificial intelligence to provide a comprehensive view of the skies.
           </p>
 
           <h2 className="text-2xl font-bold text-white mt-12 mb-4">How We Differ</h2>
           <p>
-            Unlike traditional flight trackers that often sanitize, delay, or censor data based on government requests or corporate interests, Averyn taps into the unfiltered ADS-B exchange network. 
+            Unlike traditional flight trackers that often sanitize, delay, or censor data based on government requests or corporate interests, Aervyn taps into the unfiltered ADS-B exchange network. 
           </p>
           <ul className="list-disc pl-6 space-y-2 mt-4 text-gray-400">
             <li><strong className="text-white">Unfiltered Telemetry:</strong> If a transponder is broadcasting and a community receiver hears it, you see it on the map.</li>
@@ -33,10 +33,10 @@ export default function AboutPage() {
 
           <h2 className="text-2xl font-bold text-white mt-12 mb-4">An Independent Project</h2>
           <p>
-            We believe in transparency. Averyn is an independent, bootstrapped project. We do not operate our own hardware network. Instead, we rely on incredible open-data initiatives like ADSB.lol, open-meteo, and community-driven aircraft databases. 
+            We believe in transparency. Aervyn is an independent, bootstrapped project. We do not operate our own hardware network. Instead, we rely on incredible open-data initiatives like ADSB.lol, open-meteo, and community-driven aircraft databases. 
           </p>
           <p>
-            Because we rely on community feeders, our coverage is exceptional in populated areas but may be sparse over oceans or remote regions. We make no claims of being authoritative for operational or navigational use—Averyn is for situational awareness and research.
+            Because we rely on community feeders, our coverage is exceptional in populated areas but may be sparse over oceans or remote regions. We make no claims of being authoritative for operational or navigational use—Aervyn is for situational awareness and research.
           </p>
         </div>
       </main>

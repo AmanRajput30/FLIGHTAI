@@ -21,7 +21,7 @@ export default function LandingPage() {
       <header className="h-20 flex items-center justify-between px-6 md:px-12 z-20 border-b border-white/5 bg-[#0d1117]/80 backdrop-blur-xl">
         <div className="flex items-center gap-2">
           <Plane className="w-8 h-8 text-yellow-500" />
-          <span className="font-bold text-2xl tracking-tight text-white">Averyn</span>
+          <span className="font-bold text-2xl tracking-tight text-white">Aervyn</span>
         </div>
         
         <div className="flex items-center gap-6">
@@ -109,7 +109,7 @@ export default function LandingPage() {
       {/* Footer */}
       <footer className="w-full text-center p-6 text-sm text-gray-500 z-10 border-t border-white/5 bg-black/50">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-2">
-          <span>&copy; {new Date().getFullYear()} Averyn Aviation. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} Aervyn Aviation. All rights reserved.</span>
           <div className="flex gap-4">
             <Link href="/terms" className="hover:text-yellow-400 transition-colors">Terms of Service</Link>
             <Link href="/privacy" className="hover:text-yellow-400 transition-colors">Privacy Policy</Link>

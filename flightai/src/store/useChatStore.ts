@@ -14,7 +14,7 @@ interface ChatState {
 
 export const useChatStore = create<ChatState>((set) => ({
   messages: [
-    { role: 'assistant', content: "Welcome to Averyn Command Center. I'm SkyLord, your aviation intelligence assistant. What would you like to track?" }
+    { role: 'assistant', content: "Welcome to Aervyn Command Center. I'm SkyLord, your aviation intelligence assistant. What would you like to track?" }
   ],
   inputValue: '',
   loading: false,

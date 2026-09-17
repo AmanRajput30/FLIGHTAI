@@ -13,7 +13,7 @@ export default function DataSourcesPage() {
         </h1>
         
         <div className="prose prose-invert prose-sm text-gray-400 mb-12">
-          Averyn is built on the shoulders of giants. We aggregate data from open communities and premium APIs to provide a comprehensive view of global aviation.
+          Aervyn is built on the shoulders of giants. We aggregate data from open communities and premium APIs to provide a comprehensive view of global aviation.
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

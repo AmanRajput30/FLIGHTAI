@@ -85,7 +85,7 @@ export default function RegisterPage() {
     <div className="flex flex-col">
       <div className="mb-6 text-center">
         <h1 className="text-2xl font-bold text-white mb-2">Create Account</h1>
-        <p className="text-sm text-gray-400">Join Averyn for advanced flight tracking</p>
+        <p className="text-sm text-gray-400">Join Aervyn for advanced flight tracking</p>
       </div>
 
       {error && (

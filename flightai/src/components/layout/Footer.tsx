@@ -9,7 +9,7 @@ export default function Footer() {
         <div className="flex flex-col gap-4 p-6 border-r border-b border-[var(--color-instrument-grey)] bg-[#050505]">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
             <Plane size={16} strokeWidth={1.5} className="text-[var(--color-horizon-blue)]" />
-            <span className="font-bold text-xl tracking-widest text-[var(--color-instrument-white)] uppercase font-[family-name:var(--font-labels)]">Averyn</span>
+            <span className="font-bold text-xl tracking-widest text-[var(--color-instrument-white)] uppercase font-[family-name:var(--font-labels)]">Aervyn</span>
             <span className="text-[10px] text-[var(--color-horizon-blue)] font-[family-name:var(--font-numerals)] ml-1 border border-[var(--color-horizon-blue)] px-1 rounded-[2px] leading-tight">V2.0</span>
           </Link>
           <p className="text-[var(--color-instrument-grey)] text-[10px] uppercase tracking-widest leading-relaxed font-[family-name:var(--font-labels)] mt-2">
@@ -41,7 +41,7 @@ export default function Footer() {
       </div>
 
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[var(--color-instrument-grey)] text-[10px] uppercase tracking-widest font-[family-name:var(--font-labels)]">
-        <p>© {new Date().getFullYear()} Averyn. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Aervyn. All rights reserved.</p>
         <p>
           Live data provided by <a href="https://adsb.lol" target="_blank" rel="noreferrer" className="text-white hover:underline">ADSB.lol</a> under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noreferrer" className="text-white hover:underline">ODbL 1.0 License</a>.
         </p>

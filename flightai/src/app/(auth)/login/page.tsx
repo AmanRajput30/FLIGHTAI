@@ -44,7 +44,7 @@ export default function LoginPage() {
     <div className="flex flex-col">
       <div className="mb-8 text-center">
         <h1 className="text-2xl font-bold text-white mb-2">Welcome Back</h1>
-        <p className="text-sm text-gray-400">Sign in to your Averyn account</p>
+        <p className="text-sm text-gray-400">Sign in to your Aervyn account</p>
       </div>
 
       {error && (
