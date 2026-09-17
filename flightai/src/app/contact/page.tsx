@@ -50,7 +50,7 @@ export default function ContactPage() {
             <h2 className="text-2xl font-bold text-white mb-2">Message Sent!</h2>
             <p className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] uppercase tracking-widest">Thanks for reaching out. We've received your message and will respond shortly.</p>
             <CockpitButton 
-              variant="default"
+              variant="action"
               onClick={() => setStatus('idle')}
               className="mt-6"
             >

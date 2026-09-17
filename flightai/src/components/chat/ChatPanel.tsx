@@ -38,7 +38,7 @@ export default function ChatPanel() {
     setLoading(true);
 
     try {
-      const data = await chatApi.sendMessage([...messages, userMessage], selectedFlight);
+      const data: any = await chatApi.sendMessage([...messages, userMessage], selectedFlight);
       addMessage({
         role: 'assistant',
         content: data.reply,

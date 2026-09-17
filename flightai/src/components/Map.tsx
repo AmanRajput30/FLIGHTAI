@@ -336,7 +336,7 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
         style={{ width: '100%', height: '100%', background: mapMode === 'satellite' ? '#020304' : '#0d1117' }}
         zoomControl={false}
         // @ts-expect-error - react-leaflet typing issue
-        whenReady={(mapEvent: unknown) => {
+        whenReady={(mapEvent: any) => {
            const map = mapEvent.target;
            const checkZoom = () => setIsZoomedOut(map.getZoom() < 5);
            checkZoom();
@@ -370,11 +370,9 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
       
       {isZoomedOut && (
         <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[1000] pointer-events-none">
-          <div className="bg-slate-900/90 backdrop-blur-md border border-amber-500/30 text-amber-400 px-6 py-2.5 rounded-full shadow-lg font-medium text-sm flex items-center space-x-2">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
-            </svg>
-            <span>Zoom in to see live aircraft</span>
+          <div className="bg-[var(--color-cockpit-black)] border border-[var(--color-caution-amber)] text-[var(--color-caution-amber)] px-4 py-2 flex items-center gap-2 uppercase tracking-widest font-bold text-[10px] font-[family-name:var(--font-labels)]">
+            <div className="w-2 h-2 rounded-full bg-[var(--color-caution-amber)] animate-pulse shrink-0" />
+            <span>Map Zoom Limit Exceeded — Zoom In</span>
           </div>
         </div>
       )}
@@ -382,9 +380,10 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
       <DataAttribution />
       
       <style jsx global>{`
-        .leaflet-container { background: #0d1117 !important; }
-        .leaflet-popup-content-wrapper { background: rgba(15, 23, 42, 0.9) !important; backdrop-filter: blur(12px) !important; border: 1px solid rgba(255, 255, 255, 0.1); color: #fafafa; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .leaflet-popup-tip { background: rgba(15, 23, 42, 0.9) !important; border-top: 1px solid rgba(255, 255, 255, 0.1); border-left: 1px solid rgba(255, 255, 255, 0.1); }
+        .leaflet-container { background: var(--color-cockpit-black) !important; }
+        .leaflet-popup-content-wrapper { background: var(--color-cockpit-black) !important; border: 1px solid var(--color-instrument-grey) !important; color: var(--color-instrument-white) !important; border-radius: 2px !important; box-shadow: none !important; }
+        .leaflet-popup-tip { background: var(--color-cockpit-black) !important; border-top: 1px solid var(--color-instrument-grey) !important; border-left: 1px solid var(--color-instrument-grey) !important; box-shadow: none !important; }
+        .leaflet-popup-content { margin: 8px !important; font-family: var(--font-labels) !important; }
       `}</style>
     </div>
   );

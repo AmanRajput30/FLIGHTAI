@@ -20,7 +20,7 @@ export default function GlobalSearch() {
     setIsSearching(true);
     setSearchError(null);
     try {
-      const res = await flightApi.getSearch(searchQuery);
+      const res: any = await flightApi.getSearch(searchQuery);
       if (res && res.type === 'flight') {
           setSelectedFlight(res.data);
           setFocusedFlightId(res.data.id);

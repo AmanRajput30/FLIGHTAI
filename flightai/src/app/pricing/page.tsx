@@ -46,7 +46,7 @@ export default function PricingPage() {
                 <Check className="w-4 h-4 text-[var(--color-horizon-blue)] flex-shrink-0" /> 100 AI QUERIES / MONTH
               </div>
             </div>
-            <CockpitButton variant="default" className="w-full mt-8 justify-center">
+            <CockpitButton variant="action" className="w-full mt-8 justify-center">
               JOIN WAITLIST
             </CockpitButton>
           </div>
@@ -117,7 +117,7 @@ export default function PricingPage() {
               </div>
             </div>
             <a href="/contact" className="w-full mt-8">
-              <CockpitButton variant="default" className="w-full justify-center">
+              <CockpitButton variant="action" className="w-full justify-center">
                 CONTACT SALES
               </CockpitButton>
             </a>
