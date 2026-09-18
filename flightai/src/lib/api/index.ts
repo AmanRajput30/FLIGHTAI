@@ -1,7 +1,9 @@
 import axios from 'axios';
 import { ChatMessage, Flight } from '../../types';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-hxbd.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+axios.defaults.withCredentials = true;
 
 export const flightApi = {
   getSearch: async (query: string): Promise<unknown> => {

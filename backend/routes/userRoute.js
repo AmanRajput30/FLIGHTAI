@@ -7,6 +7,8 @@ const Token = require('../models/Token');
 const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
+const axios = require('axios');
+const appleSignin = require('apple-signin-auth');
 
 /**
  * Helper: Log Security Event
@@ -43,6 +45,113 @@ router.patch('/profile', requireAuth, async (req, res) => {
     res.json({ message: 'Profile updated successfully', user: req.user });
   } catch (error) {
     console.error('Update Profile Error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/user/link/google
+ * Link Google account to current user
+ */
+router.post('/link/google', requireAuth, async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token is required' });
+
+    let payload;
+    try {
+      const response = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      payload = response.data;
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid Google token' });
+    }
+
+    const { sub: googleId } = payload;
+    
+    const existing = await User.findOne({ googleId });
+    if (existing && existing._id.toString() !== req.user._id.toString()) {
+      return res.status(400).json({ error: 'This Google account is already linked to another user.' });
+    }
+
+    req.user.googleId = googleId;
+    await req.user.save();
+    
+    await logSecurityEvent(req.user._id, 'ACCOUNT_LINKED', req, { provider: 'google' });
+    res.json({ message: 'Google account linked successfully', user: req.user });
+  } catch (error) {
+    console.error('Google Link Error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/user/link/apple
+ * Link Apple account to current user
+ */
+router.post('/link/apple', requireAuth, async (req, res) => {
+  try {
+    const { token } = req.body;
+    if (!token) return res.status(400).json({ error: 'Token is required' });
+
+    let payload;
+    try {
+      payload = await appleSignin.verifyIdToken(token, {
+        audience: process.env.APPLE_CLIENT_ID,
+        ignoreExpiration: false,
+      });
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid Apple token' });
+    }
+
+    const { sub: appleId } = payload;
+    
+    const existing = await User.findOne({ appleId });
+    if (existing && existing._id.toString() !== req.user._id.toString()) {
+      return res.status(400).json({ error: 'This Apple account is already linked to another user.' });
+    }
+
+    req.user.appleId = appleId;
+    await req.user.save();
+    
+    await logSecurityEvent(req.user._id, 'ACCOUNT_LINKED', req, { provider: 'apple' });
+    res.json({ message: 'Apple account linked successfully', user: req.user });
+  } catch (error) {
+    console.error('Apple Link Error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/user/unlink/:provider
+ */
+router.post('/unlink/:provider', requireAuth, async (req, res) => {
+  try {
+    const { provider } = req.params;
+    
+    if (!req.user.passwordHash) {
+      const hasGoogle = provider !== 'google' && req.user.googleId;
+      const hasApple = provider !== 'apple' && req.user.appleId;
+      
+      if (!hasGoogle && !hasApple) {
+        return res.status(400).json({ error: 'You must set a password before unlinking your only authentication method.' });
+      }
+    }
+
+    if (provider === 'google') {
+      req.user.googleId = undefined;
+    } else if (provider === 'apple') {
+      req.user.appleId = undefined;
+    } else {
+      return res.status(400).json({ error: 'Unknown provider' });
+    }
+
+    await req.user.save();
+    await logSecurityEvent(req.user._id, 'ACCOUNT_UNLINKED', req, { provider });
+    res.json({ message: `${provider} unlinked successfully`, user: req.user });
+  } catch (error) {
+    console.error('Unlink Error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

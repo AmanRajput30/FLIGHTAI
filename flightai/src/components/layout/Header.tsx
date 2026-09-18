@@ -1,7 +1,8 @@
 "use client";
 
-import { Plane, Eye, Layers } from 'lucide-react';
+import { Eye, Layers } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import GlobalSearch from '../search/GlobalSearch';
 import UserMenu from '../UserMenu';
 import { useUIStore } from '@/store/useUIStore';
@@ -19,32 +20,33 @@ export default function Header({ variant = 'compact' }: HeaderProps) {
   const isCompact = variant === 'compact';
 
   return (
-    <header className={`h-16 border-b border-[var(--color-instrument-grey)] bg-[var(--color-cockpit-black)] z-40 relative w-full flex items-center justify-between px-6`}>
+    <header className={`h-16 border-b border-border-subtle bg-cockpit-black z-40 relative w-full flex items-center justify-between px-6 drop-shadow-md`}>
       <div className="flex items-center gap-6">
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <Plane className="w-5 h-5 text-[var(--color-horizon-blue)]" />
-          <span className="font-bold text-lg tracking-widest text-[var(--color-instrument-white)] uppercase font-[family-name:var(--font-labels)]">Aervyn</span>
-          <span className="text-[10px] text-[var(--color-horizon-blue)] font-[family-name:var(--font-numerals)] ml-1 border border-[var(--color-horizon-blue)] px-1 rounded-[2px] leading-tight">V2.0</span>
+        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
+          <Image src="/logo.png" alt="Aervyn Logo" width={24} height={24} className="object-contain" />
+          <div className="flex items-baseline gap-2">
+            <span className="font-bold text-xl tracking-widest text-instrument-white uppercase">AERVYN</span>
+            <span className="text-instrument-grey">|</span>
+            <span className="text-xs tracking-[0.2em] text-horizon-blue font-bold uppercase">Cockpit</span>
+          </div>
         </Link>
         {!isCompact && (
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-300">
-            <CockpitButton as={Link} href="/dashboard" variant="selector" isActive={pathname === '/dashboard'}>Live Map</CockpitButton>
-            <CockpitButton as={Link} href="/airport" variant="selector" isActive={pathname?.startsWith('/airport')}>Airports</CockpitButton>
-            <CockpitButton as={Link} href="/airline" variant="selector" isActive={pathname?.startsWith('/airline')}>Airlines</CockpitButton>
-            <CockpitButton as={Link} href="/pricing" variant="selector" isActive={pathname === '/pricing'}>Pricing</CockpitButton>
-            <CockpitButton as={Link} href="/about" variant="selector" isActive={pathname === '/about'}>About</CockpitButton>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-instrument-grey">
+            <CockpitButton href="/dashboard" variant="selector" isActive={pathname === '/dashboard'}>Live Map</CockpitButton>
+            <CockpitButton href="/pricing" variant="selector" isActive={pathname === '/pricing'}>Pricing</CockpitButton>
+            <CockpitButton href="/about" variant="selector" isActive={pathname === '/about'}>About</CockpitButton>
           </nav>
         )}
       </div>
       
-      <div className={`${isCompact ? 'flex-1 max-w-xl mx-8' : 'w-64 mx-4'}`}>
+      <div className={`${isCompact ? 'hidden md:block flex-1 max-w-xl mx-8' : 'hidden md:block w-64 mx-4'}`}>
         <GlobalSearch />
       </div>
 
       <div className="flex items-center gap-5">
-        {/* Map Mode Toggle (Only show on compact map view) */}
+        {/* Map Mode Toggle */}
         {isCompact && (
-          <div className="flex relative items-center">
+          <div className="hidden md:flex relative items-center">
             <CockpitButton
               variant="toggle"
               isActive={mapMode === 'dark'}
@@ -64,20 +66,20 @@ export default function Header({ variant = 'compact' }: HeaderProps) {
               <Layers size={14} strokeWidth={2} className="mr-1" /> Premium
             </CockpitButton>
             {performanceMode && (
-               <span className="absolute -bottom-5 right-0 text-[9px] text-[var(--color-warning-red)] whitespace-nowrap font-bold">FPS GUARDIAN ACTIVE</span>
+               <span className="absolute -bottom-5 right-0 text-[9px] text-warning-red whitespace-nowrap font-bold">FPS GUARDIAN ACTIVE</span>
             )}
           </div>
         )}
 
         {isCompact && (
           systemStatus === 'live' ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-[#050505] border border-[var(--color-instrument-grey)] text-[var(--color-horizon-blue)] text-[10px] font-bold uppercase tracking-widest font-[family-name:var(--font-labels)]">
-              <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full bg-[var(--color-horizon-blue)] opacity-75"></span><span className="relative inline-flex h-2 w-2 bg-[var(--color-horizon-blue)]"></span></span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-cockpit-panel-raised border border-border-subtle text-horizon-blue text-[10px] font-bold uppercase tracking-widest font-labels">
+              <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full bg-horizon-blue opacity-75"></span><span className="relative inline-flex h-2 w-2 bg-horizon-blue"></span></span>
               SYSTEM LIVE
             </div>
           ) : (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-[2px] bg-[#1a0000] border border-[var(--color-warning-red)] text-[var(--color-warning-red)] text-[10px] font-bold uppercase tracking-widest font-[family-name:var(--font-labels)]">
-              <span className="relative flex h-2 w-2"><span className="relative inline-flex h-2 w-2 bg-[var(--color-warning-red)]"></span></span>
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-warning-red/10 border border-warning-red text-warning-red text-[10px] font-bold uppercase tracking-widest font-labels">
+              <span className="relative flex h-2 w-2"><span className="relative inline-flex h-2 w-2 bg-warning-red"></span></span>
               DEGRADED
             </div>
           )

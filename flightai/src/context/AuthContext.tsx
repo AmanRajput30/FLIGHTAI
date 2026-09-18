@@ -15,6 +15,8 @@ export interface User {
   bio: string;
   role: string;
   isEmailVerified: boolean;
+  googleId?: string;
+  appleId?: string;
 }
 
 interface AuthContextType {

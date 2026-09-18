@@ -105,7 +105,9 @@ const authLimiter = rateLimit({
 
 // Apply CSRF to all non-GET requests (handled inside csrfProtection)
 // Mount auth routes (with rate limiter)
+const oauthRoute = require('./routes/oauthRoute');
 app.use('/api/auth', authLimiter, csrfProtection, authRoute);
+app.use('/api/oauth', authLimiter, csrfProtection, oauthRoute);
 app.use('/api/user', csrfProtection, userRoute);
 
 // Health check endpoint for keep-alive cron

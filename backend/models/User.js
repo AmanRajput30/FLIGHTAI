@@ -26,7 +26,19 @@ const userSchema = new mongoose.Schema(
     },
     passwordHash: {
       type: String,
-      required: true,
+      required: false, // Optional for OAuth users
+    },
+    googleId: {
+      type: String,
+      default: null,
+      sparse: true,
+      unique: true,
+    },
+    appleId: {
+      type: String,
+      default: null,
+      sparse: true,
+      unique: true,
     },
     avatar: {
       type: String,

@@ -51,10 +51,10 @@ export default function UserMenu() {
                 <p className="text-xs text-[var(--color-horizon-blue)] truncate font-[family-name:var(--font-numerals)]">@{user.username}</p>
               </div>
               <div className="p-2 flex flex-col gap-1">
-                <CockpitButton as={Link} href="/settings" onClick={() => setIsOpen(false)} variant="selector" className="justify-start border-none h-10 hover:bg-[#111]">
+                <CockpitButton  href="/settings" onClick={() => setIsOpen(false)} variant="selector" className="justify-start border-none h-10 hover:bg-[#111]">
                   <Settings size={14} strokeWidth={1.5} className="mr-2" /> Settings & Profile
                 </CockpitButton>
-                <CockpitButton as={Link} href="/settings/security" onClick={() => setIsOpen(false)} variant="selector" className="justify-start border-none h-10 hover:bg-[#111]">
+                <CockpitButton  href="/settings/security" onClick={() => setIsOpen(false)} variant="selector" className="justify-start border-none h-10 hover:bg-[#111]">
                   <Shield size={14} strokeWidth={1.5} className="mr-2" /> Security
                 </CockpitButton>
               </div>
@@ -73,10 +73,10 @@ export default function UserMenu() {
               <div className="pb-3 border-b border-[var(--color-instrument-grey)]">
                 <p className="text-xs text-[var(--color-instrument-grey)] font-[family-name:var(--font-labels)] leading-relaxed">Sign in to save flights and sync settings.</p>
               </div>
-              <CockpitButton as={Link} href="/login" onClick={() => setIsOpen(false)} variant="action" className="w-full">
+              <CockpitButton  href="/login" onClick={() => setIsOpen(false)} variant="action" className="w-full">
                 <LogIn size={14} strokeWidth={1.5} className="mr-2" /> Sign In
               </CockpitButton>
-              <CockpitButton as={Link} href="/register" onClick={() => setIsOpen(false)} variant="selector" className="w-full border-dashed">
+              <CockpitButton  href="/register" onClick={() => setIsOpen(false)} variant="selector" className="w-full border-dashed">
                 <UserPlus size={14} strokeWidth={1.5} className="mr-2" /> Create Account
               </CockpitButton>
             </div>

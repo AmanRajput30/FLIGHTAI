@@ -3,6 +3,8 @@ import { Archivo, Oswald } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 import CookieConsent from '@/components/CookieConsent';
+import GoogleProvider from '@/components/auth/GoogleProvider';
+import { MotionConfigProvider } from "@/components/providers/MotionConfigProvider";
 
 const archivo = Archivo({ 
   subsets: ["latin"],
@@ -29,10 +31,14 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className={`${archivo.variable} ${oswald.variable} font-sans min-h-screen bg-background text-foreground antialiased`}>
-        <AuthProvider>
-          {children}
-          <CookieConsent />
-        </AuthProvider>
+        <MotionConfigProvider>
+          <GoogleProvider>
+            <AuthProvider>
+              {children}
+              <CookieConsent />
+            </AuthProvider>
+          </GoogleProvider>
+        </MotionConfigProvider>
       </body>
     </html>
   );

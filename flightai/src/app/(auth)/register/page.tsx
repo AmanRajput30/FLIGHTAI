@@ -3,48 +3,74 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import axios from "axios";
+import { useGoogleLogin } from '@react-oauth/google';
+import { useAuth } from "@/context/AuthContext";
+import AppleSignin from 'react-apple-signin-auth';
 import { AlertCircle, CheckCircle2, Eye, EyeOff, Loader2 } from "lucide-react";
-import { CockpitButton } from "@/components/ui/CockpitButton";
+import { motion } from "framer-motion";
+import { M_PRESETS } from "@/lib/motion/presets";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-hxbd.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
-    name: "",
     username: "",
     email: "",
     password: "",
     confirmPassword: "",
-    termsAccepted: false,
   });
   
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const { refreshUser } = useAuth();
+
+  const appleLogin = async (response: any) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      await axios.post(`${API_URL}/api/oauth/apple`, { 
+        token: response.authorization.id_token,
+        name: response.user?.name ? `${response.user.name.firstName} ${response.user.name.lastName}` : null
+      }, { withCredentials: true });
+      await refreshUser();
+      router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Apple Sign-Up failed.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        await axios.post(`${API_URL}/api/oauth/google`, { token: tokenResponse.access_token }, { withCredentials: true });
+        await refreshUser();
+        router.push("/dashboard");
+      } catch (err: any) {
+        setError(err.response?.data?.error || "Google Sign-Up failed.");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    onError: () => setError("Google Sign-Up was cancelled or failed.")
+  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === "checkbox" ? checked : value,
+      [name]: value,
     }));
   };
-
-  const getPasswordStrength = (pass: string) => {
-    if (pass.length === 0) return 0;
-    let score = 0;
-    if (pass.length > 7) score += 1;
-    if (pass.length > 10) score += 1;
-    if (/[A-Z]/.test(pass)) score += 1;
-    if (/[0-9]/.test(pass)) score += 1;
-    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
-    return Math.min(score, 4);
-  };
-
-  const strength = getPasswordStrength(formData.password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,10 +81,6 @@ export default function RegisterPage() {
       return setError("Passwords do not match");
     }
 
-    if (!formData.termsAccepted) {
-      return setError("You must accept the Terms and Conditions");
-    }
-
     if (formData.password.length < 8) {
       return setError("Password must be at least 8 characters");
     }
@@ -66,14 +88,16 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const res = await axios.post(`${API_URL}/api/auth/register`, {
-        name: formData.name,
+      const payload = {
+        name: formData.username,
         username: formData.username,
         email: formData.email,
         password: formData.password,
-      });
+      };
+
+      const res = await axios.post(`${API_URL}/api/auth/register`, payload);
       setSuccess(res.data.message || "Registration successful! Please check your email.");
-      setFormData({ name: "", username: "", email: "", password: "", confirmPassword: "", termsAccepted: false });
+      setFormData({ username: "", email: "", password: "", confirmPassword: "" });
     } catch (err: any) {
       setError(err.response?.data?.error || "Registration failed. Please try again.");
     } finally {
@@ -82,173 +106,226 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="mb-6 text-center">
-        <h1 className="text-2xl font-bold text-white mb-2">Create Account</h1>
-        <p className="text-sm text-gray-400">Join Aervyn for advanced flight tracking</p>
-      </div>
-
-      {error && (
-        <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/20 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-400">{error}</p>
+    <div className="flex w-full min-h-screen bg-cockpit-black font-labels">
+      {/* Left Column - Image */}
+      <motion.div 
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={M_PRESETS.panel}
+        className="hidden lg:flex w-1/2 relative overflow-hidden border-r border-border-subtle"
+      >
+        <Image 
+          src="https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=1974&auto=format&fit=crop" 
+          alt="Aviation mountains"
+          fill
+          className="object-cover opacity-80 mix-blend-luminosity"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-cockpit-black via-transparent to-cockpit-black opacity-80"></div>
+        <div className="absolute inset-0 bg-horizon-blue/10 mix-blend-overlay"></div>
+        
+        <div className="absolute bottom-0 left-0 p-10 w-full flex flex-col gap-6">
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, ...M_PRESETS.panel }} className="bg-cockpit-black/50 p-4 border-l-2 border-horizon-blue backdrop-blur-sm">
+            <h3 className="text-horizon-blue font-bold text-xs uppercase tracking-widest mb-1">SECURE CLEARANCE</h3>
+            <p className="text-instrument-white text-xs font-bold tracking-wide">Direct access to the global aviation command center.</p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, ...M_PRESETS.panel }} className="bg-cockpit-black/50 p-4 border-l-2 border-horizon-blue backdrop-blur-sm">
+            <h3 className="text-horizon-blue font-bold text-xs uppercase tracking-widest mb-1">REAL-TIME TELEMETRY</h3>
+            <p className="text-instrument-white text-xs font-bold tracking-wide">Low-latency tracking of thousands of global targets.</p>
+          </motion.div>
+          <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4, ...M_PRESETS.panel }} className="bg-cockpit-black/50 p-4 border-l-2 border-horizon-blue backdrop-blur-sm">
+            <h3 className="text-horizon-blue font-bold text-xs uppercase tracking-widest mb-1">SKYLORD INTEGRATION</h3>
+            <p className="text-instrument-white text-xs font-bold tracking-wide">Advanced AI intelligence for airspace command.</p>
+          </motion.div>
         </div>
-      )}
+      </motion.div>
 
-      {success && (
-        <div className="mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/20 flex flex-col items-center justify-center gap-3 text-center">
-          <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-            <CheckCircle2 className="w-6 h-6 text-green-400" />
-          </div>
-          <div>
-            <h3 className="text-green-400 font-semibold mb-1">Check your inbox!</h3>
-            <p className="text-sm text-green-400/80">{success}</p>
-          </div>
-          <Link href="/login" className="mt-2 text-sm text-white font-medium hover:text-green-300 transition-colors">
-            Go to Login
-          </Link>
+      {/* Right Column - Form */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.1, ...M_PRESETS.panel }}
+        className="w-full lg:w-1/2 flex flex-col p-8 sm:p-12 text-instrument-white justify-center items-center"
+      >
+        <div className="w-full max-w-md flex flex-col">
+        
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl sm:text-5xl font-extrabold uppercase tracking-widest mb-4 text-instrument-white drop-shadow-md">
+            AERVYN
+          </h1>
+          <p className="text-sm text-instrument-grey uppercase tracking-widest font-bold">
+            Request Operator Clearance
+          </p>
         </div>
-      )}
 
-      {!success && (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Full Name</label>
-              <input
-                type="text"
-                name="name"
-                required
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)] text-sm"
-                placeholder="John Doe"
-              />
+        {error && (
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 rounded bg-warning-red/10 border border-warning-red flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-warning-red shrink-0 mt-0.5" />
+            <p className="text-sm text-warning-red font-bold uppercase tracking-wide">{error}</p>
+          </motion.div>
+        )}
+
+        {success && (
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mb-6 p-6 rounded bg-horizon-blue/10 border border-horizon-blue flex flex-col items-center justify-center gap-3 text-center">
+            <div className="w-16 h-16 rounded-full bg-horizon-blue/20 flex items-center justify-center mb-2 shadow-[0_0_15px_rgba(56,189,248,0.5)]">
+              <CheckCircle2 className="w-8 h-8 text-horizon-blue" />
             </div>
             <div>
-              <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Username</label>
+              <h3 className="text-horizon-blue font-bold text-lg mb-1 tracking-wide uppercase">Clearance Initiated</h3>
+              <p className="text-xs text-instrument-white font-bold">{success}</p>
+            </div>
+            <Link href="/login" className="mt-4 w-full text-center py-3 bg-horizon-blue hover:bg-horizon-blue-bright text-white rounded font-bold text-xs uppercase tracking-widest transition-colors drop-shadow-[0_0_8px_rgba(56,189,248,0.4)]">
+              Proceed to Login
+            </Link>
+          </motion.div>
+        )}
+
+        {!success && (
+          <>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div>
+              <label className="block text-[10px] font-bold text-instrument-grey uppercase tracking-widest mb-2">Operator Identity (Username)</label>
               <input
                 type="text"
                 name="username"
                 required
                 value={formData.username}
                 onChange={handleChange}
-                className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)] text-sm"
-                placeholder="johndoe123"
+                className="w-full bg-cockpit-panel-raised border border-border-subtle rounded px-4 py-3 text-instrument-white placeholder-instrument-muted focus:outline-none focus:border-horizon-blue transition-colors text-sm font-bold tracking-wide"
+                placeholder="INPUT USERNAME"
               />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Email Address</label>
-            <input
-              type="email"
-              name="email"
-              required
-              value={formData.email}
-              onChange={handleChange}
-              className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)] text-sm"
-              placeholder="pilot@example.com"
-            />
-          </div>
-
-          <div>
-            <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Password</label>
-            <div className="relative">
+            <div>
+              <label className="block text-[10px] font-bold text-instrument-grey uppercase tracking-widest mb-2">Comms Channel (Email)</label>
               <input
-                type={showPassword ? "text" : "password"}
-                name="password"
+                type="email"
+                name="email"
                 required
-                value={formData.password}
+                value={formData.email}
                 onChange={handleChange}
-                className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all pr-12 font-[family-name:var(--font-labels)] text-sm"
-                placeholder="••••••••"
+                className="w-full bg-cockpit-panel-raised border border-border-subtle rounded px-4 py-3 text-instrument-white placeholder-instrument-muted focus:outline-none focus:border-horizon-blue transition-colors text-sm font-bold tracking-wide"
+                placeholder="INPUT EMAIL"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-instrument-grey)] hover:text-[var(--color-instrument-white)] transition-colors p-1"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
             </div>
-            
-            {/* Password Strength Meter */}
-            {formData.password.length > 0 && (
-              <div className="mt-2 flex gap-1 h-1.5">
-                {[1, 2, 3, 4].map((i) => (
-                  <div 
-                    key={i} 
-                    className={`flex-1 rounded-[2px] ${
-                      i <= strength 
-                        ? strength <= 1 ? 'bg-[var(--color-warning-red)]' : strength === 2 ? 'bg-[var(--color-caution-amber)]' : 'bg-[var(--color-horizon-blue)]'
-                        : 'bg-[#111]'
-                    }`}
-                  ></div>
-                ))}
-              </div>
-            )}
-          </div>
 
-          <div>
-            <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Confirm Password</label>
-            <input
-              type="password"
-              name="confirmPassword"
-              required
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`w-full bg-[var(--color-cockpit-black)] border ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-[var(--color-warning-red)] focus:border-[var(--color-warning-red)]' : 'border-[var(--color-instrument-grey)] focus:border-[var(--color-horizon-blue)]'} rounded-[2px] px-4 py-2.5 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:ring-1 transition-all font-[family-name:var(--font-labels)] text-sm`}
-              placeholder="••••••••"
-            />
-          </div>
-
-          <div className="mt-2">
-            <label className="flex items-start gap-3 cursor-pointer group">
-              <div className="relative flex items-center justify-center w-5 h-5 shrink-0 mt-0.5">
+            <div>
+              <label className="block text-[10px] font-bold text-instrument-grey uppercase tracking-widest mb-2">Security Passcode</label>
+              <div className="relative">
                 <input
-                  type="checkbox"
-                  name="termsAccepted"
-                  checked={formData.termsAccepted}
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  required
+                  value={formData.password}
                   onChange={handleChange}
-                  className="peer appearance-none w-5 h-5 border border-[var(--color-instrument-grey)] rounded-[2px] cursor-pointer checked:bg-[var(--color-horizon-blue)] checked:border-[var(--color-horizon-blue)] transition-all"
+                  className="w-full bg-cockpit-panel-raised border border-border-subtle rounded px-4 py-3 text-instrument-white placeholder-instrument-muted focus:outline-none focus:border-horizon-blue transition-colors pr-12 text-sm font-bold tracking-wide"
+                  placeholder="**********"
                 />
-                <svg className="absolute w-3 h-3 text-[var(--color-cockpit-black)] opacity-0 peer-checked:opacity-100 pointer-events-none" viewBox="0 0 14 10" fill="none">
-                  <path d="M1 5L4.5 8.5L13 1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-instrument-grey hover:text-instrument-white transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
-              <span className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] leading-tight uppercase tracking-widest">
-                I agree to the <Link href="/terms" className="text-[var(--color-horizon-blue)] hover:text-white transition-colors" target="_blank">Terms</Link> and <Link href="/privacy" className="text-[var(--color-horizon-blue)] hover:text-white transition-colors" target="_blank">Privacy Policy</Link>
-              </span>
-            </label>
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-instrument-grey uppercase tracking-widest mb-2">Verify Passcode</label>
+              <div className="relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  name="confirmPassword"
+                  required
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  className={`w-full bg-cockpit-panel-raised border ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-warning-red focus:border-warning-red' : 'border-border-subtle focus:border-horizon-blue'} rounded px-4 py-3 text-instrument-white placeholder-instrument-muted focus:outline-none transition-colors pr-12 text-sm font-bold tracking-wide`}
+                  placeholder="**********"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-instrument-grey hover:text-instrument-white transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="mt-2 text-[9px] text-instrument-grey font-bold uppercase tracking-widest">
+              By proceeding, operator agrees to Aervyn <Link href="/terms" className="text-horizon-blue hover:text-horizon-blue-bright transition-colors">Terms of Service</Link> and <Link href="/privacy" className="text-horizon-blue hover:text-horizon-blue-bright transition-colors">Privacy Policy</Link>.
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading || (formData.password !== formData.confirmPassword && formData.confirmPassword.length > 0)}
+              className="w-full mt-4 bg-horizon-blue hover:bg-horizon-blue-bright text-white py-3.5 rounded font-bold text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-2 drop-shadow-[0_0_8px_rgba(56,189,248,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : null}
+              Submit Clearance Request
+            </button>
+          </form>
+          
+          <div className="mt-6 flex justify-center">
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] text-instrument-grey font-bold uppercase tracking-widest">Existing Operator?</span>
+              <Link href="/login" className="text-[10px] font-bold text-horizon-blue hover:text-horizon-blue-bright uppercase tracking-widest transition-colors">
+                Return to Login
+              </Link>
+            </div>
           </div>
 
-          <CockpitButton
-            type="submit"
-            variant="action"
-            disabled={isLoading || (formData.password !== formData.confirmPassword && formData.confirmPassword.length > 0)}
-            className="w-full mt-4 justify-center bg-[var(--color-horizon-blue)] text-white border-[var(--color-horizon-blue)]"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                REGISTERING...
-              </>
-            ) : (
-              "CREATE ACCOUNT"
-            )}
-          </CockpitButton>
-        </form>
-      )}
+          <div className="relative my-8">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border-subtle"></div>
+            </div>
+            <div className="relative flex justify-center">
+              <span className="bg-cockpit-black px-4 text-[10px] text-instrument-muted uppercase tracking-widest font-bold">External Auth</span>
+            </div>
+          </div>
 
-      <div className="mt-6 pt-6 border-t border-[var(--color-instrument-grey)] text-center">
-        <p className="text-[10px] text-[var(--color-instrument-grey)] font-[family-name:var(--font-labels)] uppercase tracking-widest">
-          Active clearance?{" "}
-          <Link href="/login" className="text-[var(--color-instrument-white)] font-bold hover:text-[var(--color-horizon-blue)] transition-colors ml-1">
-            SIGN IN
-          </Link>
-        </p>
-      </div>
+          <div className="flex flex-col gap-3">
+            <button 
+              type="button" 
+              onClick={() => googleLogin()}
+              className="w-full bg-cockpit-panel-raised border border-border-subtle hover:bg-cockpit-panel text-instrument-white py-3 rounded font-bold text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-3"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+              Google OAuth
+            </button>
+            
+            <AppleSignin
+            authOptions={{
+              clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || 'com.example.web',
+              scope: 'email name',
+              redirectURI: 'https://example.com',
+              state: 'state',
+              nonce: 'nonce',
+              usePopup: true,
+            }}
+            uiType="dark"
+            className="w-full bg-instrument-white text-cockpit-black hover:bg-gray-200 py-3 rounded font-bold text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-3"
+            onSuccess={(response: any) => appleLogin(response)}
+            onError={(error: any) => setError("Apple Sign-Up failed.")}
+            render={(props: any) => (
+              <button 
+                type="button" 
+                onClick={props.onClick}
+                className="w-full bg-instrument-white text-cockpit-black hover:bg-gray-200 py-3 rounded font-bold text-xs uppercase tracking-widest transition-colors flex items-center justify-center gap-3"
+              >
+                <svg viewBox="0 0 384 512" width="16" height="16" xmlns="http://www.w3.org/2000/svg" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+                Apple ID Auth
+              </button>
+            )}
+          />
+          </div>
+          </>
+          )}
+        </div>
+      </motion.div>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { socket } from '@/lib/socket';
 import axios from 'axios';
-import DataAttribution from './DataAttribution';
+
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-hxbd.onrender.com';
 
@@ -333,8 +333,9 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
         minZoom={4}
         maxBounds={[[-90, -180], [90, 180]]}
         maxBoundsViscosity={1.0}
-        style={{ width: '100%', height: '100%', background: mapMode === 'satellite' ? '#020304' : '#0d1117' }}
+        style={{ width: '100%', height: '100%', background: mapMode === 'satellite' ? '#020304' : '#000000' }}
         zoomControl={false}
+        attributionControl={false}
         // @ts-expect-error - react-leaflet typing issue
         whenReady={(mapEvent: any) => {
            const map = mapEvent.target;
@@ -348,41 +349,29 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
         {mapMode === 'satellite' ? (
           <TileLayer
             url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
-            attribution='Tiles &copy; Esri'
             maxZoom={19}
             noWrap={true}
           />
         ) : (
           <TileLayer
             url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
-            attribution='Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ'
             maxZoom={16}
             noWrap={true}
+            className="map-tiles"
           />
         )}
         
         {flightPath.length > 0 && (
-          <Polyline positions={flightPath} pathOptions={{ color: '#fbbf24', weight: 3, dashArray: '5, 10', opacity: 0.8 }} />
+          <Polyline positions={flightPath} pathOptions={{ color: '#3b82f6', weight: 3, dashArray: '5, 10', opacity: 0.8 }} />
         )}
         
         <MarkerLayer flights={flights} selectedFlightId={selectedFlightId} routeData={routeData} onFlightSelect={onFlightSelect} onFlightDeselect={onFlightDeselect} performanceMode={performanceMode} />
       </MapContainer>
       
-      {isZoomedOut && (
-        <div className="absolute top-8 left-1/2 -translate-x-1/2 z-[1000] pointer-events-none">
-          <div className="bg-[var(--color-cockpit-black)] border border-[var(--color-caution-amber)] text-[var(--color-caution-amber)] px-4 py-2 flex items-center gap-2 uppercase tracking-widest font-bold text-[10px] font-[family-name:var(--font-labels)]">
-            <div className="w-2 h-2 rounded-full bg-[var(--color-caution-amber)] animate-pulse shrink-0" />
-            <span>Map Zoom Limit Exceeded — Zoom In</span>
-          </div>
-        </div>
-      )}
-
-      <DataAttribution />
-      
       <style jsx global>{`
         .leaflet-container { background: var(--color-cockpit-black) !important; }
-        .leaflet-popup-content-wrapper { background: var(--color-cockpit-black) !important; border: 1px solid var(--color-instrument-grey) !important; color: var(--color-instrument-white) !important; border-radius: 2px !important; box-shadow: none !important; }
-        .leaflet-popup-tip { background: var(--color-cockpit-black) !important; border-top: 1px solid var(--color-instrument-grey) !important; border-left: 1px solid var(--color-instrument-grey) !important; box-shadow: none !important; }
+        .leaflet-popup-content-wrapper { background: var(--color-cockpit-panel) !important; border: 1px solid var(--color-border-subtle) !important; color: var(--color-instrument-white) !important; border-radius: 4px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; }
+        .leaflet-popup-tip { background: var(--color-cockpit-panel) !important; border-top: 1px solid var(--color-border-subtle) !important; border-left: 1px solid var(--color-border-subtle) !important; box-shadow: none !important; }
         .leaflet-popup-content { margin: 8px !important; font-family: var(--font-labels) !important; }
       `}</style>
     </div>

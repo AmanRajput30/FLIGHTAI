@@ -1,20 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  /* True black base */
+  /* Core Base Colors */
   --color-cockpit-black: #000000;
+  --color-cockpit-deep: #0a0a0a;
+  --color-cockpit-panel: #111111;
+  --color-cockpit-panel-raised: #1a1a1a;
   
-  /* Horizon Interactive & Accents */
-  --color-horizon-blue: #0088CC;
-  --color-horizon-brown: #5C3D2E;
+  /* Instrument Colors */
+  --color-instrument-white: #ffffff;
+  --color-instrument-grey: #a1a1aa;
+  --color-instrument-muted: #52525b;
   
-  /* Typography & Lines */
-  --color-instrument-white: #E8EDF0;
-  --color-instrument-grey: #8A94A0;
+  /* Accents */
+  --color-horizon-blue: #3b82f6;
+  --color-horizon-blue-bright: #60a5fa;
+  --color-horizon-brown: #78350f;
   
-  /* Status */
-  --color-caution-amber: #FFB300;
-  --color-warning-red: #E8453C;
+  /* Status Colors */
+  --color-caution-amber: #f59e0b;
+  --color-warning-red: #ef4444;
+  --color-success-green: #10b981;
+  
+  /* Borders */
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-active: rgba(255, 255, 255, 0.2);
 
   /* Typography */
   --font-numerals: 'Oswald', 'Bebas Neue', sans-serif;
@@ -23,8 +33,8 @@
   /* Fallback mapping for existing classes during transition */
   --color-background: var(--color-cockpit-black);
   --color-foreground: var(--color-instrument-white);
-  --color-card: #050505; /* slightly lifted black */
-  --color-border: rgba(138, 148, 160, 0.45);
+  --color-card: var(--color-cockpit-panel);
+  --color-border: var(--color-border-subtle);
   --color-primary: var(--color-horizon-blue);
   --color-muted-foreground: var(--color-instrument-grey);
 }
@@ -34,21 +44,17 @@
     background-color: var(--color-cockpit-black);
     color: var(--color-instrument-white);
     font-family: var(--font-labels);
-    overflow: hidden;
   }
 }
 
-/* ── PFD Hard-Edged Panels ── */
-.glass, .glass-panel {
-  background: var(--color-cockpit-black);
-  border: 1px solid rgba(138, 148, 160, 0.45);
-  box-shadow: inset 0 1px 0 rgba(232, 237, 240, 0.1);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border-radius: 4px; /* Minimal radius */
+/* ── PFD Hard-Edged Panels (No Glassmorphism) ── */
+.glass, .glass-panel, .cockpit-panel {
+  background-color: var(--color-cockpit-panel);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 6px;
 }
 
-/* ── Selection Indicator (replaces aggressive radar pulse) ── */
+/* ── Selection Indicator ── */
 .selection-glow {
   position: absolute;
   top: 50%;
@@ -63,7 +69,7 @@
   z-index: -1;
 }
 
-/* ── Hover Glow on Aircraft ── */
+/* ── Hover Effects on Aircraft ── */
 .custom-plane-icon {
   transition: opacity 0.1s ease;
   cursor: pointer;
@@ -73,12 +79,12 @@
   filter: drop-shadow(0 0 2px var(--color-caution-amber));
 }
 
-/* ── Selected Aircraft (clean blue outline instead of soft cyan glow) ── */
+/* ── Selected Aircraft ── */
 .selected-plane svg {
   filter: drop-shadow(0 0 4px var(--color-horizon-blue));
 }
 
-/* ── Dimmed/Shadow effect for unselected planes when a target is acquired ── */
+/* ── Dimmed Aircraft (when target acquired) ── */
 .dimmed-plane {
   opacity: 0.3 !important;
   transition: opacity 0.1s ease !important;
@@ -88,23 +94,11 @@
   opacity: 0.8 !important;
 }
 
-/* ── Modal Scale-In Animation ── */
-@keyframes scaleIn {
-  0% {
-    transform: scale(0.95);
-    opacity: 0;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
 /* ── Tracking Context Bar ── */
 .tracking-bar {
-  background: #050505;
-  border: 1px solid rgba(138, 148, 160, 0.45);
-  border-radius: 2px;
+  background: var(--color-cockpit-deep);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: 4px;
 }
 
 @keyframes trackBarSlideIn {
@@ -114,7 +108,7 @@
 
 .tracking-bar-btn {
   padding: 3px 10px;
-  border-radius: 8px;
+  border-radius: 4px;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.02em;
@@ -124,7 +118,7 @@
 }
 
 .tracking-bar-btn:hover {
-  transform: translateY(-1px);
+  background-color: var(--color-cockpit-panel-raised);
 }
 
 /* ── Flight Reference Badge ── */
@@ -133,27 +127,21 @@
   align-items: center;
   gap: 5px;
   padding: 4px 12px;
-  border-radius: 20px;
+  border-radius: 4px;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.05em;
   cursor: pointer;
-  transition: all 0.25s ease;
-  background: rgba(251, 191, 36, 0.1);
-  border: 1px solid rgba(251, 191, 36, 0.3);
-  color: #fbbf24;
+  transition: all 0.2s ease;
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid var(--color-caution-amber);
+  color: var(--color-caution-amber);
   margin-top: 8px;
 }
 
 .flight-badge:hover {
-  background: rgba(251, 191, 36, 0.2);
-  border-color: rgba(251, 191, 36, 0.5);
-  box-shadow: 0 0 16px rgba(251, 191, 36, 0.25), 0 0 4px rgba(251, 191, 36, 0.15);
+  background: rgba(245, 158, 11, 0.25);
   transform: translateY(-1px);
-}
-
-.flight-badge svg {
-  filter: drop-shadow(0 0 4px rgba(251, 191, 36, 0.4));
 }
 
 /* ── Context Indicator ── */
@@ -166,7 +154,6 @@
   50% { opacity: 1; }
 }
 
-/* ── Slide-up animation for badges ── */
 @keyframes badgeSlideUp {
   0% { transform: translateY(6px); opacity: 0; }
   100% { transform: translateY(0); opacity: 1; }
@@ -176,6 +163,7 @@
   animation: badgeSlideUp 0.3s ease-out;
 }
 
-
-.map-tiles { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
-
+/* ── Map Styling ── */
+.map-tiles { 
+  filter: invert(100%) hue-rotate(180deg) brightness(85%) contrast(95%); 
+}

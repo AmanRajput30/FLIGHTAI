@@ -1,8 +1,8 @@
 # ADSB.lol Commercial Launch Checklist
 
-**Production contact: Averyn's launch requirement based on ADSB.lol's published API guidance.**
+**Production contact: Aervyn's launch requirement based on ADSB.lol's published API guidance.**
 
-- [ ] ADSB.lol contacted regarding Averyn production API usage.
+- [ ] ADSB.lol contacted regarding Aervyn production API usage.
 - [ ] Current API documentation rechecked.
 - [ ] Current API OpenAPI specification rechecked.
 - [ ] Current ADSB.lol Privacy/License page rechecked.
@@ -26,11 +26,11 @@
 ## Production Contact Draft Email
 
 > **To:** [ADSB.lol Contact]
-> **Subject:** Production API Usage Inquiry - Averyn
+> **Subject:** Production API Usage Inquiry - Aervyn
 > 
 > Hello ADSB.lol Team,
 > 
-> I am writing to inform you of our intent to use ADSB.lol as the live aircraft-data provider for Averyn, a commercial aviation intelligence application, as we approach our launch.
+> I am writing to inform you of our intent to use ADSB.lol as the live aircraft-data provider for Aervyn, a commercial aviation intelligence application, as we approach our launch.
 > 
 > **Usage Details:**
 > - We will use the v2 API (specifically the `point` endpoint with strict radius bounds) to display live aircraft on a geographic map.
@@ -47,4 +47,4 @@
 > Thank you for providing such a fantastic open data service.
 > 
 > Best regards,
-> [Your Name/Averyn Team]
+> [Your Name/Aervyn Team]

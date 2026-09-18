@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import dynamic from 'next/dynamic';
 import axios from 'axios';
 import { socket } from '@/lib/socket';
@@ -10,12 +10,16 @@ import { useUIStore } from '@/store/useUIStore';
 import Header from '@/components/layout/Header';
 import TelemetryPanel from '@/components/telemetry/TelemetryPanel';
 import ChatPanel from '@/components/chat/ChatPanel';
+import { CockpitButton } from '@/components/ui/CockpitButton';
+import { Activity, MessageSquare } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { M_PRESETS } from '@/lib/motion/presets';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-hxbd.onrender.com';
 
 const Map = dynamic(() => import('@/components/Map'), { 
   ssr: false,
-  loading: () => <div className="flex-1 h-full bg-[#0d1117] flex items-center justify-center">Loading Real-Time Map...</div>
+  loading: () => <div className="flex-1 h-full bg-[#0d1117] flex items-center justify-center font-labels text-instrument-white uppercase tracking-widest text-sm font-bold">Initializing Radar...</div>
 });
 
 export default function Dashboard() {
@@ -41,6 +45,17 @@ export default function Dashboard() {
     setMapMode,
     setPerformanceMode
   } = useUIStore();
+
+  const [activeMobilePanel, setActiveMobilePanel] = useState<'telemetry' | 'chat' | 'none'>('none');
+
+  // Automatically open telemetry when a flight is selected on mobile
+  useEffect(() => {
+    if (selectedFlight || useFlightStore.getState().airportData) {
+      if (window.innerWidth < 1024) {
+        setActiveMobilePanel('telemetry');
+      }
+    }
+  }, [selectedFlight, useFlightStore.getState().airportData]);
 
   const fpsRef = useRef<number[]>([]);
 
@@ -166,29 +181,95 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
-      <Header variant="compact" />
+    <div className="h-screen w-screen bg-cockpit-black text-instrument-white overflow-hidden relative font-labels">
+      {/* Background Map - Absolute Full Screen */}
+      <div className="absolute inset-0 z-0">
+        <Map 
+          onFlightSelect={(flight) => { setSelectedFlight(flight); setFocusedFlightId(flight.id); setAirportData(null); }} 
+          onFlightDeselect={handleUntrack} 
+          selectedFlightId={focusedFlightId} 
+          routeData={selectedFlight?.id === focusedFlightId ? useFlightStore.getState().flightRouteData : null} 
+          targetPos={targetPos}
+          mapMode={mapMode}
+          performanceMode={performanceMode}
+        />
+      </div>
 
-      <main className="flex-1 flex overflow-hidden relative">
-        <TelemetryPanel />
-
-        <div className="flex-1 h-full relative border-l border-r border-white/5 flex flex-col">
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[400] bg-red-500/80 backdrop-blur text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest shadow-lg border border-red-400">
-            NOT FOR OPERATIONAL USE
-          </div>
-          <Map 
-            onFlightSelect={(flight) => { setSelectedFlight(flight); setFocusedFlightId(flight.id); setAirportData(null); }} 
-            onFlightDeselect={handleUntrack} 
-            selectedFlightId={focusedFlightId} 
-            routeData={selectedFlight?.id === focusedFlightId ? useFlightStore.getState().flightRouteData : null} 
-            targetPos={targetPos}
-            mapMode={mapMode}
-            performanceMode={performanceMode}
-          />
+      {/* Floating Header */}
+      <div className="absolute top-0 left-0 right-0 z-50 pointer-events-none">
+        <div className="pointer-events-auto">
+          <Header variant="compact" />
         </div>
+      </div>
 
-        <ChatPanel />
-      </main>
+      {/* Desktop Panels */}
+      <div className="hidden lg:block absolute left-6 top-24 bottom-6 z-40 w-[340px] pointer-events-none">
+        <div className="pointer-events-auto h-full w-full">
+          <TelemetryPanel />
+        </div>
+      </div>
+      <div className="hidden lg:flex absolute right-6 top-24 bottom-6 z-40 w-[380px] pointer-events-none flex-col justify-end">
+        <div className="pointer-events-auto h-full w-full flex flex-col justify-end">
+          <ChatPanel />
+        </div>
+      </div>
+
+      {/* Mobile Panels */}
+      <AnimatePresence>
+        {activeMobilePanel === 'telemetry' && (
+          <motion.div 
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={M_PRESETS.panel}
+            className="lg:hidden absolute bottom-20 left-4 right-4 top-24 z-40 pointer-events-none"
+          >
+            <div className="pointer-events-auto h-full w-full overflow-hidden rounded-[4px] shadow-2xl">
+              <TelemetryPanel />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {activeMobilePanel === 'chat' && (
+          <motion.div 
+            initial={{ y: '100%', opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: '100%', opacity: 0 }}
+            transition={M_PRESETS.panel}
+            className="lg:hidden absolute bottom-20 left-4 right-4 top-24 z-40 pointer-events-none"
+          >
+            <div className="pointer-events-auto h-full w-full overflow-hidden rounded-[4px] shadow-2xl flex flex-col">
+              <ChatPanel />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Mobile Bottom Navigation */}
+      <div className="lg:hidden absolute bottom-4 left-4 right-4 z-50 flex gap-2 justify-center pointer-events-none">
+        <div className="bg-cockpit-black/90 backdrop-blur-md p-1.5 rounded-[4px] border border-border-subtle flex gap-1 pointer-events-auto shadow-xl">
+          <CockpitButton 
+            variant="selector" 
+            isActive={activeMobilePanel === 'telemetry'}
+            onClick={() => setActiveMobilePanel(activeMobilePanel === 'telemetry' ? 'none' : 'telemetry')}
+            className="px-6 py-2"
+          >
+            <Activity size={16} className="mr-2" />
+            TELEMETRY
+          </CockpitButton>
+          <CockpitButton 
+            variant="selector" 
+            isActive={activeMobilePanel === 'chat'}
+            onClick={() => setActiveMobilePanel(activeMobilePanel === 'chat' ? 'none' : 'chat')}
+            className="px-6 py-2"
+          >
+            <MessageSquare size={16} className="mr-2" />
+            SKYLORD
+          </CockpitButton>
+        </div>
+      </div>
     </div>
   );
 }
