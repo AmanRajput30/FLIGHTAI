@@ -20,7 +20,7 @@ import { M_PRESETS } from '@/lib/motion/presets';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://aervyn.in';
 
-const Map = dynamic(() => import('@/components/Map'), { 
+const Map = dynamic(() => import('@/components/map/AERVYNMap'), { 
   ssr: false,
   loading: () => <div className="flex-1 h-full bg-aervyn-bg-dark flex items-center justify-center font-labels text-aervyn-text-primary uppercase tracking-widest text-sm font-bold">Initializing Radar...</div>
 });
@@ -82,6 +82,8 @@ export default function Dashboard() {
     });
 
     socket.on('flights_update', (flights: any[]) => {
+      useFlightStore.getState().setFlights(flights);
+      
       const currentFlight = useFlightStore.getState().selectedFlight;
       if (currentFlight) {
         const updated = flights.find(f => f.id === currentFlight.id);
@@ -108,7 +110,14 @@ export default function Dashboard() {
       {/* Background Map - Absolute Full Screen */}
       <div className="absolute inset-0 z-0">
         <Map 
-          onFlightSelect={(flight) => { setSelectedFlight(flight); setFocusedFlightId(flight.id); setAirportData(null); }} 
+          onFlightSelect={(id) => { 
+            const flight = useFlightStore.getState().flights.find(f => f.id === id);
+            if (flight) {
+              setSelectedFlight(flight); 
+              setFocusedFlightId(flight.id); 
+              setAirportData(null); 
+            }
+          }} 
           onFlightDeselect={handleUntrack} 
           selectedFlightId={focusedFlightId} 
           routeData={selectedFlight?.id === focusedFlightId ? useFlightStore.getState().flightRouteData : null} 

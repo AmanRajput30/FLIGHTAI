@@ -39,6 +39,8 @@ export interface RouteInfo {
   destinationTerminal?: string;
   destinationGate?: string;
   
+  originLat?: number;
+  originLng?: number;
   destLat?: number;
   destLng?: number;
   
