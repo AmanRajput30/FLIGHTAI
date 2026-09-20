@@ -64,6 +64,9 @@ class NormalizedAircraft {
     this.provider = provider;
     this.providerAircraftId = providerAircraftId;
     this.id = icao24 || providerAircraftId || 'Unknown'; // Primary key for frontend rendering (id)
+    this.icao24 = icao24 || providerAircraftId; // Store for backend search indexing
+    this.callsign = callsign; // Store for backend search indexing
+    this.registration = registration; // Store for backend search indexing
     this.flightNumber = callsign || 'Unknown'; // Mapped to callsign for legacy frontend compatibility
     this.airline = aircraftType || 'Private/Unknown'; // Legacy mapping
     this.lat = latitude;

@@ -15,11 +15,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   }, [user, loading, router]);
 
   if (loading || user) {
-    return <div className="min-h-screen bg-[var(--color-cockpit-black)] flex items-center justify-center"><div className="w-8 h-8 border-2 border-[var(--color-horizon-blue)] border-t-transparent rounded-full animate-spin"></div></div>;
+    return <div className="min-h-screen bg-aervyn-bg-dark flex items-center justify-center"><div className="w-8 h-8 border-2 border-aervyn-status-cyan border-t-transparent rounded-full animate-spin"></div></div>;
   }
 
   return (
-    <div className="min-h-screen bg-white w-full flex font-[family-name:var(--font-labels)]">
+    <div className="min-h-screen bg-aervyn-bg-dark w-full flex font-labels">
       {children}
     </div>
   );

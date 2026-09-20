@@ -14,13 +14,17 @@ const axios = require('axios');
 const OpenAI = require('openai');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const { requireAuth, requireVerified } = require('./middleware/auth');
+const { requireAuth, requireVerified, optionalAuth } = require('./middleware/auth');
 const { LRUCache } = require('lru-cache');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
+const mongoSanitize = require('express-mongo-sanitize');
 const { csrfProtection } = require('./middleware/csrf');
 const authRoute = require('./routes/authRoute');
 const userRoute = require('./routes/userRoute');
+const cookie = require('cookie');
+const Session = require('./models/Session');
+const cryptoUtils = require('./utils/crypto');
 
 const openai = new OpenAI({
   apiKey: process.env.GROQ_API_KEY,
@@ -34,15 +38,22 @@ const routeCache = new LRUCache({
 }); // Cache for flight routes to improve robustness
 
 const app = express();
+
+// Health check endpoint for keep-alive cron
+app.get('/healthz', (req, res) => {
+  res.status(200).send('OK');
+});
+
 app.set('trust proxy', 1); // Trust the first proxy (Render's load balancer) for rate limiting
 const server = http.createServer(app);
 
-const frontendOrigin = process.env.FRONTEND_URL || 'https://skyintel-black.vercel.app';
+const frontendOrigin = process.env.FRONTEND_URL || 'https://aervyn.in';
 const allowedOrigins = [
-  frontendOrigin,
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'https://skyintel-black.vercel.app'
+  'https://aervyn.in',
+  'https://www.aervyn.in',
+  ...(process.env.NODE_ENV !== 'production'
+    ? ['http://localhost:3000', 'http://localhost:3001']
+    : [])
 ];
 
 const corsOptions = {
@@ -63,6 +74,10 @@ const corsOptions = {
 
 const pinoHttp = require('pino-http');
 const logger = require('pino')({
+  redact: {
+    paths: ['req.headers.cookie', 'req.headers["x-csrf-token"]', 'req.body.password', 'req.body.currentPassword', 'req.body.newPassword', 'res.headers["set-cookie"]'],
+    censor: '[REDACTED]'
+  },
   transport: {
     target: 'pino-pretty',
     options: { colorize: true }
@@ -73,10 +88,72 @@ const io = new Server(server, {
   cors: corsOptions
 });
 
-app.use(helmet());
+app.disable('x-powered-by');
+
+// Force HTTPS in production
+app.use((req, res, next) => {
+  if (process.env.NODE_ENV === 'production' && req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(301, `https://${req.hostname}${req.url}`);
+  }
+  next();
+});
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: [
+        "'self'",
+        "https://aervyn.in",
+        "wss://aervyn.in",
+        "wss://flightai-hxbd.onrender.com", 
+        "https://api.adsb.lol",
+        "https://api.open-meteo.com",
+      ],
+      imgSrc: [
+        "'self'", 
+        "data:", 
+        "https://*.planespotters.net", 
+        "https://images.flightradar24.com", 
+        "https://*.tile.openstreetmap.org", 
+        "https://server.arcgisonline.com",
+        "https://ui-avatars.com",
+        "https://images.unsplash.com"
+      ],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'"],
+      frameAncestors: ["'none'"],
+    },
+  },
+  crossOriginResourcePolicy: { policy: 'same-site' },
+  hsts: {
+    maxAge: 63072000,
+    includeSubDomains: true,
+    preload: true
+  },
+  frameguard: {
+    action: 'deny'
+  },
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin'
+  }
+}));
+
+app.use((req, res, next) => {
+  res.setHeader('Permissions-Policy', 'geolocation=(), camera=(), microphone=()');
+  next();
+});
+
 app.use(cors(corsOptions));
 app.use(pinoHttp({ logger }));
-app.use(express.json());
+app.use(express.json({ limit: '100kb' }));
+// Custom mongo-sanitize for Express 5 compatibility (avoids req.query reassignment throw)
+app.use((req, res, next) => {
+  if (req.body) mongoSanitize.sanitize(req.body);
+  if (req.params) mongoSanitize.sanitize(req.params);
+  if (req.query) mongoSanitize.sanitize(req.query);
+  next();
+});
 app.use(cookieParser());
 app.set('io', io);
 
@@ -103,17 +180,22 @@ const authLimiter = rateLimit({
   message: { error: 'Too many authentication attempts, please try again later.' }
 });
 
+// Global fallback rate limiter (Section 7)
+const globalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 300,
+  message: { error: 'Too many requests, please try again later.' }
+});
+app.use('/api/', globalLimiter);
+
 // Apply CSRF to all non-GET requests (handled inside csrfProtection)
 // Mount auth routes (with rate limiter)
 const oauthRoute = require('./routes/oauthRoute');
+const flightRoute = require('./routes/flightRoute');
 app.use('/api/auth', authLimiter, csrfProtection, authRoute);
 app.use('/api/oauth', authLimiter, csrfProtection, oauthRoute);
 app.use('/api/user', csrfProtection, userRoute);
-
-// Health check endpoint for keep-alive cron
-app.get('/healthz', (req, res) => {
-  res.status(200).json({ status: "ok", uptime: process.uptime() });
-});
+app.use('/api/flight', flightRoute);
 
 // Rate Limiters
 const searchLimiter = rateLimit({
@@ -135,14 +217,60 @@ app.get('/api/search/:query', searchLimiter, requireAuth, async (req, res) => {
   try {
     let rawQuery = req.params.query;
     if (!rawQuery || rawQuery.length > 100) return res.status(400).json({ error: "Invalid search query." });
-    const query = rawQuery.toLowerCase().trim();
-    if (!query) return res.json(null);
     
-    // Global Unified Search
-    // Since we no longer cache all live flights, search relies purely on LLM Airport Geocoding
-    // (A real global flight search would require a provider global API or database)
+    // Normalize query
+    const query = rawQuery.trim().toUpperCase();
+    if (!query || query.length < 3) return res.json(null);
     
-    // Pass 2: Fallback to LLM Airport Geocoding
+    // 1. Is it a flight candidate? (3-10 alphanumeric)
+    const isFlightCandidate = /^[A-Z0-9]{3,10}$/i.test(query);
+
+    if (isFlightCandidate) {
+      // 1a. Check local live cache first (instant)
+      const liveFlight = flightDataService.searchFlight(query);
+      if (liveFlight) {
+        return res.json({ type: 'flight', data: liveFlight });
+      }
+
+      // 1b. Check provider directly (ADSB.lol callsign lookup)
+      try {
+        const adsbRes = await axios.get(`https://api.adsb.lol/v2/callsign/${query}`, { timeout: 3000 });
+        if (adsbRes.data && adsbRes.data.ac && adsbRes.data.ac.length > 0) {
+           const ac = adsbRes.data.ac[0];
+           // Normalize to our frontend format
+           const flight = {
+             id: ac.hex,
+             callsign: ac.flight ? ac.flight.trim() : null,
+             flightNumber: ac.flight ? ac.flight.trim() : null,
+             registration: ac.r,
+             aircraftModel: ac.t,
+             lat: ac.lat,
+             lng: ac.lon,
+             alt: ac.alt_baro,
+             speed: ac.gs != null ? Math.round(ac.gs * 1.852) : null,
+             heading: ac.track,
+             airline: null,
+           };
+           if (flight.lat && flight.lng) {
+             return res.json({ type: 'flight', data: flight });
+           }
+        }
+      } catch (err) {
+        console.warn('[Search] Legacy ADSB.lol callsign lookup failed', {
+          message: err.message,
+          query: query
+        });
+      }
+
+      // If it's a flight candidate but not found, we don't send to Groq. 
+      // (Unless it's an airport code like DEL, but airport codes are usually handled if flight search fails, 
+      // as requested by the user: "never send flight-number candidates to Groq until the live-flight lookup has failed... return not_found")
+      // Wait, the user specifically said: "Found? → flight, Not found? → not_found. That's better than trying to make the regex perfectly identify flight numbers."
+      // So if it's a candidate, it ONLY checks flights, and returns not_found if missing.
+      return res.json({ type: 'not_found' });
+    }
+
+    // 2. If it's NOT a flight candidate (e.g., contains spaces, longer than 10 chars), use Groq
     const response = await openai.chat.completions.create({
       model: GROQ_MODEL,
       messages: [
@@ -150,7 +278,7 @@ app.get('/api/search/:query', searchLimiter, requireAuth, async (req, res) => {
         { role: "user", content: query }
       ],
       response_format: { type: "json_object" }
-    });
+    }, { timeout: 5000 });
     
     const airportData = JSON.parse(response.choices[0].message.content);
     if (airportData.error || !airportData.lat || !airportData.lng) {
@@ -159,6 +287,9 @@ app.get('/api/search/:query', searchLimiter, requireAuth, async (req, res) => {
     
     return res.json({ type: 'airport', data: airportData });
   } catch (error) {
+    if (error.code === 'ECONNABORTED' || error.name === 'AbortError') {
+      return res.status(504).json({ error: "Search timed out." });
+    }
     console.error('Search Error:', error.message);
     res.status(500).json({ error: "Failed to perform search." });
   }
@@ -166,7 +297,7 @@ app.get('/api/search/:query', searchLimiter, requireAuth, async (req, res) => {
 
 // Contact Route
 const { Resend } = require('resend');
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || 're_dummy_key_to_prevent_crash');
 
 const contactLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
@@ -176,7 +307,13 @@ const contactLimiter = rateLimit({
 
 app.post('/api/contact', contactLimiter, async (req, res) => {
   try {
-    const { name, email, category, message } = req.body;
+    const { name, email, category, message, website } = req.body;
+    
+    // Honeypot check: If the hidden 'website' field is filled out, silently drop it.
+    if (website) {
+      return res.json({ success: true });
+    }
+
     if (!name || !email || !message) {
       return res.status(400).json({ error: 'Name, email, and message are required.' });
     }
@@ -202,171 +339,16 @@ app.post('/api/contact', contactLimiter, async (req, res) => {
 });
 
 // Protected Routes
-app.use('/api/chat', requireAuth, requireVerified, csrfProtection, chatRoute);
-
-// Endpoint for Origin and Destination (AviationStack + ADSB.lol fallback)
-app.get('/api/route/:flightNumber', routeLimiter, requireAuth, async (req, res) => {
-  try {
-    let fn = req.params.flightNumber;
-    if (!fn || fn === 'Unknown') return res.json(null);
-    fn = fn.trim().toUpperCase();
-    if (!/^[A-Z0-9]{2,10}$/.test(fn)) return res.status(400).json({ error: 'Invalid flight number format' });
-
-    // Check Cache first
-    if (routeCache.has(fn)) {
-      return res.json(routeCache.get(fn));
-    }
-    
-    // First attempt: AeroDataBox (RapidAPI) - Premium Data
-    try {
-      const isIcao24 = /^[0-9A-F]{6}$/.test(fn);
-      const today = new Date().toISOString().split('T')[0];
-      const url = isIcao24 
-        ? `https://aerodatabox.p.rapidapi.com/aircrafts/icao24/${fn}`
-        : `https://aerodatabox.p.rapidapi.com/flights/number/${fn}/${today}?withLocation=true&withFlightPlan=true`;
-      
-      console.log(`[ROUTE] Attempting AeroDataBox with identifier: ${fn}, URL: ${url}`);
-      
-      let aeroRes = await axios.get(url, {
-        headers: {
-          'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-          'x-rapidapi-host': process.env.RAPIDAPI_HOST
-        }
-      });
-      
-      // Secondary fallback for flights/number if date-specific lookup gave nothing
-      if (!isIcao24 && (!aeroRes.data || (Array.isArray(aeroRes.data) && aeroRes.data.length === 0))) {
-        console.log(`[ROUTE] Date-specific lookup failed for ${fn}, trying nearest...`);
-        const fallbackUrl = `https://aerodatabox.p.rapidapi.com/flights/number/${fn}?withLocation=true`;
-        aeroRes = await axios.get(fallbackUrl, {
-          headers: {
-            'x-rapidapi-key': process.env.RAPIDAPI_KEY,
-            'x-rapidapi-host': process.env.RAPIDAPI_HOST
-          }
-        });
-      }
-
-      console.log(`[AeroDataBox] Response received for ${fn}, Status: ${aeroRes.status}`);
-
-      // If result is an array (flights/number)
-      if (Array.isArray(aeroRes.data) && aeroRes.data.length > 0) {
-        console.log(`[AeroDataBox] Found flight data for ${fn}`);
-        const f = aeroRes.data[0];
-        const route = {
-          origin: f.departure?.airport?.name || f.departure?.airport?.iata,
-          originIata: f.departure?.airport?.iata,
-          originIcao: f.departure?.airport?.icao,
-          originLat: f.departure?.airport?.location?.lat,
-          originLng: f.departure?.airport?.location?.lon,
-          destination: f.arrival?.airport?.name || f.arrival?.airport?.iata,
-          destinationIata: f.arrival?.airport?.iata,
-          destinationIcao: f.arrival?.airport?.icao,
-          destLat: f.arrival?.airport?.location?.lat,
-          destLng: f.arrival?.airport?.location?.lon,
-          registration: f.aircraft?.registration || f.aircraft?.reg,
-          aircraftModel: f.aircraft?.model || f.aircraft?.modelCode || f.aircraft?.typeName,
-          source: 'AeroDataBox'
-        };
-        routeCache.set(fn, route);
-        return res.json(route);
-      } 
-      // If result is an object (aircrafts/icao24)
-      else if (aeroRes.data && (aeroRes.data.registration || aeroRes.data.reg || aeroRes.data.model)) {
-        console.log(`[AeroDataBox] Found aircraft info for ${fn}`);
-        const f = aeroRes.data;
-        const route = {
-          registration: f.registration || f.reg,
-          aircraftModel: f.model || f.modelCode || f.typeName,
-          productionLine: f.productionLine,
-          source: 'AeroDataBox (Aircraft Info)'
-        };
-        routeCache.set(fn, route);
-        return res.json(route);
-      } else {
-        console.log(`[AeroDataBox] No usable data returned for ${fn}`);
-      }
-    } catch (e) {
-      console.error(`[AeroDataBox ERROR] for ${fn}:`, e.response ? e.response.status : e.message);
-      if (e.response && e.response.data) console.error(`[AeroDataBox ERROR DATA]:`, JSON.stringify(e.response.data));
-    }
-    
-    // Second attempt: match as IATA code (AviationStack)
-    const urlIata = `http://api.aviationstack.com/v1/flights?access_key=${process.env.AVIATIONSTACK_API_KEY}&flight_iata=${fn}`;
-    response = await axios.get(urlIata);
-    
-    if(response.data && response.data.data && response.data.data.length > 0) {
-      const flight = response.data.data[0];
-      if (flight.departure && flight.arrival) {
-        const route = { 
-          origin: flight.departure.airport || flight.departure.iata,
-          originIata: flight.departure.iata,
-          originIcao: flight.departure.icao,
-          originTimezone: flight.departure.timezone,
-          originTerminal: flight.departure.terminal,
-          originGate: flight.departure.gate,
-          destination: flight.arrival.airport || flight.arrival.iata,
-          destinationIata: flight.arrival.iata,
-          destinationIcao: flight.arrival.icao,
-          destinationTimezone: flight.arrival.timezone,
-          destinationTerminal: flight.arrival.terminal,
-          destinationGate: flight.arrival.gate,
-          source: 'AviationStack'
-        };
-        routeCache.set(fn, route);
-        return res.json(route);
-      }
-    }
-
-    // Third attempt: ADSB.lol Fallback
-    try {
-      const adsbRes = await axios.get(`https://api.adsb.lol/api/route/${fn}`);
-      if (adsbRes.data && adsbRes.data.route) {
-        const route = {
-          origin: adsbRes.data.route.origin.name || adsbRes.data.route.origin.iata,
-          originIata: adsbRes.data.route.origin.iata,
-          originIcao: adsbRes.data.route.origin.icao,
-          originLat: adsbRes.data.route.origin.lat,
-          originLng: adsbRes.data.route.origin.lon,
-          destination: adsbRes.data.route.destination.name || adsbRes.data.route.destination.iata,
-          destinationIata: adsbRes.data.route.destination.iata,
-          destinationIcao: adsbRes.data.route.destination.icao,
-          destLat: adsbRes.data.route.destination.lat,
-          destLng: adsbRes.data.route.destination.lon,
-          source: 'ADSB.lol'
-        };
-        routeCache.set(fn, route);
-        return res.json(route);
-      }
-    } catch (e) {
-      console.log("ADSB.lol route lookup failed for", fn);
-    }
-    
-    const fallbackRoute = {
-      origin: 'Data Unavailable',
-      originIata: 'N/A',
-      originIcao: 'N/A',
-      originTimezone: 'Unknown',
-      destination: 'Data Unavailable',
-      destinationIata: 'N/A',
-      destinationIcao: 'N/A',
-      destinationTimezone: 'Unknown'
-    };
-    
-    res.json(fallbackRoute);
-  } catch (error) {
-    console.error('AviationStack Error:', error.message);
-    res.json({
-      origin: 'Data Unavailable',
-      originIata: 'N/A',
-      originIcao: 'N/A',
-      originTimezone: 'Unknown',
-      destination: 'Data Unavailable',
-      destinationIata: 'N/A',
-      destinationIcao: 'N/A',
-      destinationTimezone: 'Unknown'
-    });
+app.use('/api/chat', optionalAuth, (req, res, next) => {
+  if (req.user && !req.user.isEmailVerified) {
+    return res.status(403).json({ error: 'EMAIL_NOT_VERIFIED', message: 'Please verify your email address to access this feature.' });
   }
-});
+  if (req.user) {
+    return csrfProtection(req, res, next);
+  }
+  next();
+}, chatRoute);
+
 
 // Endpoint for Flight Paths (Robust combines OpenSky tracks + Planned Route)
 app.get('/api/flight-path/:icao24', async (req, res) => {
@@ -385,23 +367,27 @@ app.get('/api/flight-path/:icao24', async (req, res) => {
       console.log(`OpenSky track failed for ${icao24}, using fallback.`);
     }
 
-    // 2. If no track, we could synthesize a route (removed legacy logic that relied on flightCache)
-      let route = routeCache.get(fn);
-      
-      // If not in cache, try to fetch it quickly (or wait)
+    // 2. If no track, we can try to synthesize a route using routeCache or ADSB metadata
+    if (path.length === 0) {
+      let route = null;
+      let callsign = null;
+
+      // Try to find the callsign from aircraft metadata if possible
+      const aircraftMetadata = routeCache.get(`aircraft_${icao24}`);
+      if (aircraftMetadata && aircraftMetadata.registration) {
+         // Sometimes route is keyed by registration
+         route = routeCache.get(aircraftMetadata.registration);
+      }
+
+      // If we don't have the route, see if we can find it by scanning routeCache (not ideal but it's small)
       if (!route) {
-        try {
-          // Internal call to route endpoint or logic
-          const adsbRes = await axios.get(`https://api.adsb.lol/api/route/${fn}`);
-          if (adsbRes.data && adsbRes.data.route) {
-            route = {
-              originLat: adsbRes.data.route.origin.lat,
-              originLng: adsbRes.data.route.origin.lon,
-              destLat: adsbRes.data.route.destination.lat,
-              destLng: adsbRes.data.route.destination.lon
-            };
+        for (const [key, value] of routeCache.entries()) {
+          // If we cached a route that has this ICAO (though we don't always store icao in the route itself)
+          if (value.registration === aircraftMetadata?.registration || value.aircraftModel === aircraftMetadata?.type) {
+            route = value;
+            break;
           }
-        } catch (err) {}
+        }
       }
 
       if (route && route.originLat && route.destLat) {
@@ -415,7 +401,7 @@ app.get('/api/flight-path/:icao24', async (req, res) => {
           path.push([Date.now()/1000, lat, lng]);
         }
       }
-    // Legacy fallback removed because flightCache is no longer available
+    }
 
     res.json({ icao24, path, isSynthetic });
   } catch (err) {
@@ -428,35 +414,30 @@ app.get('/api/flight-track/:icao24', async (req, res) => {
   res.redirect(`/api/flight-path/${req.params.icao24}`);
 });
 
-// Endpoint for Hex (Registration) lookup
-app.get('/api/aircraft/:hex', requireAuth, async (req, res) => {
-  const hex = req.params.hex;
-  if (!hex || hex === 'Unknown') return res.status(400).json({ error: 'Invalid hex' });
-  
-  const cacheKey = `aircraft_${hex}`;
-  const cached = routeCache.get(cacheKey);
-  if (cached) return res.json(cached);
-
-  try {
-    const response = await axios.get(`https://api.adsbdb.com/v0/aircraft/${hex}`, {
-      timeout: 5000,
-      headers: { 'User-Agent': 'Aervyn/1.0' }
-    });
-    
-    if (response.data && response.data.response && response.data.response.aircraft) {
-      const metadata = response.data.response.aircraft;
-      routeCache.set(cacheKey, metadata);
-      return res.json(metadata);
-    }
-    return res.status(404).json({ error: 'Not found in ADS-B DB' });
-  } catch (error) {
-    return res.status(error.response?.status || 500).json({ error: 'Failed to fetch aircraft details' });
-  }
-});
 
 const flightDataService = require('./services/FlightDataService');
 
 const socketConnections = new Map();
+const socketEventRates = new Map(); // For viewport_update rate limiting
+
+io.use(async (socket, next) => {
+  try {
+    if (socket.handshake.headers.cookie) {
+      const cookies = cookie.parse(socket.handshake.headers.cookie);
+      if (cookies._session) {
+        const sessionTokenHash = cryptoUtils.hashToken(cookies._session);
+        const session = await Session.findOne({ sessionTokenHash }).populate('userId');
+        
+        if (session && session.expiresAt >= new Date()) {
+          socket.user = session.userId;
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Socket auth error:', err);
+  }
+  next(); // Anonymous sockets are allowed
+});
 
 io.on('connection', (socket) => {
   const ip = socket.handshake.address;
@@ -469,12 +450,53 @@ io.on('connection', (socket) => {
   }
   
   socketConnections.set(ip, currentCount + 1);
+  socket.isPaused = false;
 
   socket.emit('system_status', 'live');
   
+  socket.on('pause_updates', () => {
+    socket.isPaused = true;
+  });
+
+  socket.on('resume_updates', () => {
+    socket.isPaused = false;
+  });
+  
   // Listen for viewport updates from clients
   socket.on('viewport_update', async (bounds) => {
-    if (!bounds || !bounds.minLat) return;
+    if (socket.isPaused) return;
+
+    // 1. Rate Limiting
+    const now = Date.now();
+    const lastUpdate = socketEventRates.get(socket.id) || 0;
+    const rateLimitMs = socket.user ? 500 : 2000; // 500ms authenticated, 2000ms anonymous
+    
+    if (now - lastUpdate < rateLimitMs) {
+      return; // Ignore updates that are too frequent
+    }
+    socketEventRates.set(socket.id, now);
+
+    // 2. Payload Validation
+    if (!bounds || typeof bounds.minLat !== 'number' || typeof bounds.minLng !== 'number' || 
+        typeof bounds.maxLat !== 'number' || typeof bounds.maxLng !== 'number' ||
+        Number.isNaN(bounds.minLat) || Number.isNaN(bounds.maxLat)) {
+      return;
+    }
+    
+    // Bounds sanity check
+    if (bounds.minLat > bounds.maxLat || bounds.minLat < -90 || bounds.maxLat > 90 || 
+        bounds.minLng < -180 || bounds.maxLng > 180) {
+      return;
+    }
+    
+    // Area check (prevent full planet fetch)
+    const MAX_VIEWPORT_AREA = 150 * 150; // Degrees squared
+    const area = (bounds.maxLat - bounds.minLat) * (bounds.maxLng - bounds.minLng);
+    if (area > MAX_VIEWPORT_AREA) {
+      socket.emit('viewport_error', { reason: 'zoom_too_wide' });
+      return;
+    }
+
     try {
       const flights = await flightDataService.getFlightsInViewport(
         bounds.minLat,
@@ -482,6 +504,13 @@ io.on('connection', (socket) => {
         bounds.maxLat,
         bounds.maxLng
       );
+      
+      if (flights.__isOutage) {
+        socket.emit('data_outage', { active: true });
+      } else {
+        socket.emit('data_outage', { active: false });
+      }
+      
       socket.emit('flights_update', flights);
     } catch (e) {
       console.error('Failed to get flights for viewport:', e.message);
@@ -491,6 +520,21 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     const count = socketConnections.get(ip) || 0;
     if (count > 0) socketConnections.set(ip, count - 1);
+    socketEventRates.delete(socket.id);
+  });
+});
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    return res.status(403).json({ error: 'Invalid or missing CSRF token' });
+  }
+  
+  console.error('[Global Error]', err);
+  
+  // Never serialize err.stack in production
+  res.status(err.status || 500).json({ 
+    error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message 
   });
 });
 

@@ -4,9 +4,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import axios from "axios";
 import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { CockpitButton } from "@/components/ui/CockpitButton";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-hxbd.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://aervyn.in";
 
 export default function ProfileSettingsPage() {
   const { user, refreshUser } = useAuth();
@@ -64,100 +63,94 @@ export default function ProfileSettingsPage() {
   if (!user) return null;
 
   return (
-    <div className="flex flex-col h-full relative">
+    <div className="flex flex-col h-full relative font-labels">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-white mb-1">Public Profile</h2>
-        <p className="text-gray-400 text-sm">Manage how your profile appears to other users.</p>
+        <h2 className="text-xl font-bold text-aervyn-text-primary uppercase tracking-widest mb-1">Clearance Ident</h2>
+        <p className="text-aervyn-text-tertiary text-[10px] uppercase tracking-widest font-bold">Manage how your profile appears to other operators.</p>
       </div>
 
       {status && (
-        <div className={`mb-6 p-4 rounded-xl flex items-start gap-3 border ${status.type === "success" ? "bg-green-500/10 border-green-500/20" : "bg-red-500/10 border-red-500/20"}`}>
+        <div className={`mb-6 p-4 rounded flex items-start gap-3 border ${status.type === "success" ? "bg-aervyn-status-cyan/10 border-aervyn-status-cyan" : "bg-aervyn-status-red/10 border-aervyn-status-red"}`}>
           {status.type === "success" ? (
-            <CheckCircle2 className="w-5 h-5 text-green-400 shrink-0 mt-0.5" />
+            <CheckCircle2 className={`w-5 h-5 shrink-0 mt-0.5 text-aervyn-status-cyan`} />
           ) : (
-            <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+            <AlertCircle className={`w-5 h-5 shrink-0 mt-0.5 text-aervyn-status-red`} />
           )}
-          <p className={`text-sm ${status.type === "success" ? "text-green-400" : "text-red-400"}`}>{status.message}</p>
+          <p className={`text-xs font-bold uppercase tracking-wide ${status.type === "success" ? "text-aervyn-status-cyan" : "text-aervyn-status-red"}`}>{status.message}</p>
         </div>
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 max-w-xl pb-10">
         <div>
-          <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">Email Address</label>
+          <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-2 uppercase tracking-widest">Comms Channel (Email)</label>
           <div className="flex items-center gap-3">
             <input
               type="text"
               disabled
               value={user.email}
-              className="flex-1 bg-black/20 border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-grey)] cursor-not-allowed font-[family-name:var(--font-labels)] text-sm"
+              className="flex-1 bg-black/40 border border-aervyn-border-subtle rounded px-4 py-3 text-aervyn-text-tertiary cursor-not-allowed text-xs font-bold tracking-wide"
             />
             {user.isEmailVerified ? (
-              <span className="px-3 py-1.5 border border-green-500 bg-green-500/10 text-green-400 text-[10px] font-bold whitespace-nowrap uppercase tracking-widest font-[family-name:var(--font-labels)]">Verified</span>
+              <span className="px-3 py-3 border border-aervyn-status-cyan bg-aervyn-status-cyan/10 text-aervyn-status-cyan rounded text-[10px] font-bold whitespace-nowrap uppercase tracking-widest flex items-center justify-center">Verified</span>
             ) : (
-              <CockpitButton 
+              <button 
                 type="button"
-                variant="action"
                 onClick={handleResendVerification}
                 disabled={isResending || resendSuccess}
-                className="whitespace-nowrap"
+                className="px-3 py-3 border border-aervyn-status-amber bg-aervyn-status-amber/10 hover:bg-aervyn-status-amber hover:text-black text-aervyn-status-amber rounded text-[10px] font-bold whitespace-nowrap uppercase tracking-widest transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isResending ? 'SENDING...' : resendSuccess ? 'SENT!' : 'UNVERIFIED (RESEND)'}
-              </CockpitButton>
+                {isResending ? 'TRANSMITTING...' : resendSuccess ? 'TRANSMITTED!' : 'UNVERIFIED (RESEND)'}
+              </button>
             )}
           </div>
-          {resendError && <p className="text-xs text-[var(--color-warning-red)] mt-2 font-[family-name:var(--font-labels)]">{resendError}</p>}
-          <p className="text-[10px] text-[var(--color-instrument-grey)] mt-2 font-[family-name:var(--font-labels)] uppercase tracking-widest">Email address cannot be changed currently.</p>
+          {resendError && <p className="text-[10px] font-bold text-aervyn-status-red uppercase tracking-widest mt-2">{resendError}</p>}
+          <p className="text-[10px] text-aervyn-text-tertiary mt-2 uppercase tracking-widest font-bold">Email address cannot be modified once set.</p>
         </div>
 
         <div>
-          <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">Display Name</label>
+          <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-2 uppercase tracking-widest">Operator Designation (Name)</label>
           <input
             type="text"
             required
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)] text-sm"
+            className="w-full bg-aervyn-panel-base border border-aervyn-border-subtle rounded px-4 py-3 text-aervyn-text-primary placeholder:text-aervyn-text-tertiary focus:outline-none focus:border-aervyn-status-cyan transition-colors text-xs font-bold tracking-wide"
           />
         </div>
 
         <div>
-          <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">Avatar URL</label>
+          <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-2 uppercase tracking-widest">Ident Visual (Avatar URL)</label>
           <input
             type="url"
             value={formData.avatar}
             onChange={(e) => setFormData({ ...formData, avatar: e.target.value })}
-            className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all font-[family-name:var(--font-labels)] text-sm"
+            className="w-full bg-aervyn-panel-base border border-aervyn-border-subtle rounded px-4 py-3 text-aervyn-text-primary placeholder:text-aervyn-text-tertiary focus:outline-none focus:border-aervyn-status-cyan transition-colors text-xs font-bold tracking-wide"
             placeholder="https://example.com/avatar.jpg"
           />
-          <p className="text-[10px] text-[var(--color-instrument-grey)] mt-2 font-[family-name:var(--font-labels)] uppercase tracking-widest">Link to a public image to use as your avatar.</p>
+          <p className="text-[10px] text-aervyn-text-tertiary mt-2 uppercase tracking-widest font-bold">Link to a public image resource to override default ident.</p>
         </div>
 
         <div>
-          <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-2 uppercase tracking-widest">Bio</label>
+          <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-2 uppercase tracking-widest">Operational Bio</label>
           <textarea
             rows={4}
             value={formData.bio}
             onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-            className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all resize-none font-[family-name:var(--font-labels)] text-sm"
-            placeholder="A short bio about your aviation interests..."
+            className="w-full bg-aervyn-panel-base border border-aervyn-border-subtle rounded px-4 py-3 text-aervyn-text-primary placeholder:text-aervyn-text-tertiary focus:outline-none focus:border-aervyn-status-cyan transition-colors resize-none text-xs font-bold tracking-wide leading-relaxed"
+            placeholder="Operational background..."
           />
         </div>
 
-        <CockpitButton
+        <button
           type="submit"
-          variant="action"
           disabled={isLoading}
-          className="mt-2 w-fit"
+          className="mt-2 w-fit bg-aervyn-status-cyan/20 border border-aervyn-status-cyan hover:bg-aervyn-status-cyan text-aervyn-status-cyan hover:text-white px-8 py-3 rounded font-bold text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 drop-shadow-[0_0_8px_rgba(56,189,248,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              SAVING...
-            </>
-          ) : (
-            "SAVE CHANGES"
-          )}
-        </CockpitButton>
+            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+          ) : null}
+          {isLoading ? "UPDATING IDENT..." : "SAVE CONFIGURATION"}
+        </button>
       </form>
     </div>
   );

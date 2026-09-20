@@ -285,7 +285,7 @@ router.delete('/account', requireAuth, async (req, res) => {
     await Token.deleteMany({ userId });
     // Keep SecurityEvents for audit trailing if desired, or delete them. We will keep them for auditing.
 
-    res.clearCookie('sessionId', {
+    res.clearCookie('_session', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'Lax',

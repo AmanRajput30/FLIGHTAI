@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import axios from 'axios';
 import { Flight, WeatherData, RouteInfo, AircraftMetadata } from '../types';
 
 interface FlightState {
@@ -23,6 +24,7 @@ interface FlightState {
   setTargetPos: (pos: [number, number] | null) => void;
   setFlights: (flights: Flight[]) => void;
   setAirportData: (data: unknown | null) => void;
+  fetchFlightDetails: (flight: Flight, apiUrl: string) => Promise<void>;
 }
 
 export const useFlightStore = create<FlightState>((set) => ({
@@ -47,4 +49,45 @@ export const useFlightStore = create<FlightState>((set) => ({
   setTargetPos: (pos) => set({ targetPos: pos }),
   setFlights: (flights) => set({ flights: flights }),
   setAirportData: (data) => set({ airportData: data }),
+  
+  fetchFlightDetails: async (flight, apiUrl) => {
+    // Reset previous flight data immediately to prevent stale data
+    set({
+      flightPhotoUrl: null,
+      weatherData: null,
+      flightRouteData: null,
+      aircraftMetadata: null
+    });
+
+    const isCurrent = () => useFlightStore.getState().selectedFlight?.id === flight.id;
+
+    try {
+      // 1. Fetch complete normalized details from backend
+      const res = await axios.get(`${apiUrl}/api/flight/details/${flight.id}`);
+      
+      if (!isCurrent()) return; // Abort if user clicked another flight
+
+      // 2. Hydrate the store safely using the partial merge pattern
+      if (res.data) {
+        set((state) => ({
+          flightPhotoUrl: res.data.photo?.url || null,
+          weatherData: res.data.weather || null,
+          flightRouteData: res.data.route || { 
+            origin: "Data Unavailable", originIata: "N/A", originIcao: "---", 
+            destination: "Data Unavailable", destinationIata: "N/A", destinationIcao: "---" 
+          },
+          aircraftMetadata: res.data.aircraft || null
+        }));
+      }
+    } catch (err) {
+      if (isCurrent()) {
+        set({
+          flightRouteData: { 
+            origin: "Data Unavailable", originIata: "N/A", originIcao: "---", 
+            destination: "Data Unavailable", destinationIata: "N/A", destinationIcao: "---" 
+          }
+        });
+      }
+    }
+  }
 }));

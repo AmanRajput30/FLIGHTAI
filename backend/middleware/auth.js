@@ -3,27 +3,27 @@ const User = require('../models/User');
 const cryptoUtils = require('../utils/crypto');
 
 /**
- * Middleware to protect routes that require authentication.
- * It checks the HttpOnly cookie for a sessionId, hashes it, and looks it up.
+ * Middleware to check if user is authenticated via Session.
+ * It checks the HttpOnly cookie for a _session, hashes it, and looks it up.
  */
 const requireAuth = async (req, res, next) => {
   try {
-    const sessionId = req.cookies.sessionId;
+    const sessionId = req.cookies._session;
     if (!sessionId) {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
     const sessionTokenHash = cryptoUtils.hashToken(sessionId);
-
-    // Find the session and populate the user
     const session = await Session.findOne({ sessionTokenHash }).populate('userId');
 
-    if (!session || !session.userId) {
-      // Invalid or expired session
-      res.clearCookie('sessionId', {
+    if (!session || session.expiresAt < new Date()) {
+      // Clean up expired session if found
+      if (session) await Session.findByIdAndDelete(session._id);
+      
+      res.clearCookie('_session', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
-        sameSite: 'Lax',
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
       });
       return res.status(401).json({ error: 'Invalid or expired session' });
     }
@@ -42,6 +42,43 @@ const requireAuth = async (req, res, next) => {
   } catch (error) {
     console.error('requireAuth Error:', error);
     res.status(500).json({ error: 'Server error during authentication' });
+  }
+};
+
+/**
+ * Middleware that parses session if available but continues if not.
+ */
+const optionalAuth = async (req, res, next) => {
+  try {
+    const sessionId = req.cookies._session;
+    if (!sessionId) {
+      return next();
+    }
+
+    const sessionTokenHash = cryptoUtils.hashToken(sessionId);
+    const session = await Session.findOne({ sessionTokenHash }).populate('userId');
+
+    if (!session || session.expiresAt < new Date()) {
+      if (session) await Session.findByIdAndDelete(session._id);
+      res.clearCookie('_session', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      });
+      return next();
+    }
+
+    req.user = session.userId;
+    req.session = session;
+
+    session.lastActiveAt = new Date();
+    session.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+    session.save().catch(console.error);
+
+    next();
+  } catch (error) {
+    console.error('optionalAuth Error:', error);
+    next();
   }
 };
 
@@ -75,6 +112,7 @@ const requireVerified = (req, res, next) => {
 
 module.exports = {
   requireAuth,
+  optionalAuth,
   requireRole,
   requireVerified,
 };

@@ -58,7 +58,7 @@ exports.sendEmail = async ({ to, subject, html }) => {
       return data;
     } else {
       // Send via classic Nodemailer SMTP
-      const from = process.env.EMAIL_FROM || "\"SkyIntel Auth\" <noreply@skyintel.com>";
+      const from = process.env.EMAIL_FROM || "\"Aervyn Auth\" <noreply@aervyn.in>";
       const info = await transporter.sendMail({ from, to, subject, html });
       console.log(`[EmailService] ✅ Successfully sent via SMTP to: ${to}`);
       return info;

@@ -1,49 +1,74 @@
 @import "tailwindcss";
 
 @theme {
-  /* Core Base Colors */
-  --color-cockpit-black: #000000;
-  --color-cockpit-deep: #0a0a0a;
-  --color-cockpit-panel: #111111;
-  --color-cockpit-panel-raised: #1a1a1a;
+  /* ========================================= */
+  /* PHASE 1: AERVYN COMMAND CENTER TOKENS   */
+  /* ========================================= */
   
-  /* Instrument Colors */
-  --color-instrument-white: #ffffff;
-  --color-instrument-grey: #a1a1aa;
-  --color-instrument-muted: #52525b;
-  
-  /* Accents */
-  --color-horizon-blue: #3b82f6;
-  --color-horizon-blue-bright: #60a5fa;
-  --color-horizon-brown: #78350f;
-  
-  /* Status Colors */
-  --color-caution-amber: #f59e0b;
-  --color-warning-red: #ef4444;
-  --color-success-green: #10b981;
-  
+  /* Backgrounds */
+  --color-aervyn-bg-dark: #05070A;
+  --color-aervyn-bg-base: #080B10;
+  --color-aervyn-bg-light: #0D1117;
+
+  /* Panels */
+  --color-aervyn-panel-dark: #11161D;
+  --color-aervyn-panel-base: #151B23;
+  --color-aervyn-panel-light: #1B222C;
+
   /* Borders */
-  --color-border-subtle: rgba(255, 255, 255, 0.08);
-  --color-border-active: rgba(255, 255, 255, 0.2);
+  --color-aervyn-border-subtle: #29313B;
+  --color-aervyn-border-active: #343E4A;
+
+  /* Text */
+  --color-aervyn-text-primary: #F1F4F7;
+  --color-aervyn-text-secondary: #C4CBD3;
+  --color-aervyn-text-tertiary: #7F8A97;
+
+  /* Operational States */
+  --color-aervyn-status-blue: #3b82f6;
+  --color-aervyn-status-cyan: #06b6d4;
+  --color-aervyn-status-green: #10b981;
+  --color-aervyn-status-amber: #f59e0b;
+  --color-aervyn-status-red: #ef4444;
 
   /* Typography */
-  --font-numerals: 'Oswald', 'Bebas Neue', sans-serif;
   --font-labels: 'Archivo', system-ui, sans-serif;
-  
+  --font-telemetry: 'Oswald', 'Bebas Neue', sans-serif;
+
+  /* ========================================= */
+  /* LEGACY TOKENS (Mapped to AERVYN for fallback) */
+  /* ========================================= */
+  --color-cockpit-black: var(--color-aervyn-bg-dark);
+  --color-cockpit-deep: var(--color-aervyn-bg-base);
+  --color-cockpit-panel: var(--color-aervyn-panel-base);
+  --color-cockpit-panel-raised: var(--color-aervyn-panel-light);
+  --color-instrument-white: var(--color-aervyn-text-primary);
+  --color-instrument-grey: var(--color-aervyn-border-subtle);
+  --color-instrument-muted: var(--color-aervyn-text-tertiary);
+  --color-horizon-blue: var(--color-aervyn-status-cyan);
+  --color-horizon-blue-bright: var(--color-aervyn-status-cyan);
+  --color-horizon-brown: var(--color-aervyn-status-amber);
+  --color-caution-amber: var(--color-aervyn-status-amber);
+  --color-warning-red: var(--color-aervyn-status-red);
+  --color-success-green: var(--color-aervyn-status-green);
+  --color-border-subtle: var(--color-aervyn-border-subtle);
+  --color-border-active: var(--color-aervyn-border-active);
+  --font-numerals: var(--font-telemetry);
+
   /* Fallback mapping for existing classes during transition */
-  --color-background: var(--color-cockpit-black);
-  --color-foreground: var(--color-instrument-white);
-  --color-card: var(--color-cockpit-panel);
-  --color-border: var(--color-border-subtle);
-  --color-primary: var(--color-horizon-blue);
-  --color-muted-foreground: var(--color-instrument-grey);
+  --color-background: var(--color-aervyn-bg-base);
+  --color-foreground: var(--color-aervyn-text-primary);
+  --color-card: var(--color-aervyn-panel-base);
+  --color-border: var(--color-aervyn-border-subtle);
+  --color-primary: var(--color-aervyn-status-cyan);
+  --color-muted-foreground: var(--color-aervyn-text-secondary);
 }
 
 @layer base {
   body {
-    background-color: var(--color-cockpit-black);
-    color: var(--color-instrument-white);
-    font-family: var(--font-labels);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: labels;
   }
 }
 
@@ -63,7 +88,7 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid var(--color-horizon-blue);
+  border: 1px solid var(--color-aervyn-status-cyan);
   background: transparent;
   pointer-events: none;
   z-index: -1;
@@ -81,7 +106,7 @@
 
 /* ── Selected Aircraft ── */
 .selected-plane svg {
-  filter: drop-shadow(0 0 4px var(--color-horizon-blue));
+  filter: drop-shadow(0 0 4px var(--color-aervyn-status-cyan));
 }
 
 /* ── Dimmed Aircraft (when target acquired) ── */

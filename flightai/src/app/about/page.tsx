@@ -3,8 +3,8 @@ import Footer from '@/components/layout/Footer';
 
 export default function AboutPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--color-cockpit-black)] text-foreground">
-      <Header variant="full" />
+    <div className="flex flex-col min-h-screen bg-aervyn-bg-dark] text-foreground">
+      <Header />
       
       <main className="flex-1 max-w-4xl mx-auto px-6 py-24">
         <h1 className="text-4xl md:text-5xl font-black mb-8 text-white tracking-tight">

@@ -70,3 +70,18 @@ export interface AircraftMetadata {
   registered_owner?: string;
   registered_owner_country_iso_name?: string;
 }
+
+export interface NormalizedFlightDetails {
+  flight: Flight;
+  route: RouteInfo | null;
+  weather: WeatherData | null;
+  aircraft: AircraftMetadata | null;
+  photo: AircraftPhoto | null;
+  provenance: {
+    route?: string;
+    weather?: string;
+    aircraft?: string;
+    photo?: string;
+  };
+  fetchedAt: string;
+}

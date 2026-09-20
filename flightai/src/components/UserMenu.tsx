@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { LogIn, UserPlus, Settings, LogOut, Shield } from 'lucide-react';
 import Link from 'next/link';
-import { CockpitButton } from './ui/CockpitButton';
 
 export default function UserMenu() {
   const { user, loading, logout } = useAuth();
@@ -22,63 +21,62 @@ export default function UserMenu() {
 
   if (loading) {
     return (
-      <div className="w-9 h-9 rounded-full bg-white/10 animate-pulse border-2 border-white/5"></div>
+      <div className="w-8 h-8 rounded-full bg-white/10 animate-pulse border-2 border-white/5"></div>
     );
   }
 
   return (
-    <div className="relative" ref={menuRef}>
-      <CockpitButton 
+    <div className="relative font-labels" ref={menuRef}>
+      <button 
         onClick={() => setIsOpen(!isOpen)} 
-        variant="icon"
-        className={`w-9 h-9 !p-0 overflow-hidden shadow-none transition-all cursor-pointer ${user ? 'border-[var(--color-horizon-blue)]' : ''}`}
+        className={`w-8 h-8 rounded-full overflow-hidden shadow-none transition-all cursor-pointer border ${user ? 'border-aervyn-status-cyan shadow-[0_0_8px_rgba(56,189,248,0.3)]' : 'border-aervyn-border-subtle opacity-50 hover:opacity-100'} p-0`}
       >
         {user ? (
-          <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=0088CC&color=fff`} alt="Profile" className="w-full h-full object-cover" />
+          <img src={user.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=020617&color=38BDF8`} alt="Profile" className="w-full h-full object-cover grayscale mix-blend-screen opacity-90" />
         ) : (
-          <div className="w-full h-full bg-[#111] flex items-center justify-center">
-            <span className="text-[var(--color-instrument-grey)] text-xs font-bold font-[family-name:var(--font-numerals)]">?</span>
+          <div className="w-full h-full bg-aervyn-bg-dark flex items-center justify-center">
+            <span className="text-aervyn-text-tertiary text-xs font-bold font-mono">?</span>
           </div>
         )}
-      </CockpitButton>
+      </button>
 
       {isOpen && (
-        <div className="absolute top-12 right-0 w-64 bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-none shadow-[0_4px_20px_rgba(0,0,0,0.8)] overflow-hidden z-50">
+        <div className="absolute top-10 right-0 w-64 bg-aervyn-panel-base border border-aervyn-border-subtle rounded shadow-[0_4px_20px_rgba(0,0,0,0.8)] overflow-hidden z-50">
           {user ? (
             <>
-              <div className="p-4 border-b border-[var(--color-instrument-grey)] bg-[#050505]">
-                <p className="font-bold text-white truncate font-[family-name:var(--font-labels)]">{user.name}</p>
-                <p className="text-xs text-[var(--color-horizon-blue)] truncate font-[family-name:var(--font-numerals)]">@{user.username}</p>
+              <div className="p-4 border-b border-aervyn-border-subtle bg-aervyn-bg-dark relative overflow-hidden">
+                <div className="absolute inset-0 bg-aervyn-status-cyan/5 mix-blend-overlay pointer-events-none"></div>
+                <p className="font-extrabold text-aervyn-text-primary truncate uppercase tracking-widest text-[10px] drop-shadow-md relative z-10">{user.name}</p>
+                <p className="text-[9px] text-aervyn-status-cyan truncate uppercase tracking-widest font-bold mt-1 relative z-10">OP_ID: @{user.username}</p>
               </div>
               <div className="p-2 flex flex-col gap-1">
-                <CockpitButton  href="/settings" onClick={() => setIsOpen(false)} variant="selector" className="justify-start border-none h-10 hover:bg-[#111]">
-                  <Settings size={14} strokeWidth={1.5} className="mr-2" /> Settings & Profile
-                </CockpitButton>
-                <CockpitButton  href="/settings/security" onClick={() => setIsOpen(false)} variant="selector" className="justify-start border-none h-10 hover:bg-[#111]">
-                  <Shield size={14} strokeWidth={1.5} className="mr-2" /> Security
-                </CockpitButton>
+                <Link href="/settings" onClick={() => setIsOpen(false)} className="flex items-center gap-2 px-3 py-2 text-[9px] font-bold text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light uppercase tracking-widest transition-colors rounded">
+                  <Settings size={12} className="text-aervyn-text-tertiary" /> CONFIGURATION
+                </Link>
+                <Link href="/settings/security" onClick={() => setIsOpen(false)} className="flex items-center gap-2 px-3 py-2 text-[9px] font-bold text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light uppercase tracking-widest transition-colors rounded">
+                  <Shield size={12} className="text-aervyn-text-tertiary" /> PROTOCOLS
+                </Link>
               </div>
-              <div className="p-2 border-t border-[var(--color-instrument-grey)]">
-                <CockpitButton 
+              <div className="p-2 border-t border-aervyn-border-subtle">
+                <button 
                   onClick={() => { setIsOpen(false); logout(); }}
-                  variant="selector"
-                  className="w-full justify-start border-none h-10 hover:bg-[#111] text-[var(--color-warning-red)] hover:text-[var(--color-warning-red)]"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-[9px] font-bold text-aervyn-status-red hover:text-white hover:bg-aervyn-status-red uppercase tracking-widest transition-colors rounded"
                 >
-                  <LogOut size={14} strokeWidth={1.5} className="mr-2" /> Sign Out
-                </CockpitButton>
+                  <LogOut size={12} /> TERMINATE
+                </button>
               </div>
             </>
           ) : (
             <div className="p-4 flex flex-col gap-3">
-              <div className="pb-3 border-b border-[var(--color-instrument-grey)]">
-                <p className="text-xs text-[var(--color-instrument-grey)] font-[family-name:var(--font-labels)] leading-relaxed">Sign in to save flights and sync settings.</p>
+              <div className="pb-3 border-b border-aervyn-border-subtle">
+                <p className="text-[9px] text-aervyn-text-tertiary font-bold uppercase tracking-widest leading-relaxed">Authorize to sync telemetry data.</p>
               </div>
-              <CockpitButton  href="/login" onClick={() => setIsOpen(false)} variant="action" className="w-full">
-                <LogIn size={14} strokeWidth={1.5} className="mr-2" /> Sign In
-              </CockpitButton>
-              <CockpitButton  href="/register" onClick={() => setIsOpen(false)} variant="selector" className="w-full border-dashed">
-                <UserPlus size={14} strokeWidth={1.5} className="mr-2" /> Create Account
-              </CockpitButton>
+              <Link href="/login" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full bg-aervyn-status-cyan/20 border border-aervyn-status-cyan text-aervyn-status-cyan hover:bg-aervyn-status-cyan hover:text-white transition-colors text-[9px] font-bold uppercase tracking-widest py-2 rounded">
+                <LogIn size={12} /> AUTHORIZE
+              </Link>
+              <Link href="/register" onClick={() => setIsOpen(false)} className="flex items-center justify-center gap-2 w-full border border-aervyn-border-subtle border-dashed text-aervyn-text-secondary hover:text-aervyn-text-primary hover:border-aervyn-text-tertiary hover:bg-aervyn-panel-light transition-colors text-[9px] font-bold uppercase tracking-widest py-2 rounded">
+                <UserPlus size={12} /> REGISTER
+              </Link>
             </div>
           )}
         </div>

@@ -8,33 +8,47 @@ const { requireAuth } = require('../middleware/auth');
 const { generateToken: generateCsrfToken } = require('../middleware/csrf');
 const cryptoUtils = require('../utils/crypto');
 const emailService = require('../utils/emailService');
+const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 
 const router = express.Router();
 
-/**
- * @route   POST /api/auth/test-email
- * @desc    Test Resend API integration
- * @access  Public (for diagnostic purposes)
- */
-router.post('/test-email', async (req, res) => {
-  try {
-    const { email } = req.body;
-    if (!email || typeof email !== 'string') {
-      return res.status(400).json({ error: 'Valid email is required in request body.' });
-    }
-
-    const result = await emailService.sendEmail({
-      to: email,
-      subject: 'Resend Integration Test',
-      html: '<p>If you are seeing this, Resend API integration is working perfectly!</p>'
-    });
-
-    res.status(200).json({ message: 'Test email dispatched successfully!', result });
-  } catch (error) {
-    console.error('Test Email Error:', error);
-    res.status(500).json({ error: 'Failed to send test email', details: error.message });
-  }
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 mins
+  max: 5, // 5 attempts per window per IP + Email
+  keyGenerator: (req, res) => {
+    return ipKeyGenerator(req.ip) + '_' + (req.body.identifier || 'unknown').toLowerCase();
+  },
+  message: { error: 'Too many login attempts, please try again later.' },
+  standardHeaders: true,
 });
+
+const emailIpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  keyGenerator: (req, res) => ipKeyGenerator(req.ip),
+  message: { error: 'Too many email requests from this IP, please try again later.' },
+  standardHeaders: true,
+});
+
+const emailAccountLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 3,
+  keyGenerator: (req) => {
+    let email = 'unknown';
+    if (req.body && req.body.email) {
+      email = req.body.email;
+    } else if (req.user && req.user.email) {
+      email = req.user.email;
+    }
+    return email.toLowerCase();
+  },
+  message: { error: 'Too many email requests for this account, please try again later.' },
+  standardHeaders: true,
+});
+
+const emailLimiter = [emailIpLimiter, emailAccountLimiter];
+
 /**
  * Helper: Log Security Event
  */
@@ -61,7 +75,7 @@ const logSecurityEvent = async (userId, eventType, req, metadata = {}) => {
 router.get('/csrf-token', (req, res) => {
   const token = generateCsrfToken(req);
   res.cookie('_csrf', token, {
-    httpOnly: true,
+    httpOnly: false, // Must be false so JS can read it for Double Submit Cookie
     secure: process.env.NODE_ENV === 'production',
     sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
   });
@@ -71,7 +85,7 @@ router.get('/csrf-token', (req, res) => {
 /**
  * POST /api/auth/register
  */
-router.post('/register', async (req, res) => {
+router.post('/register', emailLimiter, async (req, res) => {
   try {
     const { name, username, email, password } = req.body;
 
@@ -83,8 +97,8 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: 'Invalid input types' });
     }
 
-    if (password.length < 8 || password.length > 100) {
-      return res.status(400).json({ error: 'Password must be between 8 and 100 characters' });
+    if (password.length < 12 || password.length > 100) {
+      return res.status(400).json({ error: 'Password must be between 12 and 100 characters' });
     }
 
     // Check if email or username exists safely
@@ -121,12 +135,12 @@ router.post('/register', async (req, res) => {
 
     // Send Verification Email
     try {
-      const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verifyToken}`;
+      const verificationLink = `${process.env.FRONTEND_URL || 'https://aervyn.in'}/verify-email?token=${verifyToken}`;
       // Fire-and-forget to prevent blocking the UI if SMTP is slow or times out
       emailService.sendEmail({
         to: newUser.email,
-        subject: 'Verify your SkyIntel Account',
-        html: `<p>Welcome to SkyIntel!</p><p>Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
+        subject: 'Verify your Aervyn Account',
+        html: `<p>Welcome to Aervyn!</p><p>Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
       }).catch(emailErr => {
         console.error('Failed to send verification email (background task):', emailErr.message);
       });
@@ -145,7 +159,7 @@ router.post('/register', async (req, res) => {
 /**
  * POST /api/auth/login
  */
-router.post('/login', async (req, res) => {
+router.post('/login', loginLimiter, async (req, res) => {
   try {
     const { identifier, password, rememberMe } = req.body; // identifier can be email or username
 
@@ -163,6 +177,8 @@ router.post('/login', async (req, res) => {
     });
 
     if (!user) {
+      // Dummy compare to mitigate timing attacks against user enumeration
+      await bcrypt.compare(password, '$2a$12$dummySaltForTimingAttackMitigation123456789012345678');
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
@@ -193,7 +209,7 @@ router.post('/login', async (req, res) => {
     await logSecurityEvent(user._id, 'LOGIN_SUCCESS', req);
 
     // Set HttpOnly Cookie
-    res.cookie('sessionId', sessionId, {
+    res.cookie('_session', sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
@@ -218,7 +234,7 @@ router.get('/me', requireAuth, (req, res) => {
  * POST /api/auth/resend-verification
  * Allows a logged in user to request a fresh verification email.
  */
-router.post('/resend-verification', requireAuth, async (req, res) => {
+router.post('/resend-verification', requireAuth, emailLimiter, async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
     if (!user) {
@@ -243,13 +259,13 @@ router.post('/resend-verification', requireAuth, async (req, res) => {
     });
 
     // Send Verification Email
-    const verificationLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verifyToken}`;
+    const verificationLink = `${process.env.FRONTEND_URL || 'https://aervyn.in'}/verify-email?token=${verifyToken}`;
     
     // Fire-and-forget to prevent blocking the UI
     emailService.sendEmail({
       to: user.email,
-      subject: 'Verify your SkyIntel Account (Resend)',
-      html: `<p>Welcome back to SkyIntel!</p><p>Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
+      subject: 'Verify your Aervyn Account (Resend)',
+      html: `<p>Welcome back to Aervyn!</p><p>Please verify your email by clicking the link below:</p><a href="${verificationLink}">Verify Email</a>`
     }).catch(emailErr => {
       console.error('Failed to send resend verification email (background task):', emailErr.message);
     });
@@ -269,8 +285,14 @@ router.post('/logout', requireAuth, async (req, res) => {
     await Session.findByIdAndDelete(req.session._id);
     await logSecurityEvent(req.user._id, 'LOGOUT', req);
     
-    res.clearCookie('sessionId', {
+    res.clearCookie('_session', {
       httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+    });
+    
+    res.clearCookie('_csrf', {
+      httpOnly: false,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
     });
@@ -321,7 +343,7 @@ router.post('/verify-email', async (req, res) => {
 /**
  * POST /api/auth/forgot-password
  */
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', emailLimiter, async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email is required' });
@@ -330,7 +352,8 @@ router.post('/forgot-password', async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
     
     if (!user) {
-      return res.status(404).json({ error: 'No account found with that email address.' });
+      // Prevent account enumeration by returning a success message even if the user is not found
+      return res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
     }
 
     const { token: resetToken, hash: resetTokenHash } = cryptoUtils.generateSecureToken();
@@ -342,12 +365,12 @@ router.post('/forgot-password', async (req, res) => {
       expiresAt: new Date(Date.now() + 1 * 60 * 60 * 1000) // 1 hour
     });
 
-    const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    const resetLink = `${process.env.FRONTEND_URL || 'https://aervyn.in'}/reset-password?token=${resetToken}`;
     try {
       // Fire-and-forget to prevent blocking the UI
       emailService.sendEmail({
         to: user.email,
-        subject: 'Reset your SkyIntel Password',
+        subject: 'Reset your Aervyn Password',
         html: `<p>You requested a password reset.</p><p>Click the link below to reset your password:</p><a href="${resetLink}">Reset Password</a>`
       }).catch(emailErr => {
         console.error('Failed to send password reset email (background task):', emailErr.message);
@@ -356,7 +379,7 @@ router.post('/forgot-password', async (req, res) => {
       console.error('Failed to send reset email:', emailErr);
     }
 
-    res.json({ message: 'Password reset link sent to your email.' });
+    res.json({ message: 'If an account exists for that email, a reset link has been sent.' });
   } catch (error) {
     console.error('Forgot Password Error:', error);
     res.status(500).json({ error: 'Server error' });
@@ -375,8 +398,8 @@ router.post('/reset-password', async (req, res) => {
     if (typeof token !== 'string' || typeof newPassword !== 'string') {
       return res.status(400).json({ error: 'Invalid input types' });
     }
-    if (newPassword.length < 8 || newPassword.length > 100) {
-      return res.status(400).json({ error: 'Password must be between 8 and 100 characters' });
+    if (newPassword.length < 12 || newPassword.length > 100) {
+      return res.status(400).json({ error: 'Password must be between 12 and 100 characters' });
     }
 
     const tokenHash = cryptoUtils.hashToken(token);

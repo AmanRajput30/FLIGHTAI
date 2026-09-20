@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aervyn — Workflow & Data Path</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.9.1/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #0a0d12;
+    --panel: #10151d;
+    --border: #1f2a37;
+    --text: #e6edf3;
+    --muted: #8b98a5;
+    --accent: #3aa0ff;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    padding: 32px 20px 80px;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; margin-bottom: 4px; }
+  .subtitle { color: var(--muted); margin-bottom: 24px; font-size: 0.95rem; }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+    padding: 14px 16px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+  nav a {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  nav a:hover { background: #16202c; }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 28px;
+    overflow-x: auto;
+    scroll-margin-top: 20px;
+  }
+  .card h2 {
+    font-size: 1.05rem;
+    margin: 0 0 4px;
+    color: var(--accent);
+  }
+  .card p.desc {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0 0 18px;
+  }
+  .mermaid { display: flex; justify-content: center; min-width: 600px; }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.8rem;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Aervyn — Workflow &amp; Data Path</h1>
+  <p class="subtitle">Split into focused diagrams — each one shows a single flow end to end instead of everything at once.</p>
+
+  <nav>
+    <a href="#overview">1. Architecture Overview</a>
+    <a href="#live">2. Live Flight Data Path</a>
+    <a href="#lookup">3. Flight Selection Lookup</a>
+    <a href="#auth">4. Auth Flow</a>
+    <a href="#chat">5. AI Chat Flow</a>
+    <a href="#journey">6. User Journey</a>
+  </nav>
+
+  <div class="card" id="overview">
+    <h2>1. Architecture Overview</h2>
+    <p class="desc">The big shapes only — what talks to what, at a glance.</p>
+    <pre class="mermaid">
+flowchart LR
+  U["User"] --> FE["Aervyn Frontend - Next.js"]
+  FE --> BE["Aervyn Backend - Express + Socket.IO"]
+  BE --> DB[("MongoDB Atlas")]
+  BE --> LIVE["Live Position Providers"]
+  BE --> ROUTE["Route Data Providers"]
+  BE --> AI["Groq - Llama 3.1"]
+  BE --> WXPH["Weather + Aircraft Photos"]
+  BE --> MAIL["Resend Email"]
+    </pre>
+  </div>
+
+  <div class="card" id="live">
+    <h2>2. Live Flight Data Path</h2>
+    <p class="desc">What happens every time your map viewport moves.</p>
+    <pre class="mermaid">
+sequenceDiagram
+  participant C as Client Map
+  participant S as Socket.IO Server
+  participant F as FlightDataService
+  participant O as OpenSky
+  participant A as ADSB.lol
+
+  C->>S: viewport_update (map bounds)
+  S->>F: request positions in bounds
+  F->>O: fetch live positions
+  alt OpenSky available
+    O-->>F: positions
+  else OpenSky down or rate-limited
+    F->>A: fetch live positions - fallback
+    A-->>F: positions
+  end
+  F-->>S: bucketed and classified positions
+  S-->>C: push position update
+  Note over C: interpolate movement, cull off-screen, render
+    </pre>
+  </div>
+
+  <div class="card" id="lookup">
+    <h2>3. Flight Selection Lookup</h2>
+    <p class="desc">What fires when you click a flight — three independent lookups, none blocks the others.</p>
+    <pre class="mermaid">
+sequenceDiagram
+  participant C as Client
+  participant API as Backend API
+  participant ADB as AeroDataBox
+  participant AVS as AviationStack
+  participant WX as Open-Meteo
+  participant PH as Planespotters
+
+  C->>API: select flight (hex)
+  par Route lookup
+    API->>ADB: get route
+    alt AeroDataBox fails
+      API->>AVS: get route - fallback
+    end
+    API-->>C: route data
+  and Weather lookup
+    API->>WX: get weather at position
+    API-->>C: weather data
+  and Photo lookup
+    API->>PH: get aircraft photo
+    API-->>C: photo
+  end
+    </pre>
+  </div>
+
+  <div class="card" id="auth">
+    <h2>4. Auth Flow</h2>
+    <p class="desc">Register through to an authenticated, CSRF-protected request.</p>
+    <pre class="mermaid">
+sequenceDiagram
+  participant C as Client
+  participant API as Backend API
+  participant DB as MongoDB
+
+  C->>API: register - email, username, password
+  API->>DB: create user, emailVerified = false
+  API-->>C: verification email sent
+
+  C->>API: login - identifier, password
+  API->>DB: verify credentials
+  API->>DB: create Session and CSRF token
+  API-->>C: set _session and _csrf cookies
+
+  C->>API: request to protected route + CSRF header
+  API->>DB: validate session and CSRF
+  API-->>C: response
+    </pre>
+  </div>
+
+  <div class="card" id="chat">
+    <h2>5. AI Chat Flow</h2>
+    <p class="desc">A chat message, from send to a possible map command.</p>
+    <pre class="mermaid">
+sequenceDiagram
+  participant C as Client Chat
+  participant CR as Chat Route
+  participant G as Groq - Llama 3.1
+  participant S as Socket.IO
+
+  C->>CR: send message + tracked flight hex
+  CR->>CR: fetch live telemetry for hex
+  CR->>G: system prompt + sandboxed telemetry + message
+  G-->>CR: response
+  CR->>CR: detect map command in response
+  CR-->>C: chat reply
+  CR->>S: emit command_focus_map - server only
+  S-->>C: map focuses or tracks flight
+    </pre>
+  </div>
+
+  <div class="card" id="journey">
+    <h2>6. User Journey</h2>
+    <p class="desc">The path a visitor takes through the app.</p>
+    <pre class="mermaid">
+flowchart TD
+  A["Visitor lands on aervyn.in"] --> B["Anonymous Dashboard - view live map"]
+  B --> C{"Wants to save flights or chat more?"}
+  C -- "No" --> B
+  C -- "Yes" --> D["Register + Verify Email"]
+  D --> E["Login"]
+  E --> F["Authenticated Dashboard"]
+  F --> G["Select Flight - Deep Telemetry"]
+  F --> H["Search Flight / Airport"]
+  F --> I["AI Chat - SkyLord"]
+  F --> J["Account Settings"]
+  J --> K["Forgot Password - Reset Flow"]
+    </pre>
+  </div>
+
+  <footer>Aervyn &middot; generated from the application logic spec</footer>
+</div>
+
+<script>
+  mermaid.initialize({
+    startOnLoad: true,
+    theme: "dark",
+    flowchart: { nodeSpacing: 45, rankSpacing: 55, curve: "basis" },
+    sequence: { actorMargin: 60, messageMargin: 45, boxMargin: 10, width: 140 },
+    themeVariables: { fontSize: "16px" }
+  });
+</script>
+</body>
+</html>

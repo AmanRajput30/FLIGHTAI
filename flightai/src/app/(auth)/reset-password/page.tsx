@@ -5,9 +5,8 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import axios from "axios";
 import { AlertCircle, CheckCircle2, Loader2, Eye, EyeOff } from "lucide-react";
-import { CockpitButton } from "@/components/ui/CockpitButton";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://flightai-hxbd.onrender.com";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://aervyn.in";
 
 function ResetPasswordContent() {
   const [password, setPassword] = useState("");
@@ -66,121 +65,127 @@ function ResetPasswordContent() {
 
   if (!token) {
     return (
-      <div className="flex flex-col items-center text-center py-8">
-        <div className="w-16 h-16 rounded-[2px] bg-red-500/20 flex items-center justify-center mb-6">
-          <AlertCircle className="w-8 h-8 text-red-400" />
+      <div className="flex w-full min-h-screen items-center justify-center bg-aervyn-bg-dark font-labels p-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-aervyn-status-cyan/5 mix-blend-overlay pointer-events-none"></div>
+        <div className="relative w-full max-w-md bg-aervyn-panel-base border border-aervyn-border-subtle p-8 sm:p-12 flex flex-col items-center text-center shadow-2xl">
+          <div className="w-16 h-16 rounded-full bg-aervyn-status-red/20 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(239,68,68,0.5)]">
+            <AlertCircle className="w-8 h-8 text-aervyn-status-red" />
+          </div>
+          <h2 className="text-sm font-bold text-aervyn-status-red uppercase tracking-widest mb-2">Invalid Link</h2>
+          <p className="text-xs text-aervyn-text-secondary mb-8">This password reset link is invalid or missing.</p>
+          <Link href="/forgot-password" className="w-full">
+            <button className="w-full bg-aervyn-panel-light border border-aervyn-border-subtle hover:border-aervyn-status-cyan text-aervyn-text-secondary hover:text-aervyn-text-primary py-3 rounded font-bold text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center">
+              REQUEST NEW LINK
+            </button>
+          </Link>
         </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Invalid Link</h2>
-        <p className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] uppercase tracking-widest mb-8">This password reset link is invalid or missing.</p>
-        <Link href="/forgot-password" className="w-full">
-          <CockpitButton variant="action" className="w-full bg-[var(--color-horizon-blue)] text-white border-[var(--color-horizon-blue)] justify-center">
-            REQUEST NEW LINK
-          </CockpitButton>
-        </Link>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col">
-      <div className="mb-8 text-center">
-        <h1 className="text-2xl font-bold text-white mb-2">Create New Password</h1>
-        <p className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] uppercase tracking-widest">Please enter your new strong password below.</p>
-      </div>
-
-      {error && (
-        <div className="mb-6 p-4 rounded-[2px] bg-red-500/10 border border-red-500/20 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
-          <p className="text-sm text-red-400">{error}</p>
+    <div className="flex w-full min-h-screen items-center justify-center bg-aervyn-bg-dark font-labels p-4 relative overflow-hidden">
+      <div className="absolute inset-0 bg-aervyn-status-cyan/5 mix-blend-overlay pointer-events-none"></div>
+      
+      <div className="relative w-full max-w-md bg-aervyn-panel-base border border-aervyn-border-subtle p-8 sm:p-12 flex flex-col shadow-2xl">
+        <div className="mb-8">
+          <h1 className="text-3xl font-extrabold uppercase tracking-[0.3em] mb-2 text-aervyn-text-primary drop-shadow-md text-center">
+            AERVYN
+          </h1>
+          <p className="text-[10px] text-aervyn-text-tertiary uppercase tracking-widest font-bold text-center">
+            Set New Passcode
+          </p>
         </div>
-      )}
 
-      {success ? (
-        <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-[2px] bg-green-500/20 flex items-center justify-center mb-6">
-            <CheckCircle2 className="w-8 h-8 text-green-400" />
+        {error && (
+          <div className="mb-6 p-4 rounded bg-aervyn-status-red/10 border border-aervyn-status-red flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-aervyn-status-red shrink-0 mt-0.5" />
+            <p className="text-xs text-aervyn-status-red font-bold uppercase tracking-wide">{error}</p>
           </div>
-          <p className="text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-white)] uppercase tracking-widest mb-8">{success}</p>
-          <Link href="/login" className="w-full">
-            <CockpitButton variant="action" className="w-full bg-[var(--color-horizon-blue)] text-white border-[var(--color-horizon-blue)] justify-center">
-              CONTINUE TO LOGIN
-            </CockpitButton>
-          </Link>
-        </div>
-      ) : (
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">New Password</label>
-            <div className="relative">
+        )}
+
+        {success ? (
+          <div className="flex flex-col items-center text-center">
+            <div className="w-16 h-16 rounded-full bg-aervyn-status-cyan/20 flex items-center justify-center mb-6 shadow-[0_0_15px_rgba(56,189,248,0.5)]">
+              <CheckCircle2 className="w-8 h-8 text-aervyn-status-cyan" />
+            </div>
+            <p className="text-xs font-bold text-aervyn-text-primary uppercase tracking-widest mb-8">{success}</p>
+            <Link href="/login" className="w-full">
+              <button className="w-full bg-aervyn-status-cyan/20 border border-aervyn-status-cyan hover:bg-aervyn-status-cyan text-aervyn-status-cyan hover:text-white py-3 rounded font-bold text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center drop-shadow-[0_0_8px_rgba(56,189,248,0.2)]">
+                CONTINUE TO LOGIN
+              </button>
+            </Link>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div>
+              <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-1.5 uppercase tracking-widest">New Passcode</label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-aervyn-panel-base border border-aervyn-border-subtle rounded px-4 py-3 text-aervyn-text-primary placeholder:text-aervyn-text-tertiary focus:outline-none focus:border-aervyn-status-cyan transition-colors pr-12 font-labels text-xs tracking-wide"
+                  placeholder="••••••••"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-aervyn-text-tertiary hover:text-aervyn-text-primary transition-colors p-1"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              {/* Password Strength Meter */}
+              {password.length > 0 && (
+                <div className="mt-2 flex gap-1 h-1.5">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div 
+                      key={i} 
+                      className={`flex-1 rounded-sm transition-colors ${
+                        i <= strength 
+                          ? strength <= 1 ? 'bg-aervyn-status-red' : strength === 2 ? 'bg-amber-500' : 'bg-aervyn-status-cyan'
+                          : 'bg-aervyn-panel-light'
+                      }`}
+                    ></div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-1.5 uppercase tracking-widest">Confirm New Passcode</label>
               <input
-                type={showPassword ? "text" : "password"}
+                type="password"
                 required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[var(--color-cockpit-black)] border border-[var(--color-instrument-grey)] rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:border-[var(--color-horizon-blue)] transition-all pr-12 font-[family-name:var(--font-labels)] text-sm"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className={`w-full bg-aervyn-panel-base border ${confirmPassword && password !== confirmPassword ? 'border-aervyn-status-red focus:border-aervyn-status-red' : 'border-aervyn-border-subtle focus:border-aervyn-status-cyan'} rounded px-4 py-3 text-aervyn-text-primary placeholder:text-aervyn-text-tertiary focus:outline-none focus:ring-1 transition-colors font-labels text-xs tracking-wide`}
                 placeholder="••••••••"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--color-instrument-grey)] hover:text-[var(--color-instrument-white)] transition-colors p-1"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-              </button>
             </div>
-            {/* Password Strength Meter */}
-            {password.length > 0 && (
-              <div className="mt-2 flex gap-1 h-1.5">
-                {[1, 2, 3, 4].map((i) => (
-                  <div 
-                    key={i} 
-                    className={`flex-1 rounded-[2px] ${
-                      i <= strength 
-                        ? strength <= 1 ? 'bg-[var(--color-warning-red)]' : strength === 2 ? 'bg-[var(--color-caution-amber)]' : 'bg-[var(--color-horizon-blue)]'
-                        : 'bg-[#111]'
-                    }`}
-                  ></div>
-                ))}
-              </div>
-            )}
-          </div>
 
-          <div>
-            <label className="block text-[10px] font-[family-name:var(--font-labels)] text-[var(--color-instrument-grey)] mb-1.5 uppercase tracking-widest">Confirm New Password</label>
-            <input
-              type="password"
-              required
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className={`w-full bg-[var(--color-cockpit-black)] border ${confirmPassword && password !== confirmPassword ? 'border-[var(--color-warning-red)] focus:border-[var(--color-warning-red)]' : 'border-[var(--color-instrument-grey)] focus:border-[var(--color-horizon-blue)]'} rounded-[2px] px-4 py-3 text-[var(--color-instrument-white)] placeholder-[var(--color-instrument-grey)] focus:outline-none focus:ring-1 transition-all font-[family-name:var(--font-labels)] text-sm`}
-              placeholder="••••••••"
-            />
-          </div>
-
-          <CockpitButton
-            type="submit"
-            variant="action"
-            disabled={isLoading || !password || password !== confirmPassword}
-            className="w-full mt-4 justify-center bg-[var(--color-horizon-blue)] text-white border-[var(--color-horizon-blue)]"
-          >
-            {isLoading ? (
-              <>
+            <button
+              type="submit"
+              disabled={isLoading || !password || password !== confirmPassword}
+              className="w-full mt-4 bg-aervyn-status-cyan/20 border border-aervyn-status-cyan text-aervyn-status-cyan hover:bg-aervyn-status-cyan hover:text-white py-3 rounded font-bold text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 drop-shadow-[0_0_8px_rgba(56,189,248,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                RESETTING...
-              </>
-            ) : (
-              "RESET PASSWORD"
-            )}
-          </CockpitButton>
-        </form>
-      )}
+              ) : null}
+              {isLoading ? "RESETTING..." : "RESET PASSCODE"}
+            </button>
+          </form>
+        )}
+      </div>
     </div>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-10"><Loader2 className="w-8 h-8 animate-spin text-yellow-500" /></div>}>
+    <Suspense fallback={<div className="flex w-full min-h-screen items-center justify-center bg-aervyn-bg-dark"><Loader2 className="w-8 h-8 animate-spin text-aervyn-status-cyan" /></div>}>
       <ResetPasswordContent />
     </Suspense>
   );

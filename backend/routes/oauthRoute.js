@@ -4,6 +4,7 @@ const User = require('../models/User');
 const Session = require('../models/Session');
 const SecurityEvent = require('../models/SecurityEvent');
 const cryptoUtils = require('../utils/crypto');
+const { OAuth2Client } = require('google-auth-library');
 
 const router = express.Router();
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -86,7 +87,7 @@ router.post('/google', async (req, res) => {
     await logSecurityEvent(user._id, 'LOGIN_SUCCESS', req, { provider: 'google' });
 
     // Set HttpOnly Cookie
-    res.cookie('sessionId', sessionId, {
+    res.cookie('_session', sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
@@ -171,7 +172,7 @@ router.post('/apple', async (req, res) => {
 
     await logSecurityEvent(user._id, 'LOGIN_SUCCESS', req, { provider: 'apple' });
 
-    res.cookie('sessionId', sessionId, {
+    res.cookie('_session', sessionId, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',

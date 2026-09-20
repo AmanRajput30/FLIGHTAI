@@ -27,8 +27,8 @@ export default function HorizonDivider({ className = '', animateTilt = false }: 
       className={`h-[2px] w-full flex flex-col overflow-hidden transition-transform duration-300 ease-out ${className}`}
       style={{ transform: `rotate(${tilt}deg)` }}
     >
-      <div className="h-1/2 w-full bg-[var(--color-horizon-blue)]"></div>
-      <div className="h-1/2 w-full bg-[var(--color-horizon-brown)]"></div>
+      <div className="h-1/2 w-full bg-aervyn-status-cyan"></div>
+      <div className="h-1/2 w-full bg-aervyn-status-amber"></div>
     </div>
   );
 }

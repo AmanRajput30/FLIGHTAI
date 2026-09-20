@@ -1,5 +1,6 @@
 const axios = require('axios');
 const { FlightDataProvider, NormalizedAircraft } = require('./FlightDataProvider');
+const TokenBucket = require('../utils/TokenBucket');
 
 class ADSBLOLProvider extends FlightDataProvider {
   constructor() {
@@ -13,6 +14,11 @@ class ADSBLOLProvider extends FlightDataProvider {
     this.circuitOpenUntil = 0;
     this.circuitBreakerThreshold = parseInt(process.env.ADSBLOL_CIRCUIT_BREAKER_THRESHOLD || '5', 10);
     this.timeoutMs = parseInt(process.env.ADSBLOL_TIMEOUT_MS || '10000', 10);
+    
+    // Global Cost Ceiling (Token Bucket)
+    // ADSB.lol is generous but we don't want to get banned. ~10 req/sec limit locally.
+    const fillRate = parseFloat(process.env.ADSBLOL_RATE_LIMIT_PER_SEC || '10.0');
+    this.tokenBucket = new TokenBucket(Math.ceil(fillRate * 5), fillRate);
   }
 
   normalize(rawData) {
@@ -58,6 +64,12 @@ class ADSBLOLProvider extends FlightDataProvider {
       this.circuitOpen = false;
     }
 
+    if (!this.tokenBucket.consume(1)) {
+      console.warn(`[ADSBLOL] Global rate limit reached. Throttling request.`);
+      // Graceful degradation: throw to let FlightDataService know
+      throw new Error('Rate_Limit_Exceeded');
+    }
+
     // Calculate center and radius for the bounding box
     const centerLat = (minLat + maxLat) / 2;
     const centerLng = (minLng + maxLng) / 2;
@@ -97,14 +109,16 @@ class ADSBLOLProvider extends FlightDataProvider {
 
     } catch (error) {
       this.failures++;
-      console.error(`[ADSBLOL ERROR] Failure ${this.failures}/${this.circuitBreakerThreshold}: ${error.message}`);
+      const status = error.response ? error.response.status : 'NETWORK';
+      console.error(`[ADSBLOL ERROR] Failure ${this.failures}/${this.circuitBreakerThreshold}: ${status}`);
       
       if (this.failures >= this.circuitBreakerThreshold) {
         this.circuitOpen = true;
         this.circuitOpenUntil = Date.now() + 60000; // 1 minute backoff
         console.error(`[ADSBLOL] Circuit breaker TRIPPED. Backing off for 1 minute.`);
+        throw new Error('Circuit_Tripped');
       }
-      return [];
+      throw error;
     }
   }
 }

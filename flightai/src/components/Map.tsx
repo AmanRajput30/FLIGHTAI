@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useState, memo, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -8,7 +8,7 @@ import { socket } from '@/lib/socket';
 import axios from 'axios';
 
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://flightai-hxbd.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://aervyn.in';
 
 const CATEGORIES = {
   COMMERCIAL: 'COMMERCIAL',
@@ -106,49 +106,60 @@ const classifyAircraft = (flight: any, routeData?: any): AircraftCategory => {
   return CATEGORIES.UNKNOWN;
 };
 
-const createAircraftIcon = (category: AircraftCategory, heading: number, isSelected: boolean, hasSelection: boolean, zoom: number, performanceMode: boolean) => {
+const createAircraftIcon = (category: AircraftCategory, heading: number, isSelected: boolean, hasSelection: boolean, zoom: number, performanceMode: boolean, flight: any) => {
   const isDetailed = zoom >= 6 && !performanceMode;
   
   const color = isSelected ? '#38bdf8' : '#fbbf24'; 
   const strokeColor = isSelected ? '#ffffff' : '#111111';
   let scale = isSelected ? 1.4 : 1.0;
   
-  // Zoom scaling
   if (zoom < 5) scale *= 0.6;
   else if (zoom < 7) scale *= 0.8;
 
   const dimClass = (!isSelected && hasSelection) ? 'dimmed-plane' : '';
-  const glowRing = isSelected ? `<div class="selection-glow"></div>` : '';
   const size = isDetailed ? SIZES[category] : Math.max(16, SIZES[category] * 0.7);
   const svgPath = PATHS[category];
-  
   const filter = isDetailed ? `filter="drop-shadow(0px 8px 8px rgba(0,0,0,0.6))"` : '';
-  
-  // Metallic gradient simulation
   const fillStyle = isDetailed ? `url(#metallic-${isSelected ? 'selected' : 'normal'})` : color;
+  
+  let labelHtml = '';
+  if (isSelected) {
+    const callsign = flight.flightNumber || flight.callsign || 'UNK';
+    const alt = flight.altitude ? `${flight.altitude} FT` : '---';
+    const speed = flight.speed ? `${flight.speed} KT` : '---';
+    labelHtml = `
+      <div class="absolute left-8 top-1/2 -translate-y-1/2 bg-aervyn-panel-base border border-aervyn-status-cyan text-aervyn-text-primary px-2 py-1 rounded shadow-lg pointer-events-none flex flex-col whitespace-nowrap z-50">
+        <span class="font-labels text-xs font-bold text-aervyn-status-cyan tracking-widest">${callsign}</span>
+        <span class="font-labels text-[9px] font-bold text-aervyn-text-tertiary tracking-widest mt-0.5">ALT <span class="text-aervyn-text-secondary">${alt}</span> | GS <span class="text-aervyn-text-secondary">${speed}</span></span>
+      </div>
+    `;
+  }
 
   return L.divIcon({
-    className: `custom-plane-icon ${isSelected ? 'selected-plane' : ''} ${dimClass}`,
+    className: `custom-plane-icon ${isSelected ? 'selected-plane z-50' : ''} ${dimClass}`,
     html: `
-      ${glowRing}
-      <div style="transform: rotate(${heading}deg) scale(${scale}); transition: transform 0.3s ease; will-change: transform;">
-        <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" ${filter}>
-          ${isDetailed ? `
-          <defs>
-            <linearGradient id="metallic-normal" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#fcd34d;stop-opacity:1" />
-              <stop offset="50%" style="stop-color:#fbbf24;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="metallic-selected" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#7dd3fc;stop-opacity:1" />
-              <stop offset="50%" style="stop-color:#38bdf8;stop-opacity:1" />
-              <stop offset="100%" style="stop-color:#0284c7;stop-opacity:1" />
-            </linearGradient>
-          </defs>
-          ` : ''}
-          <path d="${svgPath}" fill="${fillStyle}" stroke="${strokeColor}" stroke-width="${isDetailed ? '0.8' : '1.2'}" stroke-linejoin="round" />
-        </svg>
+      <div class="relative w-full h-full">
+        ${isSelected ? `<div class="selection-glow absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 rounded-full border border-aervyn-status-cyan"></div>` : ''}
+        <div style="transform: rotate(${heading}deg) scale(${scale}); transition: transform 0.3s ease; will-change: transform;" class="absolute inset-0 flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 24 24" ${filter}>
+            ${isDetailed ? `
+            <defs>
+              <linearGradient id="metallic-normal" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#fcd34d;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#fbbf24;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+              </linearGradient>
+              <linearGradient id="metallic-selected" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#7dd3fc;stop-opacity:1" />
+                <stop offset="50%" style="stop-color:#38bdf8;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#0284c7;stop-opacity:1" />
+              </linearGradient>
+            </defs>
+            ` : ''}
+            <path d="${svgPath}" fill="${fillStyle}" stroke="${strokeColor}" stroke-width="${isDetailed ? '0.8' : '1.2'}" stroke-linejoin="round" />
+          </svg>
+        </div>
+        ${labelHtml}
       </div>
     `,
     iconSize: [size, size],
@@ -161,14 +172,18 @@ const iconCache: Record<string, L.DivIcon> = {};
 const getAircraftIcon = (flight: any, routeData: any, isSelected: boolean, hasSelection: boolean, zoom: number, performanceMode: boolean) => {
   const category = classifyAircraft(flight, isSelected ? routeData : null);
   
-  // Bucket headings into 15 degree increments to save cache memory and DOM generation
   const bucketedHeading = Math.round((flight.heading || 0) / 15) * 15;
   const zoomBucket = zoom < 5 ? 'low' : zoom < 7 ? 'mid' : 'high';
+  
+  // Do not cache selected aircraft icons as their altitude/speed data changes constantly
+  if (isSelected) {
+    return createAircraftIcon(category, flight.heading || 0, isSelected, hasSelection, zoom, performanceMode, flight);
+  }
   
   const cacheKey = `${category}-${bucketedHeading}-${isSelected}-${hasSelection}-${zoomBucket}-${performanceMode}`;
   
   if (!iconCache[cacheKey]) {
-    iconCache[cacheKey] = createAircraftIcon(category, bucketedHeading, isSelected, hasSelection, zoom, performanceMode);
+    iconCache[cacheKey] = createAircraftIcon(category, bucketedHeading, isSelected, hasSelection, zoom, performanceMode, flight);
   }
   return iconCache[cacheKey];
 };
@@ -201,6 +216,27 @@ function PopupHandler({ onClose }: { onClose: () => void }) {
   return null;
 }
 
+const PureMarker = ({ targetPosition, icon, eventHandlers, children }: any) => {
+  const markerRef = useRef<L.Marker>(null);
+
+  useEffect(() => {
+    if (markerRef.current) {
+      markerRef.current.setLatLng(targetPosition);
+    }
+  }, [targetPosition[0], targetPosition[1]]);
+
+  return (
+    <Marker 
+      ref={markerRef} 
+      position={targetPosition} 
+      icon={icon} 
+      eventHandlers={eventHandlers}
+    >
+      {children}
+    </Marker>
+  );
+};
+
 function MarkerLayer({ flights, selectedFlightId, routeData, onFlightSelect, onFlightDeselect, performanceMode }: { flights: any[], selectedFlightId: string | null, routeData: any, onFlightSelect: (flight: any) => void, onFlightDeselect: () => void, performanceMode: boolean }) {
   const map = useMap();
   const [bounds, setBounds] = useState(() => map.getBounds().pad(1.0));
@@ -209,6 +245,8 @@ function MarkerLayer({ flights, selectedFlightId, routeData, onFlightSelect, onF
   
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
+    let intervalId: NodeJS.Timeout;
+    
     const updateBounds = () => {
       clearTimeout(timeoutId);
       timeoutId = setTimeout(() => {
@@ -217,7 +255,7 @@ function MarkerLayer({ flights, selectedFlightId, routeData, onFlightSelect, onF
         setBounds(currentBounds);
         setZoom(currentZoom);
         
-        if (currentZoom >= 5) {
+        if (currentZoom >= 5 && !document.hidden) {
           socket.volatile.emit('viewport_update', {
             minLat: currentBounds.getSouth(),
             maxLat: currentBounds.getNorth(),
@@ -228,25 +266,38 @@ function MarkerLayer({ flights, selectedFlightId, routeData, onFlightSelect, onF
       }, 750); // 750ms debounce
     };
     
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        clearInterval(intervalId);
+        socket.emit('pause_updates');
+      } else {
+        socket.emit('resume_updates');
+        updateBounds(); // Immediate fetch on foreground
+        intervalId = setInterval(updateBounds, 5000); // Resume polling
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
     map.on('moveend', updateBounds);
     map.on('zoomend', updateBounds);
     
-    // Initial fetch
-    updateBounds();
-    
-    // Periodic refresh
-    const intervalId = setInterval(() => {
-       updateBounds();
-    }, 5000);
+    // Initial fetch and poll setup
+    if (!document.hidden) {
+      updateBounds();
+      intervalId = setInterval(updateBounds, 5000);
+    }
     
     return () => {
       clearTimeout(timeoutId);
       clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       map.off('moveend', updateBounds);
       map.off('zoomend', updateBounds);
     };
   }, [map]);
 
+  const center = map.getCenter();
   const visibleFlights = flights.filter(flight => {
     // Always render the selected flight so it never vanishes during target acquisition
     if (flight.id === selectedFlightId) return true;
@@ -255,30 +306,41 @@ function MarkerLayer({ flights, selectedFlightId, routeData, onFlightSelect, onF
     } catch {
       return true;
     }
-  }).slice(0, 1500); // Strict safety cap: Browsers physically crash rendering > 2000 complex SVG markers. 1500 provides massive density without hanging the DOM.
+  })
+  .sort((a, b) => {
+    // Keep selected flight at the very top of the list always
+    if (a.id === selectedFlightId) return -1;
+    if (b.id === selectedFlightId) return 1;
+    
+    // Sort by proximity to viewport center
+    const distA = Math.pow(a.lat - center.lat, 2) + Math.pow(a.lng - center.lng, 2);
+    const distB = Math.pow(b.lat - center.lat, 2) + Math.pow(b.lng - center.lng, 2);
+    return distA - distB;
+  })
+  .slice(0, 1500); // Strict safety cap prioritizing closest to center
 
   return (
     <>
       <PopupHandler onClose={onFlightDeselect} />
       {visibleFlights.map(flight => (
-        <Marker 
+        <PureMarker 
           key={flight.id} 
-          position={[flight.lat, flight.lng]}
+          targetPosition={[flight.lat, flight.lng]}
           icon={getAircraftIcon(flight, routeData, flight.id === selectedFlightId, hasSelection, zoom, performanceMode)}
           eventHandlers={{
             click: () => onFlightSelect(flight)
           }}
         >
           <Popup className="glass-popup">
-            <div className="font-sans min-w-[120px] text-center">
-              <div className="font-bold">{flight.flightNumber || 'Unknown'}</div>
-              <div className="text-xs text-gray-400 font-medium mb-1 truncate max-w-[150px]">{flight.airline}</div>
+            <div className="font-labels min-w-[120px] text-center">
+              <div className="font-extrabold text-xs uppercase tracking-widest text-aervyn-text-primary">{flight.flightNumber || 'Unknown'}</div>
+              <div className="text-[10px] text-aervyn-text-secondary font-bold mb-1 truncate max-w-[150px] uppercase tracking-widest">{flight.airline}</div>
               {flight.id === selectedFlightId && routeData?.aircraftModel && (
-                <div className="text-[10px] text-yellow-400 mt-1 uppercase tracking-wider">{routeData.aircraftModel}</div>
+                <div className="text-[9px] text-aervyn-status-cyan font-bold mt-1 uppercase tracking-widest border-t border-aervyn-border-subtle pt-1">{routeData.aircraftModel}</div>
               )}
             </div>
           </Popup>
-        </Marker>
+        </PureMarker>
       ))}
     </>
   );
@@ -294,34 +356,76 @@ interface MapProps {
   performanceMode?: boolean;
 }
 
+const pathCache = new Map<string, [number, number][]>();
+
 const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, routeData, targetPos, mapMode = 'dark', performanceMode = false }: MapProps) => {
   const [flights, setFlights] = useState<any[]>([]);
   const [flightPath, setFlightPath] = useState<[number, number][]>([]);
   const [isZoomedOut, setIsZoomedOut] = useState(false);
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [isLoadingTrail, setIsLoadingTrail] = useState(false);
 
   useEffect(() => {
     socket.on('flights_update', (updatedFlights: any[]) => {
       setFlights(updatedFlights);
     });
-    return () => { socket.off('flights_update'); };
+    
+    socket.on('viewport_error', (data) => {
+      if (data.reason === 'zoom_too_wide') {
+        setMapError('Zoom in to see live traffic');
+        setFlights([]);
+      }
+    });
+
+    socket.on('data_outage', (data) => {
+      if (data.active) {
+        setMapError('Live data temporarily unavailable');
+      } else {
+        setMapError(null);
+      }
+    });
+
+    return () => { 
+      socket.off('flights_update'); 
+      socket.off('viewport_error');
+      socket.off('data_outage');
+    };
   }, []);
 
   useEffect(() => {
     if (selectedFlightId) {
-      // Fetch historical path
+      if (pathCache.has(selectedFlightId)) {
+        setFlightPath(pathCache.get(selectedFlightId)!);
+        setIsLoadingTrail(false); // We have cached data
+      } else {
+        setFlightPath([]);
+        setIsLoadingTrail(true); // First time fetch
+      }
+      
+      // Fetch fresh historical path
       axios.get(`${API_URL}/api/flight-path/${selectedFlightId}`)
         .then(res => {
           if (res.data && res.data.path) {
-             // Path object is [time, lat, lng, ...]
              const pathPoints: [number, number][] = res.data.path.map((pt: any) => [pt[1], pt[2]]);
+             pathCache.set(selectedFlightId, pathPoints);
              setFlightPath(pathPoints);
           } else {
+             pathCache.set(selectedFlightId, []);
              setFlightPath([]);
           }
+          setIsLoadingTrail(false);
         })
-        .catch(() => setFlightPath([]));
+        .catch(() => {
+          setIsLoadingTrail(false);
+          if (!pathCache.has(selectedFlightId)) {
+             setFlightPath([]);
+          }
+        });
     } else {
-      setTimeout(() => setFlightPath([]), 0);
+      setTimeout(() => {
+        setFlightPath([]);
+        setIsLoadingTrail(false);
+      }, 0);
     }
   }, [selectedFlightId]);
 
@@ -335,7 +439,7 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
         maxBoundsViscosity={1.0}
         style={{ width: '100%', height: '100%', background: mapMode === 'satellite' ? '#020304' : '#000000' }}
         zoomControl={false}
-        attributionControl={false}
+        attributionControl={true}
         // @ts-expect-error - react-leaflet typing issue
         whenReady={(mapEvent: any) => {
            const map = mapEvent.target;
@@ -351,6 +455,7 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
             url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
             maxZoom={19}
             noWrap={true}
+            attribution='&copy; <a href="https://www.esri.com/">Esri</a> | Flight data provided by <a href="https://adsb.lol">ADSB.lol</a> (ODbL)'
           />
         ) : (
           <TileLayer
@@ -358,6 +463,7 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
             maxZoom={16}
             noWrap={true}
             className="map-tiles"
+            attribution='&copy; <a href="https://www.esri.com/">Esri</a> | Flight data provided by <a href="https://adsb.lol">ADSB.lol</a> (ODbL)'
           />
         )}
         
@@ -368,11 +474,36 @@ const MapComponent = ({ onFlightSelect, onFlightDeselect, selectedFlightId, rout
         <MarkerLayer flights={flights} selectedFlightId={selectedFlightId} routeData={routeData} onFlightSelect={onFlightSelect} onFlightDeselect={onFlightDeselect} performanceMode={performanceMode} />
       </MapContainer>
       
+      {/* Dynamic Map Overlays (Errors) */}
+      {mapError && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-[1000] pointer-events-none font-labels">
+          <div className="bg-aervyn-panel-base/80 backdrop-blur-md border border-aervyn-border-subtle text-aervyn-text-primary px-6 py-2 rounded font-bold text-[10px] tracking-widest uppercase shadow-lg flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-aervyn-status-amber" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+            </svg>
+            {mapError}
+          </div>
+        </div>
+      )}
+
+      {/* Loading Trail Indicator */}
+      {isLoadingTrail && (
+        <div className="absolute top-4 right-4 z-[1000] pointer-events-none font-labels">
+          <div className="bg-aervyn-panel-base/80 backdrop-blur-md border border-aervyn-border-subtle text-aervyn-text-primary px-4 py-2 rounded font-bold text-[10px] tracking-widest uppercase shadow-lg flex items-center gap-2">
+            <svg className="animate-spin h-3 w-3 text-aervyn-status-cyan" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Loading trail...
+          </div>
+        </div>
+      )}
+
       <style jsx global>{`
-        .leaflet-container { background: var(--color-cockpit-black) !important; }
-        .leaflet-popup-content-wrapper { background: var(--color-cockpit-panel) !important; border: 1px solid var(--color-border-subtle) !important; color: var(--color-instrument-white) !important; border-radius: 4px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; }
-        .leaflet-popup-tip { background: var(--color-cockpit-panel) !important; border-top: 1px solid var(--color-border-subtle) !important; border-left: 1px solid var(--color-border-subtle) !important; box-shadow: none !important; }
-        .leaflet-popup-content { margin: 8px !important; font-family: var(--font-labels) !important; }
+        .leaflet-container { background: aervyn-bg-dark !important; }
+        .leaflet-popup-content-wrapper { background: aervyn-panel-base !important; border: 1px solid aervyn-border-subtle !important; color: aervyn-text-primary !important; border-radius: 4px !important; box-shadow: 0 4px 12px rgba(0,0,0,0.5) !important; }
+        .leaflet-popup-tip { background: aervyn-panel-base !important; border-top: 1px solid aervyn-border-subtle !important; border-left: 1px solid aervyn-border-subtle !important; box-shadow: none !important; }
+        .leaflet-popup-content { margin: 8px !important; font-family: labels !important; }
       `}</style>
     </div>
   );

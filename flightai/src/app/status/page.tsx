@@ -4,8 +4,8 @@ import { CheckCircle2 } from 'lucide-react';
 
 export default function StatusPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--color-cockpit-black)] text-foreground">
-      <Header variant="full" />
+    <div className="flex flex-col min-h-screen bg-aervyn-bg-dark] text-foreground">
+      <Header />
       
       <main className="flex-1 max-w-4xl mx-auto px-6 py-24 w-full">
         <div className="flex items-center justify-between mb-8">

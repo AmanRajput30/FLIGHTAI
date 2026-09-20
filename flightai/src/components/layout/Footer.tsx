@@ -1,47 +1,47 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { CockpitButton } from '../ui/CockpitButton';
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-[var(--color-cockpit-black)] border-t border-[var(--color-instrument-grey)] pt-12 pb-8 px-6 text-sm mt-auto">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-0 mb-12 border-l border-t border-[var(--color-instrument-grey)]">
-        <div className="flex flex-col gap-4 p-6 border-r border-b border-[var(--color-instrument-grey)] bg-[#050505]">
-          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+    <footer className="w-full bg-aervyn-bg-dark border-t border-aervyn-border-subtle pt-12 pb-8 px-6 text-sm mt-auto font-labels pointer-events-auto">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-0 mb-12 border-l border-t border-aervyn-border-subtle">
+        <div className="flex flex-col gap-4 p-6 border-r border-b border-aervyn-border-subtle bg-aervyn-panel-base relative overflow-hidden">
+          <div className="absolute inset-0 bg-aervyn-status-cyan/5 mix-blend-overlay pointer-events-none"></div>
+          <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity relative z-10 w-fit">
             <Image src="/logo.png" alt="Aervyn Logo" width={24} height={24} className="object-contain" />
-            <span className="font-bold text-xl tracking-widest text-white uppercase">Aervyn</span>
-            <span className="text-[10px] text-[var(--color-horizon-blue)] font-[family-name:var(--font-numerals)] ml-1 border border-[var(--color-horizon-blue)] px-1 rounded-[2px] leading-tight">V2.0</span>
+            <span className="font-extrabold text-xl tracking-widest text-aervyn-text-primary uppercase drop-shadow-md">Aervyn</span>
+            <span className="text-[10px] text-aervyn-status-cyan font-bold ml-1 border border-aervyn-status-cyan/50 px-1 rounded-[2px] leading-tight drop-shadow-[0_0_5px_rgba(56,189,248,0.3)] bg-aervyn-status-cyan/10">V2.0</span>
           </Link>
-          <p className="text-[var(--color-instrument-grey)] text-[10px] uppercase tracking-widest leading-relaxed font-[family-name:var(--font-labels)] mt-2">
+          <p className="text-aervyn-text-tertiary text-[10px] uppercase tracking-widest leading-relaxed font-bold mt-2 relative z-10">
             Real-time global aviation intelligence. Independent, accurate, and community-driven.
           </p>
         </div>
 
-        <div className="flex flex-col gap-2 p-6 border-r border-b border-[var(--color-instrument-grey)]">
-          <h3 className="font-bold text-[var(--color-instrument-white)] mb-2 uppercase tracking-widest text-[10px] font-[family-name:var(--font-labels)]">Product</h3>
-          <CockpitButton  href="/dashboard" variant="selector" className="justify-start">Live Map</CockpitButton>
-          <CockpitButton  href="/pricing" variant="selector" className="justify-start">Pricing</CockpitButton>
+        <div className="flex flex-col gap-2 p-6 border-r border-b border-aervyn-border-subtle bg-aervyn-bg-dark">
+          <h3 className="font-bold text-aervyn-text-primary mb-2 uppercase tracking-widest text-[10px]">Product</h3>
+          <Link href="/dashboard" className="text-[10px] text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light transition-colors px-3 py-2 rounded font-bold uppercase tracking-widest w-full">Live Map</Link>
+          <Link href="/pricing" className="text-[10px] text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light transition-colors px-3 py-2 rounded font-bold uppercase tracking-widest w-full">Pricing</Link>
         </div>
 
-        <div className="flex flex-col gap-2 p-6 border-r border-b border-[var(--color-instrument-grey)]">
-          <h3 className="font-bold text-[var(--color-instrument-white)] mb-2 uppercase tracking-widest text-[10px] font-[family-name:var(--font-labels)]">Company</h3>
-          <CockpitButton  href="/about" variant="selector" className="justify-start">About</CockpitButton>
-          <CockpitButton  href="/contact" variant="selector" className="justify-start">Contact</CockpitButton>
-          <CockpitButton  href="/status" variant="selector" className="justify-start">Status</CockpitButton>
+        <div className="flex flex-col gap-2 p-6 border-r border-b border-aervyn-border-subtle bg-aervyn-bg-dark">
+          <h3 className="font-bold text-aervyn-text-primary mb-2 uppercase tracking-widest text-[10px]">Company</h3>
+          <Link href="/about" className="text-[10px] text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light transition-colors px-3 py-2 rounded font-bold uppercase tracking-widest w-full">About</Link>
+          <Link href="/contact" className="text-[10px] text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light transition-colors px-3 py-2 rounded font-bold uppercase tracking-widest w-full">Contact</Link>
+          <Link href="/status" className="text-[10px] text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light transition-colors px-3 py-2 rounded font-bold uppercase tracking-widest w-full">Status</Link>
         </div>
 
-        <div className="flex flex-col gap-2 p-6 border-r border-b border-[var(--color-instrument-grey)]">
-          <h3 className="font-bold text-[var(--color-instrument-white)] mb-2 uppercase tracking-widest text-[10px] font-[family-name:var(--font-labels)]">Legal & Data</h3>
-          <CockpitButton  href="/terms" variant="selector" className="justify-start">Terms</CockpitButton>
-          <CockpitButton  href="/privacy" variant="selector" className="justify-start">Privacy</CockpitButton>
-          <CockpitButton  href="/data-sources" variant="selector" className="justify-start">Data Sources</CockpitButton>
+        <div className="flex flex-col gap-2 p-6 border-r border-b border-aervyn-border-subtle bg-aervyn-bg-dark">
+          <h3 className="font-bold text-aervyn-text-primary mb-2 uppercase tracking-widest text-[10px]">Legal & Data</h3>
+          <Link href="/terms" className="text-[10px] text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light transition-colors px-3 py-2 rounded font-bold uppercase tracking-widest w-full">Terms</Link>
+          <Link href="/privacy" className="text-[10px] text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light transition-colors px-3 py-2 rounded font-bold uppercase tracking-widest w-full">Privacy</Link>
+          <Link href="/data-sources" className="text-[10px] text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light transition-colors px-3 py-2 rounded font-bold uppercase tracking-widest w-full">Data Sources</Link>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-[var(--color-instrument-grey)] text-[10px] uppercase tracking-widest font-[family-name:var(--font-labels)]">
+      <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-aervyn-text-tertiary text-[10px] uppercase tracking-widest font-bold">
         <p>© {new Date().getFullYear()} Aervyn. All rights reserved.</p>
         <p>
-          Live data provided by <a href="https://adsb.lol" target="_blank" rel="noreferrer" className="text-white hover:underline">ADSB.lol</a> under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noreferrer" className="text-white hover:underline">ODbL 1.0 License</a>.
+          Live data provided by <a href="https://adsb.lol" target="_blank" rel="noreferrer" className="text-aervyn-text-primary hover:text-aervyn-status-cyan transition-colors">ADSB.lol</a> under the <a href="https://opendatacommons.org/licenses/odbl/1-0/" target="_blank" rel="noreferrer" className="text-aervyn-text-primary hover:text-aervyn-status-cyan transition-colors">ODbL 1.0 License</a>.
         </p>
       </div>
     </footer>

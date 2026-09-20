@@ -19,8 +19,20 @@ const oswald = Oswald({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://aervyn.in'),
   title: "Aervyn - Real-Time Aviation Intelligence",
   description: "Global flight tracking, deep aircraft telemetry, and AI-powered aviation insights.",
+  openGraph: {
+    title: "Aervyn - Real-Time Aviation Intelligence",
+    description: "Global flight tracking, deep aircraft telemetry, and AI-powered aviation insights.",
+    url: 'https://aervyn.in',
+    siteName: 'Aervyn',
+    locale: 'en_US',
+    type: 'website',
+  },
+  alternates: {
+    canonical: '/',
+  },
 };
 
 export default function RootLayout({

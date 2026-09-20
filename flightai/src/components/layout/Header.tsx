@@ -1,92 +1,74 @@
 "use client";
 
-import { Eye, Layers } from 'lucide-react';
+import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import GlobalSearch from '../search/GlobalSearch';
 import UserMenu from '../UserMenu';
 import { useUIStore } from '@/store/useUIStore';
-import { CockpitButton } from '../ui/CockpitButton';
-import { usePathname } from 'next/navigation';
+import { useFlightStore } from '@/store/useFlightStore';
+import { UTCClock } from './UTCClock';
+import { FlightStatus } from '../ui/FlightStatus';
+import { AlertBadge } from '../ui/AlertBadge';
 
-interface HeaderProps {
-  variant?: 'compact' | 'full';
-}
-
-export default function Header({ variant = 'compact' }: HeaderProps) {
-  const { systemStatus, mapMode, performanceMode, setMapMode, setPerformanceMode } = useUIStore();
-  const pathname = usePathname();
-
-  const isCompact = variant === 'compact';
+export default function Header() {
+  const { systemStatus } = useUIStore();
+  const flights = useFlightStore((state) => state.flights);
+  const aircraftCount = flights.length;
 
   return (
-    <header className={`h-16 border-b border-border-subtle bg-cockpit-black z-40 relative w-full flex items-center justify-between px-6 drop-shadow-md`}>
+    <header className="h-14 border-b border-aervyn-border-subtle bg-aervyn-bg-dark z-50 relative w-full flex items-center justify-between px-4 drop-shadow-md shrink-0">
+      
+      {/* LEFT: Branding & Time */}
       <div className="flex items-center gap-6">
-        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-          <Image src="/logo.png" alt="Aervyn Logo" width={24} height={24} className="object-contain" />
+        <Link href="/" className="flex items-center gap-3 hover:opacity-80 transition-opacity group">
+          <Image src="/logo.png" alt="Aervyn Logo" width={20} height={20} className="object-contain" />
           <div className="flex items-baseline gap-2">
-            <span className="font-bold text-xl tracking-widest text-instrument-white uppercase">AERVYN</span>
-            <span className="text-instrument-grey">|</span>
-            <span className="text-xs tracking-[0.2em] text-horizon-blue font-bold uppercase">Cockpit</span>
+            <span className="font-bold text-lg tracking-widest text-aervyn-text-primary font-labels uppercase group-hover:text-aervyn-status-cyan transition-colors">AERVYN</span>
+            <span className="text-aervyn-border-active hidden sm:inline">|</span>
+            <span className="text-[10px] tracking-[0.2em] text-aervyn-text-secondary font-bold uppercase hidden sm:inline">Ops</span>
           </div>
         </Link>
-        {!isCompact && (
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-instrument-grey">
-            <CockpitButton href="/dashboard" variant="selector" isActive={pathname === '/dashboard'}>Live Map</CockpitButton>
-            <CockpitButton href="/pricing" variant="selector" isActive={pathname === '/pricing'}>Pricing</CockpitButton>
-            <CockpitButton href="/about" variant="selector" isActive={pathname === '/about'}>About</CockpitButton>
-          </nav>
-        )}
+        <div className="hidden md:block h-6 w-px bg-aervyn-border-subtle mx-2" />
+        <UTCClock className="hidden md:flex" />
       </div>
-      
-      <div className={`${isCompact ? 'hidden md:block flex-1 max-w-xl mx-8' : 'hidden md:block w-64 mx-4'}`}>
+
+      {/* CENTER: Search */}
+      <div className="flex-1 max-w-xl mx-4 lg:mx-8 hidden sm:block">
         <GlobalSearch />
       </div>
 
+      {/* RIGHT: Operational Stats, Alerts, & User Menu */}
       <div className="flex items-center gap-5">
-        {/* Map Mode Toggle */}
-        {isCompact && (
-          <div className="hidden md:flex relative items-center">
-            <CockpitButton
-              variant="toggle"
-              isActive={mapMode === 'dark'}
-              onClick={() => { setMapMode('dark'); setPerformanceMode(false); }}
-              className="rounded-r-none border-r-0"
-            >
-              <Eye size={14} strokeWidth={2} className="mr-1" /> Dark
-            </CockpitButton>
-            <CockpitButton
-              variant="toggle"
-              isActive={mapMode === 'satellite'}
-              onClick={() => { setMapMode('satellite'); setPerformanceMode(false); }}
-              disabled={performanceMode}
-              title={performanceMode ? "Disabled due to low FPS" : "Esri World Imagery"}
-              className="rounded-l-none"
-            >
-              <Layers size={14} strokeWidth={2} className="mr-1" /> Premium
-            </CockpitButton>
-            {performanceMode && (
-               <span className="absolute -bottom-5 right-0 text-[9px] text-warning-red whitespace-nowrap font-bold">FPS GUARDIAN ACTIVE</span>
-            )}
-          </div>
-        )}
-
-        {isCompact && (
-          systemStatus === 'live' ? (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-cockpit-panel-raised border border-border-subtle text-horizon-blue text-[10px] font-bold uppercase tracking-widest font-labels">
-              <span className="relative flex h-2 w-2"><span className="animate-ping absolute inline-flex h-full w-full bg-horizon-blue opacity-75"></span><span className="relative inline-flex h-2 w-2 bg-horizon-blue"></span></span>
-              SYSTEM LIVE
-            </div>
-          ) : (
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-warning-red/10 border border-warning-red text-warning-red text-[10px] font-bold uppercase tracking-widest font-labels">
-              <span className="relative flex h-2 w-2"><span className="relative inline-flex h-2 w-2 bg-warning-red"></span></span>
-              DEGRADED
-            </div>
-          )
-        )}
         
+        {/* Tracked Aircraft Count */}
+        <div className="hidden lg:flex flex-col items-end mr-2">
+          <span className="text-[9px] tracking-widest uppercase text-aervyn-text-tertiary font-labels">Tracked Aircraft</span>
+          <div className="font-telemetry text-aervyn-text-primary text-sm leading-none flex items-baseline gap-1">
+            {aircraftCount.toLocaleString()}
+          </div>
+        </div>
+
+        {/* Live Indicator */}
+        <div className="hidden sm:block">
+          {systemStatus === 'live' ? (
+            <FlightStatus statusText="System Live" state="green" />
+          ) : (
+            <FlightStatus statusText="Degraded" state="amber" />
+          )}
+        </div>
+
+        {/* Alerts (Phase 8 placeholder) */}
+        <div className="hidden md:block">
+          <AlertBadge level="info" message="0 Alerts" className="opacity-50" />
+        </div>
+        
+        <div className="h-6 w-px bg-aervyn-border-subtle mx-2 hidden sm:block" />
+
         <UserMenu />
       </div>
+      
     </header>
   );
 }
+

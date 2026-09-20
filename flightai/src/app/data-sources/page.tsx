@@ -4,8 +4,8 @@ import { Database, Zap, MapPin, Cloud } from 'lucide-react';
 
 export default function DataSourcesPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-[var(--color-cockpit-black)] text-foreground">
-      <Header variant="full" />
+    <div className="flex flex-col min-h-screen bg-aervyn-bg-dark] text-foreground">
+      <Header />
       
       <main className="flex-1 max-w-4xl mx-auto px-6 py-24 w-full">
         <h1 className="text-3xl font-black mb-8 text-white flex items-center gap-3">
