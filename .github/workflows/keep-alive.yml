@@ -18,4 +18,10 @@ jobs:
         run: |
           # Using curl -f to fail the job (exit with non-zero code) if the HTTP status is an error (>= 400).
           # This ensures a GitHub notification is sent if the backend is genuinely down.
-          curl -f https://flightai-hxbd.onrender.com/healthz
+          # Added retry logic: Render free instances take up to 60s to wake up.
+          # If the cron is delayed and hits a sleeping instance, the load balancer might return a 502/503.
+          # --retry 5: Retry up to 5 times
+          # --retry-all-errors: Retry on 502/503 and timeouts
+          # --retry-delay 10: Wait 10 seconds between retries
+          # --max-time 30: Fail the individual request if it hangs for 30s
+          curl -f -L --retry 5 --retry-all-errors --retry-delay 10 --max-time 30 https://flightai-hxbd.onrender.com/healthz
