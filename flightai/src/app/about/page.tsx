@@ -1,5 +1,18 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About AERVYN",
+  description: "Learn about AERVYN, the premier platform for real-time global aviation intelligence and advanced flight tracking telemetry.",
+  openGraph: {
+    title: "About AERVYN",
+    description: "Learn about AERVYN, the premier platform for real-time global aviation intelligence and advanced flight tracking telemetry.",
+    url: "https://aervyn.in/about",
+  },
+};
+
+
 
 export default function AboutPage() {
   return (

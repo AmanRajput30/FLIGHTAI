@@ -2,6 +2,19 @@ import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Check, Sparkles, Zap, Building } from 'lucide-react';
 import { CockpitButton } from '@/components/ui/CockpitButton';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Pricing",
+  description: "Simple, transparent pricing for AERVYN. Access global flight data, advanced telemetry, and AI-powered aviation insights.",
+  openGraph: {
+    title: "Pricing",
+    description: "Simple, transparent pricing for AERVYN. Access global flight data, advanced telemetry, and AI-powered aviation insights.",
+    url: "https://aervyn.in/pricing",
+  },
+};
+
+
 
 export default function PricingPage() {
   return (

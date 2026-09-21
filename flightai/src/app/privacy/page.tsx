@@ -1,5 +1,18 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "AERVYN Privacy Policy. Learn how we handle your data, security, and privacy on our aviation intelligence platform.",
+  openGraph: {
+    title: "Privacy Policy",
+    description: "AERVYN Privacy Policy. Learn how we handle your data, security, and privacy on our aviation intelligence platform.",
+    url: "https://aervyn.in/privacy",
+  },
+};
+
+
 
 export default function PrivacyPage() {
   return (

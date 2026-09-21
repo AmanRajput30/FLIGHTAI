@@ -1,6 +1,19 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { CheckCircle2 } from 'lucide-react';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "System Status",
+  description: "Check the real-time operational status of AERVYN flight tracking APIs, database, and telemetry pipelines.",
+  openGraph: {
+    title: "System Status",
+    description: "Check the real-time operational status of AERVYN flight tracking APIs, database, and telemetry pipelines.",
+    url: "https://aervyn.in/status",
+  },
+};
+
+
 
 export default function StatusPage() {
   return (

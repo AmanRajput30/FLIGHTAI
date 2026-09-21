@@ -1,6 +1,19 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
 import { Database, Zap, MapPin, Cloud } from 'lucide-react';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Data Sources",
+  description: "AERVYN uses high-fidelity ADS-B networks and crowdsourced aviation telemetry to deliver real-time flight tracking globally.",
+  openGraph: {
+    title: "Data Sources",
+    description: "AERVYN uses high-fidelity ADS-B networks and crowdsourced aviation telemetry to deliver real-time flight tracking globally.",
+    url: "https://aervyn.in/data-sources",
+  },
+};
+
+
 
 export default function DataSourcesPage() {
   return (

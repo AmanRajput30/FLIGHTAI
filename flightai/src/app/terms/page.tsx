@@ -1,5 +1,18 @@
 import Header from '@/components/layout/Header';
 import Footer from '@/components/layout/Footer';
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description: "AERVYN Terms of Service. Guidelines and rules for using our real-time flight tracking and telemetry platform.",
+  openGraph: {
+    title: "Terms of Service",
+    description: "AERVYN Terms of Service. Guidelines and rules for using our real-time flight tracking and telemetry platform.",
+    url: "https://aervyn.in/terms",
+  },
+};
+
+
 
 export default function TermsPage() {
   return (
