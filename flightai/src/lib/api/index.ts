@@ -26,7 +26,11 @@ const getAnonId = () => {
   if (typeof window === 'undefined') return '';
   let id = localStorage.getItem('anon_id');
   if (!id) {
-    id = Math.random().toString(36).substring(2, 15);
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+      id = crypto.randomUUID();
+    } else {
+      id = Math.random().toString(36).substring(2, 15) + Date.now().toString(36);
+    }
     localStorage.setItem('anon_id', id);
   }
   return id;

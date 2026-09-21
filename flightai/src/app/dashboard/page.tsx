@@ -22,7 +22,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://aervyn.in';
 
 const Map = dynamic(() => import('@/components/map/AERVYNMap'), { 
   ssr: false,
-  loading: () => <div className="flex-1 h-full bg-aervyn-bg-dark flex items-center justify-center font-labels text-aervyn-text-primary uppercase tracking-widest text-sm font-bold">Initializing Radar...</div>
+  loading: () => <div className="flex-1 h-full bg-aervyn-bg-dark flex items-center justify-center font-labels text-aervyn-text-primary uppercase tracking-widest text-sm font-bold">Loading map...</div>
 });
 
 export default function Dashboard() {
@@ -81,7 +81,17 @@ export default function Dashboard() {
       setSystemStatus(status);
     });
 
-    socket.on('flights_update', (flights: any[]) => {
+    socket.on('flights_update', (payload: any[]) => {
+      const flights = payload.map(p => ({
+        id: p[0],
+        icao24: p[0],
+        lat: p[1],
+        lng: p[2],
+        heading: p[3],
+        speed: p[4],
+        category: p[5],
+        status: 'active' as const
+      }));
       useFlightStore.getState().setFlights(flights);
       
       const currentFlight = useFlightStore.getState().selectedFlight;

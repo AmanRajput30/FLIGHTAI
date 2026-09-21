@@ -127,7 +127,7 @@ export default function RegisterPage() {
         <div className="absolute bottom-0 left-0 p-10 w-full flex flex-col gap-6">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2, ...M_PRESETS.panel }} className="bg-aervyn-bg-dark/80 p-4 border-l-2 border-aervyn-status-cyan backdrop-blur-sm">
             <h3 className="text-aervyn-status-cyan font-bold text-xs uppercase tracking-widest mb-1">SECURE CLEARANCE</h3>
-            <p className="text-aervyn-text-primary text-xs font-bold tracking-wide">Direct access to the global aviation command center.</p>
+            <p className="text-aervyn-text-primary text-xs font-bold tracking-wide">Direct access to the global aviation intelligence platform.</p>
           </motion.div>
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.3, ...M_PRESETS.panel }} className="bg-aervyn-bg-dark/80 p-4 border-l-2 border-aervyn-status-cyan backdrop-blur-sm">
             <h3 className="text-aervyn-status-cyan font-bold text-xs uppercase tracking-widest mb-1">REAL-TIME TELEMETRY</h3>

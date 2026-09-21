@@ -152,6 +152,9 @@ router.post('/register', emailLimiter, async (req, res) => {
     res.status(201).json({ message: 'Registration successful.' });
   } catch (error) {
     console.error('Register Error:', error);
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ error: Object.values(error.errors).map(e => e.message).join(', ') });
+    }
     res.status(500).json({ error: 'Server error during registration' });
   }
 });

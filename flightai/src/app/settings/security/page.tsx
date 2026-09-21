@@ -172,9 +172,9 @@ export default function SecuritySettingsPage() {
       <section>
         <div className="mb-6">
           <h2 className="text-xl font-bold text-aervyn-text-primary mb-1 flex items-center gap-2 uppercase tracking-widest">
-            <Key className="w-5 h-5 text-aervyn-status-amber" /> Rotate Access Code
+            <Key className="w-5 h-5 text-aervyn-status-amber" /> Change Password
           </h2>
-          <p className="text-aervyn-text-tertiary text-[10px] uppercase tracking-widest font-bold">Update your passcode to maintain operational security.</p>
+          <p className="text-aervyn-text-tertiary text-[10px] uppercase tracking-widest font-bold">Update your account password.</p>
         </div>
 
         {passStatus && (
@@ -186,21 +186,21 @@ export default function SecuritySettingsPage() {
 
         <form onSubmit={handlePasswordChange} className="flex flex-col gap-5 max-w-xl">
           <div>
-            <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-2 uppercase tracking-widest">Current Code</label>
+            <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-2 uppercase tracking-widest">Current Password</label>
             <input type="password" required value={passData.currentPassword} onChange={(e) => setPassData({...passData, currentPassword: e.target.value})} className="w-full bg-aervyn-panel-base border border-aervyn-border-subtle rounded px-4 py-3 text-aervyn-text-primary focus:border-aervyn-status-cyan focus:outline-none transition-colors text-xs font-bold tracking-wide" placeholder="••••••••" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-2 uppercase tracking-widest">New Code</label>
+              <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-2 uppercase tracking-widest">New Password</label>
               <input type="password" required value={passData.newPassword} onChange={(e) => setPassData({...passData, newPassword: e.target.value})} className="w-full bg-aervyn-panel-base border border-aervyn-border-subtle rounded px-4 py-3 text-aervyn-text-primary focus:border-aervyn-status-cyan focus:outline-none transition-colors text-xs font-bold tracking-wide" placeholder="••••••••" />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-2 uppercase tracking-widest">Confirm New</label>
+              <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-2 uppercase tracking-widest">Confirm New Password</label>
               <input type="password" required value={passData.confirmPassword} onChange={(e) => setPassData({...passData, confirmPassword: e.target.value})} className="w-full bg-aervyn-panel-base border border-aervyn-border-subtle rounded px-4 py-3 text-aervyn-text-primary focus:border-aervyn-status-cyan focus:outline-none transition-colors text-xs font-bold tracking-wide" placeholder="••••••••" />
             </div>
           </div>
           <button type="submit" disabled={loadingPass} className="mt-1 w-fit bg-aervyn-status-amber/10 border border-aervyn-status-amber text-aervyn-status-amber hover:bg-aervyn-status-amber hover:text-black px-6 py-2.5 rounded font-bold text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 drop-shadow-[0_0_8px_rgba(245,158,11,0.2)] disabled:opacity-50 disabled:cursor-not-allowed">
-            {loadingPass ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "ROTATE CODE"}
+            {loadingPass ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : "CHANGE PASSWORD"}
           </button>
         </form>
       </section>
@@ -211,9 +211,9 @@ export default function SecuritySettingsPage() {
       <section>
         <div className="mb-6">
           <h2 className="text-xl font-bold text-aervyn-text-primary mb-1 flex items-center gap-2 uppercase tracking-widest">
-            <LinkIcon className="w-5 h-5 text-purple-500" /> Authorized Systems
+            <LinkIcon className="w-5 h-5 text-purple-500" /> Connected Accounts
           </h2>
-          <p className="text-aervyn-text-tertiary text-[10px] uppercase tracking-widest font-bold">Link external identity providers for rapid access.</p>
+          <p className="text-aervyn-text-tertiary text-[10px] uppercase tracking-widest font-bold">Link accounts for quick sign-in.</p>
         </div>
 
         {linkStatus && (
@@ -229,8 +229,8 @@ export default function SecuritySettingsPage() {
             <div className="flex items-center gap-4">
               <svg viewBox="0 0 24 24" width="24" height="24" xmlns="http://www.w3.org/2000/svg" className="drop-shadow-md"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
               <div>
-                <h4 className="text-aervyn-text-primary font-bold text-xs uppercase tracking-widest">Google Auth</h4>
-                <p className="text-[10px] text-aervyn-text-tertiary mt-1 font-bold uppercase tracking-widest">{user.googleId ? "LINKED ✓" : "UNLINKED ✗"}</p>
+                <h4 className="text-aervyn-text-primary font-bold text-xs uppercase tracking-widest">Google</h4>
+                <p className="text-[10px] text-aervyn-text-tertiary mt-1 font-bold uppercase tracking-widest">{user.googleId ? "LINKED" : "NOT LINKED"}</p>
               </div>
             </div>
             {user.googleId ? (
@@ -249,8 +249,8 @@ export default function SecuritySettingsPage() {
             <div className="flex items-center gap-4">
               <svg viewBox="0 0 384 512" width="24" height="24" xmlns="http://www.w3.org/2000/svg" fill="#fff" className="opacity-90"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
               <div>
-                <h4 className="text-aervyn-text-primary font-bold text-xs uppercase tracking-widest">Apple Auth</h4>
-                <p className="text-[10px] text-aervyn-text-tertiary mt-1 font-bold uppercase tracking-widest">{user.appleId ? "LINKED ✓" : "UNLINKED ✗"}</p>
+                <h4 className="text-aervyn-text-primary font-bold text-xs uppercase tracking-widest">Apple</h4>
+                <p className="text-[10px] text-aervyn-text-tertiary mt-1 font-bold uppercase tracking-widest">{user.appleId ? "LINKED" : "NOT LINKED"}</p>
               </div>
             </div>
             {user.appleId ? (
@@ -289,13 +289,13 @@ export default function SecuritySettingsPage() {
         <div className="mb-6 flex items-end justify-between max-w-3xl">
           <div>
             <h2 className="text-xl font-bold text-aervyn-text-primary mb-1 flex items-center gap-2 uppercase tracking-widest">
-              <Monitor className="w-5 h-5 text-aervyn-status-cyan" /> Terminal Access
+              <Monitor className="w-5 h-5 text-aervyn-status-cyan" /> Active Sessions
             </h2>
-            <p className="text-aervyn-text-tertiary text-[10px] uppercase tracking-widest font-bold">Systems currently authorized to access this account.</p>
+            <p className="text-aervyn-text-tertiary text-[10px] uppercase tracking-widest font-bold">Devices currently signed in to your account.</p>
           </div>
           {sessions.length > 1 && (
             <button onClick={handleLogoutAll} className="bg-aervyn-status-red/10 border border-aervyn-status-red text-aervyn-status-red hover:bg-aervyn-status-red hover:text-white px-4 py-2 rounded font-bold text-[9px] uppercase tracking-widest transition-colors drop-shadow-[0_0_5px_rgba(239,68,68,0.2)]">
-              TERMINATE ALL OTHERS
+              SIGN OUT ALL OTHERS
             </button>
           )}
         </div>
@@ -313,14 +313,14 @@ export default function SecuritySettingsPage() {
                   <div>
                     <h4 className="text-aervyn-text-primary font-bold text-xs flex items-center gap-2 uppercase tracking-widest">
                       {session.deviceInfo.split(' ').slice(0, 3).join(' ')}
-                      {session._id === currentSessionId && <span className="text-[8px] bg-aervyn-status-cyan border border-aervyn-status-cyan text-black px-1.5 py-0.5 rounded-sm font-extrabold shadow-[0_0_5px_rgba(56,189,248,0.5)]">THIS TERMINAL</span>}
+                      {session._id === currentSessionId && <span className="text-[8px] bg-aervyn-status-cyan border border-aervyn-status-cyan text-black px-1.5 py-0.5 rounded-sm font-extrabold shadow-[0_0_5px_rgba(56,189,248,0.5)]">CURRENT</span>}
                     </h4>
-                    <p className="text-[10px] text-aervyn-text-tertiary mt-1 font-bold tracking-widest uppercase">IP: {session.ipAddress} | Last Sync: {new Date(session.lastActiveAt).toLocaleDateString()}</p>
+                    <p className="text-[10px] text-aervyn-text-tertiary mt-1 font-bold tracking-widest uppercase">IP: {session.ipAddress} | Last active: {new Date(session.lastActiveAt).toLocaleDateString()}</p>
                   </div>
                 </div>
                 {session._id !== currentSessionId && (
                   <button onClick={() => handleRevokeSession(session._id)} className="text-[9px] font-bold uppercase tracking-widest text-aervyn-text-secondary hover:text-aervyn-status-red border border-aervyn-border-subtle hover:border-aervyn-status-red px-4 py-2 rounded transition-colors">
-                    REVOKE
+                    SIGN OUT
                   </button>
                 )}
               </div>
@@ -335,14 +335,14 @@ export default function SecuritySettingsPage() {
       <section>
         <div className="mb-6">
           <h2 className="text-xl font-bold text-aervyn-status-red mb-1 flex items-center gap-2 uppercase tracking-widest drop-shadow-[0_0_5px_rgba(239,68,68,0.5)]">
-            <ShieldAlert className="w-5 h-5" /> Code Red
+            <ShieldAlert className="w-5 h-5" /> Danger Zone
           </h2>
-          <p className="text-aervyn-text-tertiary text-[10px] uppercase tracking-widest font-bold">Permanently erase operator record and all associated intelligence.</p>
+          <p className="text-aervyn-text-tertiary text-[10px] uppercase tracking-widest font-bold">Permanently delete your account and all data.</p>
         </div>
 
         <div className="bg-aervyn-status-red/5 border border-aervyn-status-red/30 rounded p-6 max-w-xl">
-          <h3 className="text-aervyn-text-primary font-bold mb-2 uppercase tracking-widest text-xs">Self Destruct Protocol</h3>
-          <p className="text-[10px] text-aervyn-text-tertiary mb-6 font-bold uppercase tracking-widest leading-relaxed">This action cannot be aborted. All operational data, clearances, and terminal access will be permanently wiped from the grid.</p>
+          <h3 className="text-aervyn-text-primary font-bold mb-2 uppercase tracking-widest text-xs">Delete Account</h3>
+          <p className="text-[10px] text-aervyn-text-tertiary mb-6 font-bold uppercase tracking-widest leading-relaxed">This action is permanent and cannot be undone. Your account, sessions, and all associated data will be deleted.</p>
           
           {deleteStatus && (
             <div className="mb-4 p-3 rounded bg-aervyn-status-red/10 border border-aervyn-status-red text-[10px] uppercase tracking-widest font-bold text-aervyn-status-red flex items-start gap-2">
@@ -357,11 +357,11 @@ export default function SecuritySettingsPage() {
               <input type="text" value={deleteConfirmText} onChange={(e) => setDeleteConfirmText(e.target.value)} className="w-full bg-black/40 border border-aervyn-border-subtle rounded px-4 py-2.5 text-aervyn-text-primary focus:border-aervyn-status-red focus:outline-none transition-colors font-mono text-xs" placeholder="DELETE ACCOUNT" />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-1.5 uppercase tracking-widest">Operator Code</label>
+              <label className="block text-[10px] font-bold text-aervyn-text-tertiary mb-1.5 uppercase tracking-widest">Password</label>
               <input type="password" value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} className="w-full bg-black/40 border border-aervyn-border-subtle rounded px-4 py-2.5 text-aervyn-text-primary focus:border-aervyn-status-red focus:outline-none transition-colors text-xs font-bold tracking-wide" placeholder="••••••••" />
             </div>
             <button onClick={handleDeleteAccount} disabled={loadingDelete || deleteConfirmText !== "DELETE ACCOUNT" || !deletePassword} className="mt-2 bg-aervyn-status-red/20 border border-aervyn-status-red text-aervyn-status-red hover:bg-aervyn-status-red hover:text-white px-6 py-3 rounded font-bold text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 drop-shadow-[0_0_8px_rgba(239,68,68,0.2)] disabled:opacity-50 disabled:cursor-not-allowed">
-              {loadingDelete ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />} INITIATE ERASE
+              {loadingDelete ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Trash2 className="w-4 h-4 mr-2" />} DELETE ACCOUNT
             </button>
           </div>
         </div>

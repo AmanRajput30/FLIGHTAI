@@ -288,7 +288,7 @@ router.delete('/account', requireAuth, async (req, res) => {
     res.clearCookie('_session', {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'Lax',
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
     });
 
     res.json({ message: 'Account permanently deleted' });

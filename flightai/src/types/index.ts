@@ -1,6 +1,6 @@
 export interface Flight {
   id: string;
-  flightNumber: string;
+  flightNumber?: string;
   callsign?: string;
   aircraftType?: string;
   airline?: string;
@@ -8,7 +8,7 @@ export interface Flight {
   destination?: string;
   lat: number;
   lng: number;
-  alt: number;
+  alt?: number;
   altitude?: number; // Aliased/injected sometimes
   speed: number;
   heading: number;

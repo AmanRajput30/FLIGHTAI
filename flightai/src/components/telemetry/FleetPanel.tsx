@@ -27,7 +27,7 @@ export default function FleetPanel() {
       >
         <CommandPanel className="h-full">
           <PanelHeader 
-            title="Airspace Traffic" 
+            title="Flights" 
             subtitle={`${flights.length} TRK`}
             rightElement={
               <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded border border-aervyn-status-cyan bg-aervyn-status-cyan/10">
@@ -44,7 +44,7 @@ export default function FleetPanel() {
             {flights.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center p-8 text-aervyn-text-tertiary">
                 <Activity className="w-6 h-6 mb-2 opacity-50" />
-                <span className="text-[10px] tracking-widest uppercase font-labels font-bold">No Traffic Detected</span>
+                <span className="text-[10px] tracking-widest uppercase font-labels font-bold">No flights in view</span>
               </div>
             ) : (
               visibleFlights.map((flight) => (

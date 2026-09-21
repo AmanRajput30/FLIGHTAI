@@ -43,7 +43,7 @@ export default function TelemetryPanel() {
           className="w-full h-full"
         >
           <CommandPanel className="h-full">
-            <PanelHeader title="Airport Intelligence" subtitle={(airportData as any).iata || 'N/A'} />
+            <PanelHeader title="Airport" subtitle={(airportData as any).iata || 'N/A'} />
             <div className="p-4 flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <div>
@@ -60,7 +60,7 @@ export default function TelemetryPanel() {
               <div className="grid grid-cols-2 gap-4 mt-2">
                 <TelemetryValue label="ICAO Code" value={(airportData as any).icao || '----'} />
                 <TelemetryValue label="Elevation" value={(airportData as any).elevation} unit="m" />
-                <TelemetryValue className="col-span-2" label="Global Coordinates" value={`${(airportData as any).lat.toFixed(4)}°, ${(airportData as any).lng.toFixed(4)}°`} />
+                <TelemetryValue className="col-span-2" label="Coordinates" value={`${(airportData as any).lat.toFixed(4)}°, ${(airportData as any).lng.toFixed(4)}°`} />
               </div>
             </div>
           </CommandPanel>
@@ -76,7 +76,7 @@ export default function TelemetryPanel() {
         >
           <CommandPanel className="h-full overflow-y-auto no-scrollbar">
             <PanelHeader 
-              title="Target Acquired" 
+              title="Flight Details" 
               subtitle={selectedFlight.flightNumber || 'Unknown'} 
               rightElement={<span className="text-[9px] text-aervyn-status-green uppercase font-bold tracking-widest border border-aervyn-status-green/30 px-1.5 py-0.5 rounded bg-aervyn-status-green/10">TRACKING</span>}
             />
@@ -97,7 +97,7 @@ export default function TelemetryPanel() {
               <div className="w-full h-32 rounded bg-aervyn-bg-dark relative overflow-hidden border border-aervyn-border-subtle flex items-center justify-center">
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-aervyn-text-tertiary">
                   <Plane className="w-6 h-6 mb-1 opacity-30" />
-                  <span className="text-[9px] uppercase tracking-widest">No Visual Data</span>
+                  <span className="text-[9px] uppercase tracking-widest">No photo</span>
                 </div>
                 {flightPhotoUrl && (
                   <img 
@@ -114,9 +114,52 @@ export default function TelemetryPanel() {
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-[1px] bg-aervyn-border-subtle"></div>
                 <div className="text-[9px] text-aervyn-text-tertiary font-labels tracking-widest uppercase font-bold">
-                  {eta ? `TOTAL ${eta.hours}h ${eta.minutes % 60}m` : 'ROUTING DATA'}
+                  {eta ? `TOTAL ${eta.hours}h ${eta.minutes % 60}m` : 'ROUTE'}
                 </div>
                 <div className="flex-1 h-[1px] bg-aervyn-border-subtle"></div>
+              </div>
+
+              {/* Route Details */}
+              {flightRouteData && (
+                <div className="flex flex-col gap-3">
+                  <div className="flex justify-between items-center bg-aervyn-panel-light p-2 rounded border border-aervyn-border-subtle">
+                    <div className="flex flex-col">
+                      <span className="text-[9px] text-aervyn-text-tertiary uppercase tracking-widest mb-1">Departure</span>
+                      <span className="font-labels font-bold text-aervyn-text-primary text-sm">{flightRouteData.originIata || '---'}</span>
+                    </div>
+                    <Plane className="w-4 h-4 text-aervyn-border-active rotate-90" />
+                    <div className="flex flex-col text-right">
+                      <span className="text-[9px] text-aervyn-text-tertiary uppercase tracking-widest mb-1">Arrival</span>
+                      <span className="font-labels font-bold text-aervyn-text-primary text-sm">{flightRouteData.destinationIata || '---'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Telemetry Grid */}
+              <div className="grid grid-cols-2 gap-y-6 gap-x-4 mt-2 p-3 bg-aervyn-panel-dark border border-aervyn-border-subtle rounded">
+                <TelemetryValue 
+                  label="Altitude" 
+                  value={selectedFlight.altitude != null ? selectedFlight.altitude.toLocaleString() : null} 
+                  unit="ft"
+                  state={selectedFlight.altitude != null && selectedFlight.altitude < 10000 && selectedFlight.altitude > 0 ? 'stale' : 'live'}
+                />
+                <TelemetryValue 
+                  label="Ground Speed" 
+                  value={selectedFlight.speed} 
+                  unit="kts"
+                  state={selectedFlight.speed != null && selectedFlight.speed < 150 && (selectedFlight.altitude || 0) > 0 ? 'stale' : 'live'}
+                />
+                <TelemetryValue 
+                  label="Heading" 
+                  value={selectedFlight.heading != null ? Math.round(selectedFlight.heading) : null}
+                  unit="°"
+                />
+                <TelemetryValue 
+                  label="Vertical Rate" 
+                  value={selectedFlight.verticalRate != null ? (selectedFlight.verticalRate > 0 ? `+${selectedFlight.verticalRate}` : selectedFlight.verticalRate) : null} 
+                  unit="fpm"
+                />
               </div>
 
               {/* Route Details */}
@@ -175,14 +218,13 @@ export default function TelemetryPanel() {
           className="w-full h-full"
         >
           <CommandPanel state="empty" className="h-full min-h-[300px]">
-            {/* The CommandPanel 'empty' state handles the text, but let's override children to show the icon */}
             <div className="flex-1 flex flex-col items-center justify-center p-8 text-aervyn-text-tertiary">
               <div className="w-12 h-12 border border-aervyn-border-subtle rounded-full flex items-center justify-center mb-4 bg-aervyn-panel-light">
                 <Navigation className="w-5 h-5 text-aervyn-text-secondary" />
               </div>
-              <h3 className="font-bold text-aervyn-text-secondary mb-2 uppercase tracking-widest text-xs font-labels">No Target Selected</h3>
+              <h3 className="font-bold text-aervyn-text-secondary mb-2 uppercase tracking-widest text-xs font-labels">No Flight Selected</h3>
               <p className="text-[10px] text-center tracking-widest leading-relaxed uppercase font-labels">
-                Awaiting Target Selection
+                Select a flight on the map
               </p>
             </div>
           </CommandPanel>

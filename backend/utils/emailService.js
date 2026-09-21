@@ -11,10 +11,10 @@ let resendClient = null;
 
 const initializeEmailProvider = () => {
   if (process.env.RESEND_API_KEY) {
-    console.log("✅ Initializing Resend API for email delivery...");
+    console.log("[Email] Initializing Resend API for email delivery...");
     resendClient = new Resend(process.env.RESEND_API_KEY);
   } else if (process.env.EMAIL_SERVER_HOST) {
-    console.log("✅ Initializing Nodemailer SMTP transporter...");
+    console.log("[Email] Initializing Nodemailer SMTP transporter...");
     transporter = nodemailer.createTransport({
       host: process.env.EMAIL_SERVER_HOST,
       port: process.env.EMAIL_SERVER_PORT || 465,
@@ -25,7 +25,7 @@ const initializeEmailProvider = () => {
       },
     });
   } else {
-    console.error("❌ CRITICAL: No Email Provider configured! Please set RESEND_API_KEY or SMTP variables.");
+    console.error("[Email] CRITICAL: No Email Provider configured! Please set RESEND_API_KEY or SMTP variables.");
   }
 };
 
@@ -36,7 +36,8 @@ exports.sendEmail = async ({ to, subject, html }) => {
     throw new Error("Email provider not initialized. Missing API keys.");
   }
 
-  console.log(`[EmailService] Attempting to send email to: ${to}`);
+  const redactedTo = to.replace(/(?<=^.).+(?=@)/, '***');
+  console.log(`[EmailService] Attempting to send email to: ${redactedTo}`);
 
   try {
     if (resendClient) {
@@ -54,17 +55,17 @@ exports.sendEmail = async ({ to, subject, html }) => {
       if (error) {
         throw new Error(error.message);
       }
-      console.log(`[EmailService] ✅ Successfully sent via RESEND to: ${to}`);
+      console.log(`[Email] [OK] Successfully sent via RESEND to: ${redactedTo}`);
       return data;
     } else {
       // Send via classic Nodemailer SMTP
       const from = process.env.EMAIL_FROM || "\"Aervyn Auth\" <noreply@aervyn.in>";
       const info = await transporter.sendMail({ from, to, subject, html });
-      console.log(`[EmailService] ✅ Successfully sent via SMTP to: ${to}`);
+      console.log(`[Email] [OK] Successfully sent via SMTP to: ${redactedTo}`);
       return info;
     }
   } catch (err) {
-    console.error(`[EmailService] ❌ CRITICAL ERROR sending email to ${to}:`, err.message);
+    console.error(`[Email] [ERROR] CRITICAL ERROR sending email to ${redactedTo}:`, err.message);
     throw err;
   }
 };

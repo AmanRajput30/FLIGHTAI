@@ -78,10 +78,12 @@ const logger = require('pino')({
     paths: ['req.headers.cookie', 'req.headers["x-csrf-token"]', 'req.body.password', 'req.body.currentPassword', 'req.body.newPassword', 'res.headers["set-cookie"]'],
     censor: '[REDACTED]'
   },
-  transport: {
-    target: 'pino-pretty',
-    options: { colorize: true }
-  }
+  ...(process.env.NODE_ENV !== 'production' ? {
+    transport: {
+      target: 'pino-pretty',
+      options: { colorize: true }
+    }
+  } : {})
 });
 
 const io = new Server(server, { 
@@ -162,15 +164,15 @@ if (process.env.MONGODB_URI) {
   mongoose.connect(process.env.MONGODB_URI, {
     serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of hanging
   })
-    .then(() => console.log('✅ Connected to MongoDB'))
+    .then(() => console.log('[DB] Connected to MongoDB'))
     .catch(err => {
-      console.error('❌ MongoDB connection error (Check IP Whitelist in Atlas):', err.message);
+      console.error('[DB] MongoDB connection error (Check IP Whitelist in Atlas):', err.message);
     });
     
   // Disable buffering so queries fail immediately if connection is down
   mongoose.set('bufferCommands', false);
 } else {
-  console.warn('⚠️ MONGODB_URI not provided. Authentication features will not work.');
+  console.warn('[DB] MONGODB_URI not provided. Authentication features will not work.');
 }
 
 // Authentication Rate Limiter
@@ -511,7 +513,17 @@ io.on('connection', (socket) => {
         socket.emit('data_outage', { active: false });
       }
       
-      socket.emit('flights_update', flights);
+      // Truncate payload for rendering optimization
+      const renderPayload = flights.map(f => [
+        f.id || f.icao24, 
+        f.latitude, 
+        f.longitude, 
+        f.track || f.heading || 0, 
+        f.groundSpeed || 0, 
+        f.category || 'UNKNOWN'
+      ]);
+      
+      socket.emit('flights_update', renderPayload);
     } catch (e) {
       console.error('Failed to get flights for viewport:', e.message);
     }
