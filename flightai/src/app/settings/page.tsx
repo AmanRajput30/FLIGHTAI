@@ -7,9 +7,16 @@ import { motion } from 'framer-motion';
 import { M_PRESETS } from '@/lib/motion/presets';
 import { User, Shield, CreditCard, Users, Bell, Zap, Link as LinkIcon, HelpCircle, UploadCloud } from 'lucide-react';
 import Image from 'next/image';
+import { useAuth } from '@/context/AuthContext';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('details');
+  const { user } = useAuth();
+  
+  const nameParts = user?.name ? user.name.split(' ') : ['Commander', 'Sky'];
+  const firstName = nameParts[0] || '';
+  const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
+  const initial = user?.name ? user.name.charAt(0).toUpperCase() : 'C';
 
   const tabs = [
     { id: 'details', label: 'My details', icon: User },
@@ -80,8 +87,8 @@ export default function SettingsPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-6 gap-4 items-start">
                         <label className="sm:col-span-2 block text-sm font-medium text-white pt-2">Name</label>
                         <div className="sm:col-span-4 grid grid-cols-2 gap-4">
-                          <input type="text" defaultValue="Olivia" className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
-                          <input type="text" defaultValue="Rhye" className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
+                          <input type="text" defaultValue={firstName} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
+                          <input type="text" defaultValue={lastName} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
                         </div>
                       </div>
 
@@ -92,7 +99,7 @@ export default function SettingsPage() {
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span className="text-aervyn-text-dark-muted text-sm">@</span>
                           </div>
-                          <input type="email" defaultValue="olivia@untitledui.com" className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
+                          <input type="email" defaultValue={user?.email || "loading..."} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
                         </div>
                       </div>
 
@@ -103,8 +110,12 @@ export default function SettingsPage() {
                           <p className="text-xs text-aervyn-text-dark-secondary mt-1">This will be displayed on your profile.</p>
                         </div>
                         <div className="sm:col-span-4 flex items-center gap-6">
-                          <div className="w-16 h-16 rounded-full overflow-hidden bg-aervyn-surface-dark-elevated shrink-0">
-                            <Image src="https://ui-avatars.com/api/?name=Olivia+Rhye&background=020617&color=fff" alt="Profile" width={64} height={64} className="w-full h-full object-cover" />
+                          <div className="w-16 h-16 rounded-full overflow-hidden bg-aervyn-surface-dark-elevated shrink-0 border border-aervyn-border-dark flex items-center justify-center font-bold text-xl text-aervyn-text-dark-secondary">
+                            {user?.avatar ? (
+                               <Image src={user.avatar} alt="Profile" width={64} height={64} className="w-full h-full object-cover" />
+                            ) : (
+                               initial
+                            )}
                           </div>
                           <div className="flex-1 border border-dashed border-aervyn-border-dark rounded-xl p-6 flex flex-col items-center justify-center hover:bg-aervyn-surface-dark transition-colors cursor-pointer">
                             <div className="w-10 h-10 bg-aervyn-surface-dark-elevated rounded-full flex items-center justify-center mb-3">

@@ -20,7 +20,7 @@ export default function LandingPage() {
         </div>
         
         <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-aervyn-text-dark-secondary">
-          <Link href="/products" className="hover:text-aervyn-text-dark-primary transition-colors">Products</Link>
+          <Link href="/features" className="hover:text-aervyn-text-dark-primary transition-colors">Features</Link>
           <Link href="/data-sources" className="hover:text-aervyn-text-dark-primary transition-colors">Data Sources</Link>
           <Link href="/pricing" className="hover:text-aervyn-text-dark-primary transition-colors">Pricing</Link>
           <Link href="/about" className="hover:text-aervyn-text-dark-primary transition-colors">About</Link>

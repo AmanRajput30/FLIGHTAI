@@ -215,7 +215,7 @@ const routeLimiter = rateLimit({
 const { GROQ_MODEL } = require('./config/constants');
 
 // Global Unified Search
-app.get('/api/search/:query', searchLimiter, requireAuth, async (req, res) => {
+app.get('/api/search/:query', searchLimiter, async (req, res) => {
   try {
     let rawQuery = req.params.query;
     if (!rawQuery || rawQuery.length > 100) return res.status(400).json({ error: "Invalid search query." });
