@@ -22,6 +22,8 @@ export default function SettingsPage() {
   
   const [apiKey, setApiKey] = useState('loading...');
   const [copied, setCopied] = useState(false);
+  
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   const { user, refreshUser } = useAuth();
 
@@ -165,13 +167,38 @@ export default function SettingsPage() {
                                initial
                             )}
                           </div>
-                          <div className="flex-1 border border-dashed border-aervyn-border-dark rounded-xl p-6 flex flex-col items-center justify-center hover:bg-aervyn-surface-dark transition-colors cursor-pointer">
+                          <label className="flex-1 border border-dashed border-aervyn-border-dark rounded-xl p-6 flex flex-col items-center justify-center hover:bg-aervyn-surface-dark transition-colors cursor-pointer relative">
+                            <input 
+                              type="file" 
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                              accept="image/png, image/jpeg, image/gif, image/svg+xml"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                if (file.size > 5 * 1024 * 1024) {
+                                   setUploadError("Image must be less than 5MB");
+                                   return;
+                                }
+                                setUploadError(null);
+                                const reader = new FileReader();
+                                reader.onloadend = async () => {
+                                  try {
+                                     await userApi.updateProfile({ avatar: reader.result as string });
+                                     await refreshUser();
+                                  } catch(err: any) {
+                                     setUploadError(err.response?.data?.error || "Failed to upload image.");
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }}
+                            />
                             <div className="w-10 h-10 bg-aervyn-surface-dark-elevated rounded-full flex items-center justify-center mb-3">
                               <UploadCloud size={20} className="text-white" />
                             </div>
                             <p className="text-sm text-white mb-1"><span className="text-aervyn-primary font-medium">Click to upload</span> or drag and drop</p>
                             <p className="text-xs text-aervyn-text-dark-secondary">SVG, PNG, JPG or GIF (max. 800x400px)</p>
-                          </div>
+                            {uploadError && <p className="text-xs text-red-400 mt-2">{uploadError}</p>}
+                          </label>
                         </div>
                       </div>
 
@@ -307,8 +334,8 @@ export default function SettingsPage() {
                            setPassError("Passwords do not match.");
                            return;
                         }
-                        if (passwordForm.newPassword.length < 6) {
-                           setPassError("Password must be at least 6 characters.");
+                        if (passwordForm.newPassword.length < 8) {
+                           setPassError("Password must be at least 8 characters.");
                            return;
                         }
                         try {

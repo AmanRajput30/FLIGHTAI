@@ -34,12 +34,13 @@ const logSecurityEvent = async (userId, eventType, req, metadata = {}) => {
  */
 router.patch('/profile', requireAuth, async (req, res) => {
   try {
-    const { name, bio, avatar } = req.body;
+    const { name, bio, avatar, role } = req.body;
     
     // Allow updating these fields
     if (name) req.user.name = name;
     if (bio !== undefined) req.user.bio = bio;
     if (avatar !== undefined) req.user.avatar = avatar;
+    if (role !== undefined) req.user.role = role;
 
     await req.user.save();
     res.json({ message: 'Profile updated successfully', user: req.user });
