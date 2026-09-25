@@ -95,8 +95,8 @@ export default function RegisterPage() {
         password: formData.password,
       };
 
-      // Simulating a successful backend registration locally
-      await new Promise(resolve => setTimeout(resolve, 800));
+      // Hit real backend registration
+      await axios.post(`${API_URL}/api/auth/register`, payload, { withCredentials: true });
       
       setSuccess("Registration successful! Please check your email.");
       setFormData({ username: "", email: "", password: "", confirmPassword: "" });

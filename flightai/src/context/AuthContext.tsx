@@ -22,7 +22,6 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  login: (user: User) => void;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -84,12 +83,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const res = await axios.get(`${API_URL}/api/auth/me`);
       setUser(res.data.user);
     } catch (err) {
-      const storedMockUser = typeof window !== 'undefined' ? localStorage.getItem('mockUser') : null;
-      if (storedMockUser) {
-        setUser(JSON.parse(storedMockUser));
-      } else {
-        setUser(null);
-      }
+      setUser(null);
     } finally {
       setLoading(false);
     }
@@ -113,29 +107,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   }, [user, loading, pathname, router]);
 
-  const login = (userData: User) => {
-    setUser(userData);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('mockUser', JSON.stringify(userData));
-    }
-  };
-
   const logout = async () => {
     try {
       await axios.post(`${API_URL}/api/auth/logout`);
     } catch (error) {
       console.error('Logout error', error);
     } finally {
-      if (typeof window !== 'undefined') {
-        localStorage.removeItem('mockUser');
-      }
       setUser(null);
       router.push('/login');
     }
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

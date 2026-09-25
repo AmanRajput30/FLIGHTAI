@@ -22,7 +22,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const { login, refreshUser } = useAuth();
+  const { refreshUser } = useAuth();
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -64,21 +64,13 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      // Simulate backend authentication
-      await new Promise(resolve => setTimeout(resolve, 800));
+      const response = await axios.post(`${API_URL}/api/auth/login`, {
+        identifier,
+        password,
+        rememberMe
+      }, { withCredentials: true });
       
-      const mockUser = {
-        _id: "mock_user_123",
-        name: identifier.split('@')[0],
-        username: identifier.split('@')[0],
-        email: identifier.includes('@') ? identifier : `${identifier}@example.com`,
-        avatar: "",
-        bio: "",
-        role: "admin",
-        isEmailVerified: true
-      };
-      
-      login(mockUser);
+      await refreshUser();
       router.push("/live-tracking");
     } catch (err: any) {
       setError(err.response?.data?.error || "Invalid operator credentials");

@@ -63,29 +63,44 @@ export default function ChatPanel() {
     setInputValue('');
     setLoading(true);
 
-      // Simulate network delay for AI thinking
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      let aiResponse = "I am operating in offline mode. I can see you are looking at live telemetry data.";
-      let refFlights: any[] = [];
-      
-      if (selectedFlight) {
-        aiResponse = `I see you are tracking flight ${selectedFlight.callsign || selectedFlight.id}. It is currently at ${selectedFlight.altitude || 'an unknown'} feet, traveling at ${selectedFlight.speed || 0} knots.`;
-        refFlights = [selectedFlight.id];
-      } else {
-        const flights = useFlightStore.getState().flights;
-        if (flights.length > 0) {
-          aiResponse = `I am currently tracking ${flights.length} active aircraft in this sector. For example, ${flights[0].callsign || flights[0].id} is airborne. Select any aircraft on the map for detailed telemetry!`;
-          refFlights = [flights[0].id];
+    try {
+      const response: any = await chatApi.sendMessage(
+        [...messages, userMessage], 
+        selectedFlight?.id || null, 
+        socket.id
+      );
+
+      // Handle standard text response
+      if (response && response.response) {
+        addMessage({
+          role: 'assistant',
+          content: response.response,
+          referencedFlights: response.referencedFlights || []
+        });
+        
+        // Handle map commands if the AI decided to execute one
+        if (response.mapCommand) {
+          const { type, payload } = response.mapCommand;
+          if (type === 'command_focus_map') {
+            useFlightStore.getState().setTargetPos([payload.lat, payload.lng]);
+          } else if (type === 'command_focus_flight') {
+            const flight = useFlightStore.getState().flights.find(f => f.callsign === payload.flightNumber || f.icao24 === payload.flightNumber);
+            if (flight) {
+              useFlightStore.getState().setSelectedFlight(flight);
+              useFlightStore.getState().setFocusedFlightId(flight.id);
+            }
+          }
         }
       }
-
-      addMessage({
-        role: 'assistant',
-        content: aiResponse,
-        referencedFlights: refFlights
-      });
+    } catch (err: any) {
+      if (err.response?.status === 429) {
+         addMessage({ role: 'assistant', content: "I'm currently receiving too many requests. Please wait a moment." });
+      } else {
+         addMessage({ role: 'assistant', content: "Sorry, I am having trouble connecting to the intelligence network." });
+      }
+    } finally {
       setLoading(false);
+    }
   };
 
   const handleResendVerification = async () => {
