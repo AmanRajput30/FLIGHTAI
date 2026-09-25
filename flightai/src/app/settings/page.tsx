@@ -183,12 +183,12 @@ export default function SettingsPage() {
                             <span className="text-xs text-aervyn-text-dark-secondary mt-1 text-left">High contrast tactical interface optimized for dark environments.</span>
                           </button>
                           <button 
-                            onClick={() => setMapMode('light')}
-                            className={`flex flex-col items-start p-4 rounded-xl border transition-all ${mapMode === 'light' ? 'border-aervyn-primary bg-aervyn-primary/5' : 'border-aervyn-border-dark hover:border-aervyn-border-dark-subtle bg-aervyn-surface-dark'}`}
+                            onClick={() => setMapMode('satellite')}
+                            className={`flex flex-col items-start p-4 rounded-xl border transition-all ${mapMode === 'satellite' ? 'border-aervyn-primary bg-aervyn-primary/5' : 'border-aervyn-border-dark hover:border-aervyn-border-dark-subtle bg-aervyn-surface-dark'}`}
                           >
-                            <MapIcon size={24} className={mapMode === 'light' ? 'text-aervyn-primary mb-3' : 'text-aervyn-text-dark-muted mb-3'} />
-                            <span className="font-medium text-white">Light Mode</span>
-                            <span className="text-xs text-aervyn-text-dark-secondary mt-1 text-left">Clean, bright interface optimized for daylight conditions.</span>
+                            <MapIcon size={24} className={mapMode === 'satellite' ? 'text-aervyn-primary mb-3' : 'text-aervyn-text-dark-muted mb-3'} />
+                            <span className="font-medium text-white">Satellite Mode</span>
+                            <span className="text-xs text-aervyn-text-dark-secondary mt-1 text-left">High resolution satellite imagery overlay.</span>
                           </button>
                         </div>
                       </div>
@@ -202,10 +202,10 @@ export default function SettingsPage() {
                             <p className="text-xs text-aervyn-text-dark-secondary mt-1 max-w-md">Disables animations and visual effects to prioritize rendering speed and battery life.</p>
                           </div>
                           <button 
-                            onClick={() => setPerformanceMode(performanceMode === 'standard' ? 'low' : 'standard')}
-                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${performanceMode === 'low' ? 'bg-aervyn-primary' : 'bg-slate-700'}`}
+                            onClick={() => setPerformanceMode(!performanceMode)}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${performanceMode ? 'bg-aervyn-primary' : 'bg-slate-700'}`}
                           >
-                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${performanceMode === 'low' ? 'translate-x-6' : 'translate-x-1'}`} />
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${performanceMode ? 'translate-x-6' : 'translate-x-1'}`} />
                           </button>
                         </div>
                       </div>
