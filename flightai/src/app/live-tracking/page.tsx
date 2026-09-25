@@ -25,7 +25,7 @@ const Map = dynamic(() => import('@/components/map/AERVYNMap'), {
   loading: () => <div className="flex-1 h-full bg-aervyn-bg-dark flex items-center justify-center font-labels text-aervyn-text-primary uppercase tracking-widest text-sm font-bold">Loading map...</div>
 });
 
-export default function Dashboard() {
+export default function LiveTracking() {
   const { 
     selectedFlight, 
     focusedFlightId, 
@@ -91,21 +91,12 @@ export default function Dashboard() {
               id: p[0],
               icao24: p[0],
               callsign: p[1]?.trim() || p[0],
-              originCountry: p[2],
               lat: p[6],
               lng: p[5],
               heading: p[10] || 0,
               speed: p[9] ? Math.round(p[9] * 1.94384) : 0, // m/s to knots
               altitude: p[7] ? Math.round(p[7] * 3.28084) : 0, // meters to ft
               verticalRate: p[11] ? Math.round(p[11] * 196.85) : 0, // m/s to fpm
-              squawk: p[14],
-              onGround: p[8],
-              geoAltitude: p[13] ? Math.round(p[13] * 3.28084) : undefined,
-              timePosition: p[3],
-              lastContact: p[4],
-              positionSource: p[16],
-              spi: p[15],
-              sensors: p[12],
               category: 'Commercial',
               status: p[8] ? 'grounded' : 'active'
             })); // Removed arbitrary slice limit to allow planes to be visible on user's location
@@ -176,29 +167,30 @@ export default function Dashboard() {
 
       {/* Desktop Panels */}
       <div className="hidden lg:flex absolute left-[80px] top-16 bottom-6 z-40 w-[340px] pointer-events-none flex-col gap-4">
-        <div className="pointer-events-auto h-full w-full">
+        {/* Left Side: Fleet List */}
+        <div className="pointer-events-auto h-full w-full shadow-[4px_0_24px_rgba(0,0,0,0.5)]">
           <FleetPanel />
         </div>
       </div>
       
-      <div className="hidden lg:flex absolute right-6 top-16 bottom-6 z-40 w-[340px] pointer-events-none flex-col gap-4">
-        {/* Top Right: Telemetry (Selected Flight) */}
-        <div className="pointer-events-auto flex-[2] w-full min-h-0">
-          <TelemetryPanel />
-        </div>
-        
-        {/* Bottom Right: Chat / Command */}
-        <div className="pointer-events-auto flex-[1] w-full min-h-[300px]">
-          <ChatPanel />
-        </div>
-      </div>
-
-      {/* Bottom Center: Timeline */}
-      <div className="absolute bottom-4 left-[340px] right-[400px] z-10 pointer-events-none">
-        <div className="pointer-events-auto">
-          {/* Add a timeline or other bottom panel here later if needed */}
-        </div>
-      </div>
+      <AnimatePresence>
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          className="hidden lg:flex absolute right-6 top-16 bottom-6 z-40 w-[340px] pointer-events-none flex-col gap-4"
+        >
+          {/* Right Side: Telemetry / Selected Flight Details */}
+          <div className="pointer-events-auto flex-[2] w-full min-h-0 shadow-[-4px_0_24px_rgba(0,0,0,0.5)]">
+            <TelemetryPanel />
+          </div>
+          
+          {/* Optional Chat for specific flight tracking */}
+          <div className="pointer-events-auto flex-[1] w-full min-h-[300px] shadow-[-4px_0_24px_rgba(0,0,0,0.5)]">
+            <ChatPanel />
+          </div>
+        </motion.div>
+      </AnimatePresence>
 
       {/* Mobile Panels */}
       <AnimatePresence>

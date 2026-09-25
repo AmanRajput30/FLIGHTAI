@@ -492,7 +492,7 @@ io.on('connection', (socket) => {
     }
     
     // Area check (prevent full planet fetch)
-    const MAX_VIEWPORT_AREA = 150 * 150; // Degrees squared
+    const MAX_VIEWPORT_AREA = 360 * 180; // Allow full planet
     const area = (bounds.maxLat - bounds.minLat) * (bounds.maxLng - bounds.minLng);
     if (area > MAX_VIEWPORT_AREA) {
       socket.emit('viewport_error', { reason: 'zoom_too_wide' });

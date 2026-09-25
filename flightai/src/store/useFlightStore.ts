@@ -13,6 +13,7 @@ interface FlightState {
   targetPos: [number, number] | null;
   flights: Flight[];
   airportData: unknown | null;
+  myFleetIds: string[];
 
   setSelectedFlight: (flight: Flight | null) => void;
   setFocusedFlightId: (id: string | null) => void;
@@ -24,6 +25,8 @@ interface FlightState {
   setTargetPos: (pos: [number, number] | null) => void;
   setFlights: (flights: Flight[]) => void;
   setAirportData: (data: unknown | null) => void;
+  addToFleet: (id: string) => void;
+  removeFromFleet: (id: string) => void;
   fetchFlightDetails: (flight: Flight, apiUrl: string) => Promise<void>;
 }
 
@@ -38,6 +41,7 @@ export const useFlightStore = create<FlightState>((set) => ({
   targetPos: null,
   flights: [],
   airportData: null,
+  myFleetIds: [],
 
   setSelectedFlight: (flight) => set({ selectedFlight: flight }),
   setFocusedFlightId: (id) => set({ focusedFlightId: id }),
@@ -49,6 +53,8 @@ export const useFlightStore = create<FlightState>((set) => ({
   setTargetPos: (pos) => set({ targetPos: pos }),
   setFlights: (flights) => set({ flights: flights }),
   setAirportData: (data) => set({ airportData: data }),
+  addToFleet: (id) => set((state) => ({ myFleetIds: state.myFleetIds.includes(id) ? state.myFleetIds : [...state.myFleetIds, id] })),
+  removeFromFleet: (id) => set((state) => ({ myFleetIds: state.myFleetIds.filter(fId => fId !== id) })),
   
   fetchFlightDetails: async (flight, apiUrl) => {
     // Reset previous flight data immediately to prevent stale data
@@ -63,7 +69,14 @@ export const useFlightStore = create<FlightState>((set) => ({
 
     try {
       // 1. Fetch complete normalized details from backend
-      const res = await axios.get(`${apiUrl}/api/flight/details/${flight.id}`);
+      const query = new URLSearchParams();
+      if (flight.callsign) query.append('callsign', flight.callsign.trim());
+      if (flight.lat) query.append('lat', flight.lat.toString());
+      if (flight.lng) query.append('lng', flight.lng.toString());
+
+      const res = await axios.get(`${apiUrl}/api/flight/details/${flight.id}?${query.toString()}`, {
+        withCredentials: true
+      });
       
       if (!isCurrent()) return; // Abort if user clicked another flight
 

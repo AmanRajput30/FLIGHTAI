@@ -39,7 +39,7 @@ class FlightDataService {
 
     for (let lat = startLat; lat <= endLat; lat += BUCKET_SIZE) {
       for (let lng = startLng; lng <= endLng; lng += BUCKET_SIZE) {
-        if (count++ > 50) return buckets; // Hard cap on buckets per request
+        if (count++ > 100) return buckets; // Allow up to 100 buckets
         buckets.push({
           key: this.getBucketKey(lat, lng),
           minLat: lat,

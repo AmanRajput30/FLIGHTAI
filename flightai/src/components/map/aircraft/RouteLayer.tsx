@@ -36,11 +36,13 @@ export const RouteLayer: React.FC<RouteLayerProps> = ({ map, selectedFlightId })
             'line-opacity': 0.8,
             'line-dasharray': [2, 3]
           }
-        }, 'aircraft-layer'); // Render underneath aircraft
+        });
       }
     };
 
-    setupLayer();
+    if (map.isStyleLoaded()) {
+      setupLayer();
+    }
     map.on('style.load', setupLayer);
     
     return () => {

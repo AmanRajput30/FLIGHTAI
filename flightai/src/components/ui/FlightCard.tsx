@@ -16,19 +16,19 @@ export const FlightCard: React.FC<FlightCardProps> = ({
   return (
     <div 
       onClick={onClick}
-      className={`p-3 border rounded cursor-pointer transition-colors ${isActive ? 'border-aervyn-status-blue bg-aervyn-panel-light' : 'border-aervyn-border-subtle bg-aervyn-panel-base hover:border-aervyn-border-active'}`}
+      className={`p-4 border rounded-xl cursor-pointer transition-colors ${isActive ? 'border-aervyn-primary bg-aervyn-primary/10' : 'border-aervyn-border-dark bg-aervyn-surface-dark hover:border-aervyn-border-dark-subtle'}`}
     >
-      <div className="flex justify-between items-start mb-2">
+      <div className="flex justify-between items-start mb-3">
         <div>
-          <div className="font-labels font-bold text-sm text-aervyn-text-primary">{callsign}</div>
-          {flightNumber && <div className="font-labels text-[10px] text-aervyn-text-tertiary tracking-widest">{flightNumber}</div>}
+          <div className="font-semibold text-sm text-aervyn-text-dark-primary">{callsign}</div>
+          {flightNumber && <div className="text-xs font-medium text-aervyn-text-dark-muted mt-0.5">{flightNumber}</div>}
         </div>
-        <div className="font-labels text-[9px] font-bold tracking-wider text-aervyn-status-green uppercase">{statusText}</div>
+        <div className="text-xs font-semibold text-aervyn-status-success">{statusText}</div>
       </div>
-      <div className="flex items-center text-aervyn-text-secondary font-labels text-xs tracking-widest">
-        <span>{origin}</span>
-        <span className="mx-2 text-aervyn-border-active">─────────</span>
-        <span>{destination}</span>
+      <div className="flex items-center text-aervyn-text-dark-secondary font-medium text-sm">
+        <span className="flex-1 min-w-0 truncate" title={origin}>{origin}</span>
+        <span className="mx-3 shrink-0 text-aervyn-border-dark-subtle">──────</span>
+        <span className="flex-1 min-w-0 truncate text-right" title={destination}>{destination}</span>
       </div>
     </div>
   );

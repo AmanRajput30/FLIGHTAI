@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from 'react';
 import * as maplibregl from 'maplibre-gl';
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { getMapStyle } from './mapStyle';
+import { socket } from '@/lib/socket';
 
 interface MapLibreCanvasProps {
   onMapLoaded: (map: maplibregl.Map) => void;
@@ -24,8 +25,10 @@ export const MapLibreCanvas: React.FC<MapLibreCanvasProps> = ({ onMapLoaded, onM
     const map = new maplibregl.Map({
       container: mapContainerRef.current,
       style: getMapStyle(mapMode, is3D),
-      center: [0, 20],
-      zoom: 3,
+      center: [10.0, 50.0], // Central Europe (high density)
+      zoom: 4,
+      minZoom: 2, // Prevent zooming out too far
+      renderWorldCopies: false, // Prevent infinite map repetition horizontally
       pitch: is3D ? 60 : 0, // Start with a 3D perspective if enabled
       maxPitch: 85 // Allow dramatic low angles
     });
@@ -38,8 +41,17 @@ export const MapLibreCanvas: React.FC<MapLibreCanvasProps> = ({ onMapLoaded, onM
         showCompass: true,
         visualizePitch: true,
       }),
-      'top-right'
+      'bottom-right'
     );
+
+    const geolocate = new maplibregl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true
+      },
+      trackUserLocation: true,
+      showAccuracyCircle: false
+    });
+    map.addControl(geolocate, 'bottom-right');
 
     map.addControl(
       new maplibregl.ScaleControl({
@@ -50,7 +62,41 @@ export const MapLibreCanvas: React.FC<MapLibreCanvasProps> = ({ onMapLoaded, onM
     );
 
     map.on('load', () => {
+      // CRITICAL FIX: Only execute if this map is still the active one!
+      if (mapInstanceRef.current !== map) return;
+      
+      (window as any).map = map;
       onMapLoaded(map);
+      
+      // Initial fetch
+      const bounds = map.getBounds();
+      let minLng = bounds.getWest();
+      let maxLng = bounds.getEast();
+      // Normalize longitudes to avoid server-side rejection for wrapped maps
+      if (minLng < -180) minLng = -180;
+      if (maxLng > 180) maxLng = 180;
+      
+      socket.emit('viewport_update', {
+        minLat: Math.max(-90, bounds.getSouth()),
+        minLng: minLng,
+        maxLat: Math.min(90, bounds.getNorth()),
+        maxLng: maxLng
+      });
+    });
+
+    map.on('moveend', () => {
+      const bounds = map.getBounds();
+      let minLng = bounds.getWest();
+      let maxLng = bounds.getEast();
+      if (minLng < -180) minLng = -180;
+      if (maxLng > 180) maxLng = 180;
+      
+      socket.emit('viewport_update', {
+        minLat: Math.max(-90, bounds.getSouth()),
+        minLng: minLng,
+        maxLat: Math.min(90, bounds.getNorth()),
+        maxLng: maxLng
+      });
     });
 
     map.on('error', (e) => {
@@ -76,16 +122,29 @@ export const MapLibreCanvas: React.FC<MapLibreCanvasProps> = ({ onMapLoaded, onM
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [onMapLoaded]); // Do not re-init when mapMode changes
 
+  /* 
+  const isFirstMount = useRef(true);
+
   // Update style when mapMode or is3D changes
   useEffect(() => {
-    if (mapInstanceRef.current) {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    
+    if (mapInstanceRef.current && mapInstanceRef.current.isStyleLoaded()) {
       mapInstanceRef.current.setStyle(getMapStyle(mapMode, is3D));
       mapInstanceRef.current.easeTo({
         pitch: is3D ? 60 : 0,
         duration: 1000
       });
+    } else if (mapInstanceRef.current) {
+      mapInstanceRef.current.once('style.load', () => {
+        mapInstanceRef.current?.setStyle(getMapStyle(mapMode, is3D));
+      });
     }
   }, [mapMode, is3D]);
+  */
 
   return (
     <div 

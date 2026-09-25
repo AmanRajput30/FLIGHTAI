@@ -1,7 +1,7 @@
 const express = require('express');
 const FlightSelectionService = require('../services/FlightSelectionService');
 const rateLimit = require('express-rate-limit');
-const { requireAuth } = require('../middleware/auth');
+const { optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -16,16 +16,17 @@ const detailLimiter = rateLimit({
 // Input validation: hex IDs are 6 hex chars, but we also accept callsigns up to 10 alphanumeric
 const VALID_ID = /^[a-fA-F0-9]{6}$/;
 
-router.get('/details/:id', detailLimiter, requireAuth, async (req, res) => {
+router.get('/details/:id', detailLimiter, optionalAuth, async (req, res) => {
   try {
     const { id } = req.params;
+    const { callsign, lat, lng } = req.query;
 
     // Reject obviously malformed IDs
     if (!id || id.length < 2 || id.length > 10 || !/^[a-zA-Z0-9]+$/.test(id)) {
       return res.status(400).json({ error: 'Invalid flight identifier format.' });
     }
 
-    const details = await FlightSelectionService.getDetails(id);
+    const details = await FlightSelectionService.getDetails(id, callsign, lat, lng);
     res.json(details);
   } catch (error) {
     if (error.message.includes('not found')) {

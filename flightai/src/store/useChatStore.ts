@@ -24,7 +24,7 @@ export const useChatStore = create<ChatState>((set) => ({
   ],
   inputValue: '',
   loading: false,
-  panelState: 'minimized',
+  panelState: 'open',
   hasUnread: false,
 
   setMessages: (messages) => set((state) => ({ 

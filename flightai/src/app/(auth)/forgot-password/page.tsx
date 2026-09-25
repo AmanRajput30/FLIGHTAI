@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import axios from "axios";
 import { AlertCircle, CheckCircle2, Loader2, ArrowLeft } from "lucide-react";
+import { motion } from "framer-motion";
+import { M_PRESETS } from "@/lib/motion/presets";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "https://aervyn.in";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -21,7 +24,7 @@ export default function ForgotPasswordPage() {
 
     try {
       const res = await axios.post(`${API_URL}/api/auth/forgot-password`, { email });
-      setSuccess(res.data.message || "Reset link sent!");
+      setSuccess(res.data.message || "Reset link sent! Please check your inbox.");
       setEmail("");
     } catch (err: any) {
       setError(err.response?.data?.error || "Failed to process request. Please try again.");
@@ -31,62 +34,143 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="flex w-full min-h-screen items-center justify-center bg-aervyn-bg-dark font-labels p-4 relative overflow-hidden">
-      <div className="absolute inset-0 bg-aervyn-status-cyan/5 mix-blend-overlay pointer-events-none"></div>
-      
-      <div className="relative w-full max-w-md bg-aervyn-panel-base border border-aervyn-border-subtle p-8 sm:p-12 flex flex-col shadow-2xl">
-        <Link href="/login" className="inline-flex items-center text-[9px] text-aervyn-text-tertiary uppercase tracking-widest hover:text-aervyn-text-primary transition-colors mb-8">
-          <ArrowLeft className="w-3 h-3 mr-1" /> Back to login
-        </Link>
+    <div className="flex w-full min-h-screen bg-aervyn-bg-dark">
+      {/* Left Column - Image */}
+      <motion.div 
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={M_PRESETS.panel}
+        className="hidden lg:flex w-1/2 relative overflow-hidden"
+      >
+        <Image 
+          src="https://images.unsplash.com/photo-1540962351504-03099e0a754b?q=80&w=1974&auto=format&fit=crop" 
+          alt="Aviation mountains"
+          fill
+          className="object-cover opacity-60 mix-blend-luminosity"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#07111F] via-[#07111F]/80 to-transparent"></div>
+        
+        <div className="absolute bottom-16 left-12 max-w-lg z-10">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, ...M_PRESETS.panel }}>
+            <p className="text-xs text-slate-300 tracking-widest font-bold uppercase mb-4">Real-Time Aviation Intelligence</p>
+            <h1 className="text-5xl font-bold text-white mb-6 leading-tight">See the Sky<br/><span className="text-[#155EEF]">Differently.</span></h1>
+            <p className="text-slate-300 text-sm leading-relaxed mb-10 max-w-md">Track. Analyze. Understand. AERVYN provides real-time flight data, powerful insights, and tools for a more connected world.</p>
+            
+            <div className="flex gap-8">
+              <div className="flex flex-col">
+                <div className="w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center mb-2">
+                  <span className="text-white text-xs">🌐</span>
+                </div>
+                <span className="text-white font-bold text-sm">190+</span>
+                <span className="text-slate-400 text-xs">Countries</span>
+              </div>
+              <div className="flex flex-col">
+                <div className="w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center mb-2">
+                  <span className="text-white text-xs">✈️</span>
+                </div>
+                <span className="text-white font-bold text-sm">1M+</span>
+                <span className="text-slate-400 text-xs">Flights Daily</span>
+              </div>
+              <div className="flex flex-col">
+                <div className="w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center mb-2">
+                  <span className="text-white text-xs">📊</span>
+                </div>
+                <span className="text-white font-bold text-sm">Real-Time</span>
+                <span className="text-slate-400 text-xs">Global Data</span>
+              </div>
+            </div>
 
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold uppercase tracking-[0.3em] mb-2 text-aervyn-text-primary drop-shadow-md">
-            AERVYN
+            <div className="mt-12 text-slate-400 italic font-serif text-sm">
+              "A clearer sky<br/>for a more informed world."
+            </div>
+            
+            <div className="absolute -bottom-8 text-[10px] text-slate-500">
+              © {new Date().getFullYear()} AERVYN. All rights reserved.
+            </div>
+          </motion.div>
+        </div>
+      </motion.div>
+
+      {/* Right Column - Form */}
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.1, ...M_PRESETS.panel }}
+        className="w-full lg:w-1/2 flex flex-col p-8 sm:p-16 xl:p-24 bg-white justify-center items-center relative"
+      >
+        <Link href="/login" className="absolute top-8 left-8 flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Back to sign in
+        </Link>
+        
+        <div className="w-full max-w-sm flex flex-col">
+        
+        <div className="mb-10 lg:hidden text-center mt-8">
+          <span className="font-bold text-xl tracking-wide text-slate-900">AERVYN</span>
+        </div>
+
+        <div className="mb-8 relative mt-12 lg:mt-0">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            Reset password
           </h1>
-          <p className="text-[10px] text-aervyn-text-tertiary uppercase tracking-widest font-bold">
-            Recover Operator Clearance
+          <p className="text-sm text-slate-500">
+            Enter your email and we'll send a link to reset it.
           </p>
         </div>
 
         {error && (
-          <div className="mb-6 p-4 rounded bg-aervyn-status-red/10 border border-aervyn-status-red flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-aervyn-status-red shrink-0 mt-0.5" />
-            <p className="text-xs text-aervyn-status-red font-bold uppercase tracking-wide">{error}</p>
-          </div>
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-3 rounded-lg bg-red-50 border border-red-100 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+            <p className="text-sm text-red-700 font-medium">{error}</p>
+          </motion.div>
         )}
 
         {success && (
-          <div className="mb-6 p-4 rounded bg-aervyn-status-cyan/10 border border-aervyn-status-cyan flex items-start gap-3">
-            <CheckCircle2 className="w-5 h-5 text-aervyn-status-cyan shrink-0 mt-0.5" />
-            <p className="text-xs text-aervyn-status-cyan font-bold uppercase tracking-wide">{success}</p>
-          </div>
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mb-6 p-6 rounded-lg bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center gap-3 text-center">
+            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-2">
+              <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+            </div>
+            <div>
+              <h3 className="text-emerald-800 font-medium text-lg mb-1">Link Sent</h3>
+              <p className="text-sm text-emerald-600">{success}</p>
+            </div>
+          </motion.div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="block text-[10px] font-bold text-aervyn-text-tertiary uppercase tracking-widest mb-2">Comms Channel (Email)</label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full bg-aervyn-panel-base border border-aervyn-border-subtle rounded px-4 py-3 text-aervyn-text-primary placeholder:text-aervyn-text-tertiary focus:outline-none focus:border-aervyn-status-cyan transition-colors text-xs font-bold tracking-wide"
-              placeholder="INPUT EMAIL"
-            />
-          </div>
+        {!success && (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email address</label>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#155EEF] focus:ring-1 focus:ring-[#155EEF] transition-shadow text-sm"
+                placeholder="name@company.com"
+              />
+            </div>
 
-          <button
-            type="submit"
-            disabled={isLoading || !email}
-            className="w-full mt-4 bg-aervyn-status-cyan/20 border border-aervyn-status-cyan hover:bg-aervyn-status-cyan text-aervyn-status-cyan hover:text-white py-3 rounded font-bold text-[10px] uppercase tracking-widest transition-colors flex items-center justify-center gap-2 drop-shadow-[0_0_8px_rgba(56,189,248,0.2)] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isLoading ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : null}
-            {isLoading ? "INITIATING RECOVERY..." : "REQUEST RESET LINK"}
-          </button>
-        </form>
-      </div>
+            <button
+              type="submit"
+              disabled={isLoading || !email}
+              className="w-full mt-2 bg-[#155EEF] hover:bg-[#1D6FFF] text-white py-2.5 rounded-lg font-medium text-sm transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : null}
+              Send reset link &rarr;
+            </button>
+          </form>
+        )}
+        
+        <div className="absolute bottom-8 right-8 flex gap-4 text-xs text-slate-400">
+          <Link href="/privacy" className="hover:text-slate-600 transition-colors">Privacy</Link>
+          <Link href="/terms" className="hover:text-slate-600 transition-colors">Terms</Link>
+          <Link href="/support" className="hover:text-slate-600 transition-colors">Support</Link>
+        </div>
+        </div>
+      </motion.div>
     </div>
   );
 }

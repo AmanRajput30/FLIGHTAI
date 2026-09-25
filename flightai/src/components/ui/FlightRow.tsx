@@ -1,4 +1,5 @@
 import React from 'react';
+import { Plane } from 'lucide-react';
 
 export interface FlightRowProps {
   callsign: string;
@@ -16,13 +17,16 @@ export const FlightRow: React.FC<FlightRowProps> = ({
   return (
     <div 
       onClick={onClick}
-      className={`flex items-center justify-between px-3 py-2 cursor-pointer border-b border-aervyn-border-subtle transition-colors ${isActive ? 'bg-aervyn-border-active/30 border-l-2 border-l-aervyn-status-blue' : 'hover:bg-aervyn-panel-light border-l-2 border-l-transparent'}`}
+      className={`flex items-center justify-between px-4 py-3 cursor-pointer border-b border-aervyn-border-dark transition-colors ${isActive ? 'bg-aervyn-primary/10 border-l-2 border-l-aervyn-primary' : 'hover:bg-aervyn-surface-dark border-l-2 border-l-transparent bg-aervyn-bg-dark'}`}
     >
       <div className="flex items-center gap-4">
-        <span className={`font-labels font-bold tracking-wider text-xs ${isActive ? 'text-aervyn-status-cyan' : 'text-aervyn-text-primary'}`}>{callsign}</span>
-        <span className="font-labels text-[10px] text-aervyn-text-secondary tracking-widest">{origin} <span className="text-aervyn-text-tertiary mx-1">→</span> {destination}</span>
+        <Plane size={14} className={`shrink-0 ${isActive ? 'text-aervyn-primary' : 'text-aervyn-text-dark-muted'}`} />
+        <div className="flex flex-col">
+          <span className={`font-semibold text-sm ${isActive ? 'text-aervyn-primary' : 'text-aervyn-text-dark-primary'}`}>{callsign}</span>
+          <span className="text-[10px] font-medium text-aervyn-text-dark-secondary">{origin} <span className="text-aervyn-text-dark-muted mx-0.5">→</span> {destination}</span>
+        </div>
       </div>
-      <span className="font-labels text-[9px] tracking-widest uppercase text-aervyn-text-tertiary">{statusText}</span>
+      <span className="text-xs font-medium text-aervyn-text-dark-muted">{statusText}</span>
     </div>
   );
 };

@@ -4,12 +4,12 @@ export type OperationalState = 'blue' | 'cyan' | 'green' | 'amber' | 'red' | 'of
 
 export const StatusIndicator: React.FC<{ state: OperationalState; ping?: boolean; className?: string }> = ({ state, ping = false, className = '' }) => {
   const colorMap = {
-    blue: 'bg-aervyn-status-blue',
-    cyan: 'bg-aervyn-status-cyan',
-    green: 'bg-aervyn-status-green',
-    amber: 'bg-aervyn-status-amber',
-    red: 'bg-aervyn-status-red',
-    offline: 'bg-aervyn-text-tertiary'
+    blue: 'bg-aervyn-primary',
+    cyan: 'bg-aervyn-primary',
+    green: 'bg-aervyn-status-success',
+    amber: 'bg-aervyn-status-warning',
+    red: 'bg-aervyn-status-error',
+    offline: 'bg-aervyn-text-dark-muted'
   };
   
   const color = colorMap[state];

@@ -48,8 +48,8 @@ export const chatApi = {
     return response.data;
   },
   getHistory: async (): Promise<{ messages: ChatMessage[] }> => {
-    const response = await axios.get(`${API_URL}/api/chat/history`);
-    return response.data;
+    // Return empty history mock to prevent axios crash since backend is missing
+    return { messages: [] };
   }
 };
 

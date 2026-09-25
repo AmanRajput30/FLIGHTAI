@@ -22,51 +22,50 @@ export const CockpitButton = React.forwardRef<HTMLButtonElement | HTMLAnchorElem
   ...props 
 }, ref) => {
   
-  const baseClasses = "inline-flex items-center justify-center transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-aervyn-status-cyan disabled:opacity-50 disabled:cursor-not-allowed font-labels pointer-events-auto";
+  const baseClasses = "inline-flex items-center justify-center transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#155EEF] disabled:opacity-50 disabled:cursor-not-allowed pointer-events-auto";
   
   let variantClasses = "";
   
   switch (variant) {
     case 'action':
       variantClasses = `
-        px-8 py-3 rounded font-bold text-[10px] tracking-widest uppercase gap-2
-        border border-aervyn-status-cyan drop-shadow-[0_0_8px_rgba(56,189,248,0.2)]
+        px-4 py-2 rounded-md font-medium text-sm gap-2
         ${isActive 
-          ? 'bg-aervyn-status-cyan text-white' 
-          : 'bg-aervyn-status-cyan/20 text-aervyn-status-cyan hover:bg-aervyn-status-cyan hover:text-white'
+          ? 'bg-aervyn-primary-hover text-white' 
+          : 'bg-aervyn-primary text-white hover:bg-aervyn-primary-hover shadow-sm'
         }
       `;
       break;
       
     case 'selector':
       variantClasses = `
-        px-4 py-2 rounded text-[10px] font-bold uppercase tracking-widest
+        px-4 py-2 rounded-md font-medium text-sm gap-2
         border border-transparent
         ${isActive 
-          ? 'bg-aervyn-status-cyan/20 text-aervyn-status-cyan border-aervyn-status-cyan shadow-[0_0_8px_rgba(56,189,248,0.2)]' 
-          : 'text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light hover:border-aervyn-border-subtle'
+          ? 'bg-aervyn-surface-dark-elevated text-aervyn-text-dark-primary border-aervyn-border-dark shadow-sm' 
+          : 'text-aervyn-text-dark-secondary hover:text-aervyn-text-dark-primary hover:bg-aervyn-surface-dark hover:border-aervyn-border-dark-subtle'
         }
       `;
       break;
 
     case 'icon':
       variantClasses = `
-        w-8 h-8 rounded-full flex items-center justify-center
-        border border-transparent
+        w-8 h-8 rounded-md flex items-center justify-center
+        border border-transparent transition-colors
         ${isActive 
-          ? 'bg-aervyn-status-cyan/20 text-aervyn-status-cyan border-aervyn-status-cyan shadow-[0_0_8px_rgba(56,189,248,0.2)]' 
-          : 'text-aervyn-text-secondary hover:text-aervyn-text-primary hover:bg-aervyn-panel-light hover:border-aervyn-border-subtle'
+          ? 'bg-aervyn-surface-dark-elevated text-aervyn-text-dark-primary border-aervyn-border-dark shadow-sm' 
+          : 'text-aervyn-text-dark-secondary hover:text-aervyn-text-dark-primary hover:bg-aervyn-surface-dark hover:border-aervyn-border-dark-subtle'
         }
       `;
       break;
       
     case 'toggle':
       variantClasses = `
-        px-4 py-2 font-bold text-[10px] uppercase tracking-widest
-        border
+        px-3 py-1.5 rounded-md font-medium text-sm gap-2
+        border transition-colors
         ${isActive 
-          ? 'bg-aervyn-status-cyan text-white border-aervyn-status-cyan shadow-[0_0_8px_rgba(56,189,248,0.3)]' 
-          : 'bg-aervyn-panel-light text-aervyn-text-secondary border-aervyn-border-subtle hover:text-aervyn-text-primary hover:bg-aervyn-panel-base'
+          ? 'bg-aervyn-surface-dark-elevated text-aervyn-text-dark-primary border-aervyn-border-dark shadow-sm' 
+          : 'bg-transparent text-aervyn-text-dark-secondary border-transparent hover:text-aervyn-text-dark-primary hover:bg-aervyn-surface-dark hover:border-aervyn-border-dark-subtle'
         }
       `;
       break;

@@ -75,26 +75,23 @@ export default function GlobalSearch() {
   };
 
   return (
-    <div className="relative group flex items-center h-8 w-full font-labels">
+    <div className="relative group flex items-center h-10 w-full max-w-sm">
       <div className="relative flex-1 h-full">
-        <Search size={12} strokeWidth={2} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-aervyn-text-tertiary group-focus-within:text-aervyn-status-cyan transition-colors" />
+        <Search size={16} strokeWidth={2} className="absolute left-4 top-1/2 -translate-y-1/2 text-aervyn-text-dark-muted group-focus-within:text-aervyn-primary transition-colors" />
         <input 
           type="text" 
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder={!user ? "Authentication Required" : isSearching ? "Scanning Airspace..." : "Enter Callsign, Hex, or Route..."}
+          placeholder={!user ? "Authentication Required" : isSearching ? "Scanning Airspace..." : "Search flights or airports..."}
           disabled={!user || isSearching}
-          className={`w-full h-full bg-aervyn-panel-base border-y border-l ${searchError ? 'border-aervyn-status-red focus:border-aervyn-status-red text-aervyn-status-red' : 'border-aervyn-border-subtle focus:border-aervyn-status-cyan text-aervyn-text-primary'} rounded-l pl-8 pr-3 text-[10px] uppercase tracking-widest outline-none focus:ring-0 transition-all placeholder:text-aervyn-text-tertiary disabled:opacity-50 ${!user ? 'cursor-not-allowed' : ''}`}
+          className={`w-full h-full bg-aervyn-bg-dark/50 border ${searchError ? 'border-red-500/50 focus:border-red-500 text-red-500 shadow-[0_0_10px_rgba(239,68,68,0.2)]' : 'border-aervyn-border-dark focus:border-aervyn-primary/50 hover:border-aervyn-border-dark-subtle text-white focus:bg-aervyn-surface-dark shadow-inner'} rounded-xl pl-11 pr-12 text-sm outline-none focus:ring-4 focus:ring-aervyn-primary/10 transition-all placeholder:text-aervyn-text-dark-muted disabled:opacity-50 ${!user ? 'cursor-not-allowed' : ''}`}
         />
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 pointer-events-none">
+          <kbd className="hidden sm:inline-flex items-center justify-center h-5 px-1.5 text-[10px] font-medium text-aervyn-text-dark-muted bg-aervyn-surface-dark border border-aervyn-border-dark rounded opacity-70">⌘</kbd>
+          <kbd className="hidden sm:inline-flex items-center justify-center h-5 px-1.5 text-[10px] font-medium text-aervyn-text-dark-muted bg-aervyn-surface-dark border border-aervyn-border-dark rounded opacity-70">K</kbd>
+        </div>
       </div>
-      <button 
-        onClick={executeSearch} 
-        disabled={!user || isSearching || !searchQuery.trim()}
-        className="h-full px-4 border border-aervyn-border-subtle border-l-0 rounded-r bg-aervyn-panel-light text-aervyn-text-secondary text-[10px] uppercase tracking-widest font-bold hover:bg-aervyn-status-cyan hover:text-white hover:border-aervyn-status-cyan transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-aervyn-panel-light disabled:hover:text-aervyn-text-secondary disabled:hover:border-aervyn-border-subtle"
-      >
-        Search
-      </button>
-      {searchError && <span className="absolute -bottom-5 left-0 text-[9px] uppercase tracking-widest text-aervyn-status-red font-bold">{searchError}</span>}
+      {searchError && <span className="absolute -bottom-5 left-3 text-[10px] text-red-500 font-medium">{searchError}</span>}
     </div>
   );
 }

@@ -14,7 +14,17 @@ export interface Flight {
   heading: number;
   verticalRate?: number;
   lastContact?: number;
-  status: 'active' | 'scheduled' | 'landed' | 'unknown';
+  status: 'active' | 'scheduled' | 'landed' | 'unknown' | 'grounded';
+  icao24?: string;
+  category?: string;
+  squawk?: string;
+  originCountry?: string;
+  onGround?: boolean;
+  timePosition?: number;
+  geoAltitude?: number;
+  positionSource?: number;
+  spi?: boolean;
+  sensors?: number[] | null;
 }
 
 export interface ChatMessage {

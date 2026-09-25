@@ -77,9 +77,13 @@ class RouteProvider {
     // 2. AviationStack fallback
     try {
       if (process.env.AVIATIONSTACK_API_KEY) {
-        const urlIata = `http://api.aviationstack.com/v1/flights?access_key=${process.env.AVIATIONSTACK_API_KEY}&flight_iata=${fn}`;
-        const response = await axios.get(urlIata, { timeout: 4000 });
+        let response = await axios.get(`http://api.aviationstack.com/v1/flights?access_key=${process.env.AVIATIONSTACK_API_KEY}&flight_iata=${fn}`, { timeout: 4000 });
         
+        if (!response.data || !response.data.data || response.data.data.length === 0) {
+          // Fallback to ICAO callsign (e.g. LOT6EA)
+          response = await axios.get(`http://api.aviationstack.com/v1/flights?access_key=${process.env.AVIATIONSTACK_API_KEY}&flight_icao=${fn}`, { timeout: 4000 });
+        }
+
         if(response.data && response.data.data && response.data.data.length > 0) {
           const flight = response.data.data[0];
           if (flight.departure && flight.arrival) {

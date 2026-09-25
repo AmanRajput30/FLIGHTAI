@@ -9,25 +9,30 @@ class FlightSelectionService {
    * Get complete normalized flight details
    * @param {string} flightId 
    */
-  static async getDetails(flightId) {
+  static async getDetails(flightId, frontendCallsign = null, frontendLat = null, frontendLng = null) {
     if (!flightId) throw new Error("Flight ID is required");
 
-    // 1. Get base flight telemetry
+    // 1. Get base flight telemetry (may be null if backend cache is empty due to rate limits)
     const flight = FlightDataService.searchFlight(flightId);
-    if (!flight) {
-      throw new Error(`Flight ${flightId} not found or no longer active.`);
+
+    let lookupId = flightId;
+    if (flight && flight.flightNumber && flight.flightNumber !== 'Unknown') {
+      lookupId = flight.flightNumber;
+    } else if (flight && flight.callsign && flight.callsign !== 'Unknown') {
+      lookupId = flight.callsign;
+    } else if (frontendCallsign && frontendCallsign !== 'Unknown') {
+      lookupId = frontendCallsign;
     }
 
-    const lookupId = (flight.flightNumber && flight.flightNumber !== 'Unknown') 
-      ? flight.flightNumber 
-      : flight.id;
+    const lat = flight ? flight.lat : frontendLat;
+    const lng = flight ? flight.lng : frontendLng;
 
     // 2. Fetch all providers in parallel, gracefully handling individual failures
     const results = await Promise.allSettled([
       RouteProvider.getRoute(lookupId),
-      WeatherProvider.getWeather(flight.lat, flight.lng),
-      MetadataProvider.getMetadata(flight.id),
-      PhotoProvider.getPhoto(flight.id)
+      lat && lng ? WeatherProvider.getWeather(lat, lng) : Promise.resolve({ data: null, source: 'skipped' }),
+      MetadataProvider.getMetadata(flightId),
+      PhotoProvider.getPhoto(flightId)
     ]);
 
     // Extract results

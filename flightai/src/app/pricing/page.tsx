@@ -18,121 +18,121 @@ export const metadata: Metadata = {
 
 export default function PricingPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-aervyn-bg-dark] text-aervyn-text-primary] font-labels">
+    <div className="flex flex-col min-h-screen bg-[#07111F] text-white">
       <Header />
       
       <main className="flex-1 max-w-7xl mx-auto px-6 py-24 w-full">
-        <div className="text-center mb-16 border-b border-aervyn-border-subtle] pb-16">
-          <h1 className="text-4xl md:text-6xl font-black mb-6 text-aervyn-text-primary] uppercase tracking-widest">
-            SIMPLE, TRANSPARENT PRICING.
+        <div className="text-center mb-16 border-b border-slate-800 pb-16">
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-white tracking-tight">
+            Simple, transparent pricing.
           </h1>
-          <p className="text-xl text-aervyn-border-subtle] max-w-2xl mx-auto uppercase tracking-widest">
-            CHOOSE THE PLAN THAT FITS YOUR INTELLIGENCE NEEDS. CURRENTLY IN BETA — JOIN THE WAITLIST TO LOCK IN EARLY PRICING.
+          <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+            Choose the plan that fits your intelligence needs. Currently in beta — join the waitlist to lock in early pricing.
           </p>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
           {/* Standard Tier */}
-          <div className="bg-aervyn-bg-dark] border border-aervyn-border-subtle] rounded-none p-8 flex flex-col relative group hover:border-aervyn-text-primary] transition-all">
-            <div className="mb-8 border-b border-aervyn-border-subtle] pb-6">
-              <div className="w-12 h-12 bg-transparent flex items-center justify-center mb-6 border border-aervyn-border-subtle]">
-                <Zap className="w-6 h-6 text-aervyn-text-primary]" />
+          <div className="bg-[#07111F] border border-slate-800 rounded-xl p-8 flex flex-col relative group hover:border-slate-600 transition-all">
+            <div className="mb-8 border-b border-slate-800 pb-6">
+              <div className="w-12 h-12 rounded-lg bg-slate-900 flex items-center justify-center mb-6 border border-slate-800">
+                <Zap className="w-6 h-6 text-slate-300" />
               </div>
-              <h3 className="text-2xl font-bold text-aervyn-text-primary] mb-2 uppercase tracking-widest">STANDARD</h3>
-              <p className="text-aervyn-border-subtle] text-[10px] h-10 uppercase tracking-widest">FOR AVIATION ENTHUSIASTS TRACKING FLIGHTS CASUALLY.</p>
+              <h3 className="text-xl font-semibold text-white mb-2">Standard</h3>
+              <p className="text-slate-400 text-sm h-10">For aviation enthusiasts tracking flights casually.</p>
               <div className="mt-6 flex items-baseline gap-1">
-                <span className="text-4xl font-black text-aervyn-text-primary] font-mono">$9</span>
-                <span className="text-aervyn-border-subtle] font-medium text-sm">/mo</span>
+                <span className="text-4xl font-bold text-white">$9</span>
+                <span className="text-slate-400 font-medium text-sm">/mo</span>
               </div>
             </div>
             <div className="space-y-4 flex-1">
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-border-subtle] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> GLOBAL REAL-TIME MAP
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> Global real-time map
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-border-subtle] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> AIRCRAFT METADATA
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> Aircraft metadata
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-border-subtle] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> STANDARD WEATHER OVERLAYS
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> Standard weather overlays
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-border-subtle] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> 100 AI QUERIES / MONTH
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> 100 AI queries / month
               </div>
             </div>
-            <CockpitButton variant="action" className="w-full mt-8 justify-center">
-              JOIN WAITLIST
-            </CockpitButton>
+            <button className="w-full mt-8 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium text-sm transition-colors">
+              Join Waitlist
+            </button>
           </div>
 
           {/* Pro Tier */}
-          <div className="bg-aervyn-bg-dark] border-2 border-aervyn-status-cyan] rounded-none p-8 flex flex-col relative transform md:-translate-y-4">
+          <div className="bg-[#07111F] border-2 border-[#155EEF] rounded-xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-xl shadow-blue-900/20">
             
-            <div className="mb-8 border-b border-aervyn-border-subtle] pb-6 relative z-10">
+            <div className="mb-8 border-b border-slate-800 pb-6 relative z-10">
               <div className="flex justify-between items-start mb-6">
-                <div className="w-12 h-12 bg-transparent flex items-center justify-center border border-aervyn-status-cyan]">
-                  <Sparkles className="w-6 h-6 text-aervyn-status-cyan]" />
+                <div className="w-12 h-12 rounded-lg bg-blue-900/30 flex items-center justify-center border border-blue-800/50">
+                  <Sparkles className="w-6 h-6 text-[#155EEF]" />
                 </div>
-                <span className="px-3 py-1 bg-aervyn-status-cyan] text-white text-[10px] font-bold uppercase tracking-widest">MOST POPULAR</span>
+                <span className="px-3 py-1 bg-[#155EEF] text-white text-xs font-semibold rounded-full">Most Popular</span>
               </div>
-              <h3 className="text-2xl font-bold text-aervyn-text-primary] mb-2 uppercase tracking-widest">PROFESSIONAL</h3>
-              <p className="text-aervyn-border-subtle] text-[10px] h-10 uppercase tracking-widest">DEEP INTELLIGENCE FOR RESEARCHERS AND HARDCORE SPOTTERS.</p>
+              <h3 className="text-xl font-semibold text-white mb-2">Professional</h3>
+              <p className="text-slate-400 text-sm h-10">Deep intelligence for researchers and hardcore spotters.</p>
               <div className="mt-6 flex items-baseline gap-1">
-                <span className="text-4xl font-black text-aervyn-status-cyan] font-mono">$29</span>
-                <span className="text-aervyn-border-subtle] font-medium text-sm">/mo</span>
+                <span className="text-4xl font-bold text-white">$29</span>
+                <span className="text-slate-400 font-medium text-sm">/mo</span>
               </div>
             </div>
             <div className="space-y-4 flex-1 relative z-10">
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-text-primary] font-bold uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> EVERYTHING IN STANDARD
+              <div className="flex items-center gap-3 text-sm text-white font-medium">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> Everything in Standard
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-text-primary] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> PREMIUM SATELLITE IMAGERY
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> Premium satellite imagery
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-text-primary] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> ADVANCED FLIGHT ROUTES
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> Advanced flight routes
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-text-primary] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> UNLIMITED AI QUERIES
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> Unlimited AI queries
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-text-primary] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> NO API RATE LIMITS
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> No API rate limits
               </div>
             </div>
-            <CockpitButton variant="action" className="w-full mt-8 justify-center bg-aervyn-status-cyan] text-white border-aervyn-status-cyan]">
-              JOIN WAITLIST
-            </CockpitButton>
+            <button className="w-full mt-8 py-2.5 bg-[#155EEF] hover:bg-[#1D6FFF] text-white rounded-lg font-medium text-sm transition-colors">
+              Join Waitlist
+            </button>
           </div>
 
           {/* Enterprise Tier */}
-          <div className="bg-aervyn-bg-dark] border border-aervyn-border-subtle] rounded-none p-8 flex flex-col relative group hover:border-aervyn-text-primary] transition-all">
-            <div className="mb-8 border-b border-aervyn-border-subtle] pb-6">
-              <div className="w-12 h-12 bg-transparent flex items-center justify-center mb-6 border border-aervyn-border-subtle]">
-                <Building className="w-6 h-6 text-aervyn-text-primary]" />
+          <div className="bg-[#07111F] border border-slate-800 rounded-xl p-8 flex flex-col relative group hover:border-slate-600 transition-all">
+            <div className="mb-8 border-b border-slate-800 pb-6">
+              <div className="w-12 h-12 rounded-lg bg-slate-900 flex items-center justify-center mb-6 border border-slate-800">
+                <Building className="w-6 h-6 text-slate-300" />
               </div>
-              <h3 className="text-2xl font-bold text-aervyn-text-primary] mb-2 uppercase tracking-widest">ENTERPRISE</h3>
-              <p className="text-aervyn-border-subtle] text-[10px] h-10 uppercase tracking-widest">CUSTOM DATA PIPELINES FOR COMMERCIAL APPLICATIONS.</p>
+              <h3 className="text-xl font-semibold text-white mb-2">Enterprise</h3>
+              <p className="text-slate-400 text-sm h-10">Custom data pipelines for commercial applications.</p>
               <div className="mt-6 flex items-baseline gap-1">
-                <span className="text-4xl font-black text-aervyn-text-primary] uppercase tracking-widest">CUSTOM</span>
+                <span className="text-4xl font-bold text-white">Custom</span>
               </div>
             </div>
             <div className="space-y-4 flex-1">
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-border-subtle] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> EVERYTHING IN PRO
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> Everything in Pro
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-border-subtle] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> DEDICATED API ACCESS
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> Dedicated API access
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-border-subtle] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> CUSTOM DATA EXPORT
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> Custom data export
               </div>
-              <div className="flex items-center gap-3 text-[10px] text-aervyn-border-subtle] uppercase tracking-widest">
-                <Check className="w-4 h-4 text-aervyn-status-cyan] flex-shrink-0" /> SLA GUARANTEE
+              <div className="flex items-center gap-3 text-sm text-slate-300">
+                <Check className="w-4 h-4 text-[#155EEF] flex-shrink-0" /> SLA guarantee
               </div>
             </div>
-            <a href="/contact" className="w-full mt-8">
-              <CockpitButton variant="action" className="w-full justify-center">
-                CONTACT SALES
-              </CockpitButton>
+            <a href="/contact" className="w-full mt-8 block">
+              <button className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg font-medium text-sm transition-colors">
+                Contact Sales
+              </button>
             </a>
           </div>
         </div>

@@ -44,24 +44,16 @@ export const AirportLayer: React.FC<AirportLayerProps> = ({ map }) => {
           layout: {
             'icon-image': 'airport-icon',
             'icon-size': 1.0,
-            'icon-allow-overlap': true,
-            'text-field': ['get', 'iata'],
-            'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'], // Standard MapLibre fonts
-            'text-size': 12,
-            'text-offset': [0, 1.5],
-            'text-anchor': 'top',
-            'text-allow-overlap': false
+            'icon-allow-overlap': true
           },
-          paint: {
-            'text-color': '#ffffff',
-            'text-halo-color': '#000000',
-            'text-halo-width': 2
-          }
-        }, 'aircraft-layer'); // Render under aircraft
+          paint: {}
+        }); // Render naturally
       }
     };
 
-    setupLayer();
+    if (map.isStyleLoaded()) {
+      setupLayer();
+    }
     map.on('style.load', setupLayer);
     
     return () => {

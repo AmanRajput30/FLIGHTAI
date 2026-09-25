@@ -9,16 +9,16 @@ export interface FlightStatusProps {
 
 export const FlightStatus: React.FC<FlightStatusProps> = ({ statusText, state, className = '' }) => {
   const textColorMap = {
-    blue: 'text-aervyn-status-blue',
-    cyan: 'text-aervyn-status-cyan',
-    green: 'text-aervyn-status-green',
-    amber: 'text-aervyn-status-amber',
-    red: 'text-aervyn-status-red',
-    offline: 'text-aervyn-text-tertiary'
+    blue: 'text-aervyn-primary',
+    cyan: 'text-aervyn-primary',
+    green: 'text-aervyn-status-success',
+    amber: 'text-aervyn-status-warning',
+    red: 'text-aervyn-status-error',
+    offline: 'text-aervyn-text-dark-muted'
   };
 
   return (
-    <div className={`flex items-center gap-2 text-[10px] font-bold tracking-widest uppercase font-labels ${textColorMap[state]} ${className}`}>
+    <div className={`flex items-center gap-2 text-sm font-medium ${textColorMap[state]} ${className}`}>
       <StatusIndicator state={state} ping={state === 'green' || state === 'blue'} />
       {statusText}
     </div>

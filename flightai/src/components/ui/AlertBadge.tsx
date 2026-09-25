@@ -10,7 +10,7 @@ export const AlertBadge: React.FC<{ level: AlertLevel; message: string; classNam
   };
 
   return (
-    <div className={`px-2 py-1 border rounded text-[9px] font-bold tracking-widest uppercase font-labels ${styles[level]} ${className}`}>
+    <div className={`px-2 py-1 border rounded text-[9px] font-bold tracking-widest uppercase ${styles[level]} ${className}`}>
       {message}
     </div>
   );

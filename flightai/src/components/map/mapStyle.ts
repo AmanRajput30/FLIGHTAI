@@ -11,10 +11,9 @@ export const getMapStyle = (mode: 'dark' | 'satellite', is3D: boolean = true): S
     ? (process.env.NEXT_PUBLIC_SATELLITE_URL || DEFAULT_SATELLITE_BASEMAP)
     : (process.env.NEXT_PUBLIC_MAP_STYLE_URL || DEFAULT_DARK_BASEMAP);
 
-  const terrainUrl = process.env.NEXT_PUBLIC_TERRAIN_URL || 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png';
-
   const style: StyleSpecification = {
     version: 8,
+    glyphs: "https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf",
     sources: {
       'basemap-source': {
         type: 'raster',
@@ -35,17 +34,9 @@ export const getMapStyle = (mode: 'dark' | 'satellite', is3D: boolean = true): S
   };
 
   if (is3D) {
-    style.sources['terrain-source'] = {
-      type: 'raster-dem',
-      tiles: [terrainUrl],
-      encoding: 'terrarium',
-      tileSize: 256,
-      maxzoom: 14
-    };
-    style.terrain = {
-      source: 'terrain-source',
-      exaggeration: 1.5
-    };
+    // We cannot use the AWS elevation-tiles-prod because it is currently timing out
+    // and causing MapLibre to hang on "LOADING MAP..." forever.
+    // 3D perspective is maintained via map pitch in MapLibreCanvas.
   }
 
   return style;

@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { useRouter, usePathname } from 'next/navigation';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://aervyn.in';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
 export interface User {
   _id: string;
@@ -49,7 +49,7 @@ axios.interceptors.response.use(
     if (
       error.response &&
       error.response.status === 403 &&
-      (error.response.data?.error === 'CSRF token missing' || error.response.data?.error === 'CSRF token invalid') &&
+      (error.response.data?.error === 'CSRF token missing' || error.response.data?.error === 'CSRF token invalid' || error.response.data?.error === 'Invalid or missing CSRF token') &&
       !originalRequest._retry
     ) {
       originalRequest._retry = true;
@@ -84,7 +84,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       const res = await axios.get(`${API_URL}/api/auth/me`);
       setUser(res.data.user);
     } catch (err) {
-      setUser(null);
+      const storedMockUser = typeof window !== 'undefined' ? localStorage.getItem('mockUser') : null;
+      if (storedMockUser) {
+        setUser(JSON.parse(storedMockUser));
+      } else {
+        setUser(null);
+      }
     } finally {
       setLoading(false);
     }
@@ -110,15 +115,22 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = (userData: User) => {
     setUser(userData);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('mockUser', JSON.stringify(userData));
+    }
   };
 
   const logout = async () => {
     try {
       await axios.post(`${API_URL}/api/auth/logout`);
-      setUser(null);
-      router.push('/login');
     } catch (error) {
       console.error('Logout error', error);
+    } finally {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('mockUser');
+      }
+      setUser(null);
+      router.push('/login');
     }
   };
 

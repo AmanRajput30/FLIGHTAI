@@ -2,84 +2,78 @@
 
 @theme {
   /* ========================================= */
-  /* PHASE 1: AERVYN COMMAND CENTER TOKENS   */
+  /* AERVYN PREMIUM DESIGN TOKENS            */
   /* ========================================= */
   
   /* Backgrounds */
-  --color-aervyn-bg-dark: #05070A;
-  --color-aervyn-bg-base: #080B10;
-  --color-aervyn-bg-light: #0D1117;
+  --color-aervyn-bg-dark: #07111F;
+  --color-aervyn-bg-light: #F8FAFC;
 
-  /* Panels */
-  --color-aervyn-panel-dark: #11161D;
-  --color-aervyn-panel-base: #151B23;
-  --color-aervyn-panel-light: #1B222C;
+  /* Surfaces */
+  --color-aervyn-surface-dark: #0D1B2A;
+  --color-aervyn-surface-dark-elevated: #12263A;
+  --color-aervyn-surface-light: #FFFFFF;
+  --color-aervyn-surface-light-elevated: #F1F5F9;
 
   /* Borders */
-  --color-aervyn-border-subtle: #29313B;
-  --color-aervyn-border-active: #343E4A;
+  --color-aervyn-border-dark: #1E3A5F;
+  --color-aervyn-border-dark-subtle: #17304A;
+  --color-aervyn-border-light: #E2E8F0;
+  --color-aervyn-border-light-subtle: #F1F5F9;
 
-  /* Text */
-  --color-aervyn-text-primary: #F1F4F7;
-  --color-aervyn-text-secondary: #C4CBD3;
-  --color-aervyn-text-tertiary: #7F8A97;
+  /* Text - Dark Mode */
+  --color-aervyn-text-dark-primary: #F8FAFC;
+  --color-aervyn-text-dark-secondary: #CBD5E1;
+  --color-aervyn-text-dark-muted: #94A3B8;
 
-  /* Operational States */
-  --color-aervyn-status-blue: #3b82f6;
-  --color-aervyn-status-cyan: #06b6d4;
-  --color-aervyn-status-green: #10b981;
-  --color-aervyn-status-amber: #f59e0b;
-  --color-aervyn-status-red: #ef4444;
+  /* Text - Light Mode */
+  --color-aervyn-text-light-primary: #0F172A;
+  --color-aervyn-text-light-secondary: #475569;
+  --color-aervyn-text-light-muted: #64748B;
+
+  /* Brand / Primary */
+  --color-aervyn-primary: #155EEF;
+  --color-aervyn-primary-hover: #1D6FFF;
+  --color-aervyn-secondary: #60A5FA;
+  --color-aervyn-primary-light: #DBEAFE;
+
+  /* Semantic / Operational States */
+  --color-aervyn-status-success: #10B981;
+  --color-aervyn-status-warning: #F59E0B;
+  --color-aervyn-status-error: #EF4444;
+  --color-aervyn-status-info: #38BDF8;
 
   /* Typography */
-  --font-labels: 'Archivo', system-ui, sans-serif;
-  --font-telemetry: 'Oswald', 'Bebas Neue', sans-serif;
-
-  /* ========================================= */
-  /* LEGACY TOKENS (Mapped to AERVYN for fallback) */
-  /* ========================================= */
-  --color-cockpit-black: var(--color-aervyn-bg-dark);
-  --color-cockpit-deep: var(--color-aervyn-bg-base);
-  --color-cockpit-panel: var(--color-aervyn-panel-base);
-  --color-cockpit-panel-raised: var(--color-aervyn-panel-light);
-  --color-instrument-white: var(--color-aervyn-text-primary);
-  --color-instrument-grey: var(--color-aervyn-border-subtle);
-  --color-instrument-muted: var(--color-aervyn-text-tertiary);
-  --color-horizon-blue: var(--color-aervyn-status-cyan);
-  --color-horizon-blue-bright: var(--color-aervyn-status-cyan);
-  --color-horizon-brown: var(--color-aervyn-status-amber);
-  --color-caution-amber: var(--color-aervyn-status-amber);
-  --color-warning-red: var(--color-aervyn-status-red);
-  --color-success-green: var(--color-aervyn-status-green);
-  --color-border-subtle: var(--color-aervyn-border-subtle);
-  --color-border-active: var(--color-aervyn-border-active);
-  --font-numerals: var(--font-telemetry);
-
-  /* Fallback mapping for existing classes during transition */
-  --color-background: var(--color-aervyn-bg-base);
-  --color-foreground: var(--color-aervyn-text-primary);
-  --color-card: var(--color-aervyn-panel-base);
-  --color-border: var(--color-aervyn-border-subtle);
-  --color-primary: var(--color-aervyn-status-cyan);
-  --color-muted-foreground: var(--color-aervyn-text-secondary);
+  --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  
+  /* Fallbacks mapped for legacy components to prevent immediate breakage */
+  --color-aervyn-bg-base: var(--color-aervyn-bg-dark);
+  --color-aervyn-panel-dark: var(--color-aervyn-surface-dark);
+  --color-aervyn-panel-base: var(--color-aervyn-surface-dark);
+  --color-aervyn-panel-light: var(--color-aervyn-surface-dark-elevated);
+  --color-aervyn-border-subtle: var(--color-aervyn-border-dark-subtle);
+  --color-aervyn-border-active: var(--color-aervyn-border-dark);
+  --color-aervyn-text-primary: var(--color-aervyn-text-dark-primary);
+  --color-aervyn-text-secondary: var(--color-aervyn-text-dark-secondary);
+  --color-aervyn-text-tertiary: var(--color-aervyn-text-dark-muted);
+  --color-aervyn-status-blue: var(--color-aervyn-secondary);
+  --color-aervyn-status-cyan: var(--color-aervyn-primary); /* Shift cyan to primary blue */
+  --color-aervyn-status-green: var(--color-aervyn-status-success);
+  --color-aervyn-status-amber: var(--color-aervyn-status-warning);
+  --color-aervyn-status-red: var(--color-aervyn-status-error);
+  --font-labels: var(--font-inter);
+  --font-telemetry: var(--font-inter);
 }
 
 @layer base {
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: labels;
+    background-color: var(--color-aervyn-bg-dark);
+    color: var(--color-aervyn-text-dark-primary);
+    font-family: var(--font-inter);
   }
 }
 
-/* ── PFD Hard-Edged Panels (No Glassmorphism) ── */
-.glass, .glass-panel, .cockpit-panel {
-  background-color: var(--color-cockpit-panel);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 6px;
-}
-
-/* ── Selection Indicator ── */
+/* ── Selection Indicator (No neon glow) ── */
 .selection-glow {
   position: absolute;
   top: 50%;
@@ -88,25 +82,25 @@
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  border: 1px solid var(--color-aervyn-status-cyan);
+  border: 1px solid var(--color-aervyn-primary);
   background: transparent;
   pointer-events: none;
   z-index: -1;
 }
 
-/* ── Hover Effects on Aircraft ── */
+/* ── Hover Effects on Aircraft (Subtle) ── */
 .custom-plane-icon {
   transition: opacity 0.1s ease;
   cursor: pointer;
 }
 
 .custom-plane-icon:hover svg {
-  filter: drop-shadow(0 0 2px var(--color-caution-amber));
+  filter: drop-shadow(0 0 2px var(--color-aervyn-status-warning));
 }
 
 /* ── Selected Aircraft ── */
 .selected-plane svg {
-  filter: drop-shadow(0 0 4px var(--color-aervyn-status-cyan));
+  filter: drop-shadow(0 0 4px var(--color-aervyn-primary));
 }
 
 /* ── Dimmed Aircraft (when target acquired) ── */
@@ -119,64 +113,27 @@
   opacity: 0.8 !important;
 }
 
-/* ── Tracking Context Bar ── */
-.tracking-bar {
-  background: var(--color-cockpit-deep);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: 4px;
-}
-
-@keyframes trackBarSlideIn {
-  0% { transform: translateY(-100%); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-
-.tracking-bar-btn {
-  padding: 3px 10px;
-  border-radius: 4px;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  transition: all 0.2s ease;
-  cursor: pointer;
-  border: 1px solid transparent;
-}
-
-.tracking-bar-btn:hover {
-  background-color: var(--color-cockpit-panel-raised);
-}
-
-/* ── Flight Reference Badge ── */
+/* ── Flight Reference Badge (Semantic) ── */
 .flight-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
   padding: 4px 12px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition: all 0.2s ease;
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid var(--color-caution-amber);
-  color: var(--color-caution-amber);
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid var(--color-aervyn-status-warning);
+  color: var(--color-aervyn-status-warning);
   margin-top: 8px;
 }
 
 .flight-badge:hover {
-  background: rgba(245, 158, 11, 0.25);
+  background: rgba(245, 158, 11, 0.2);
   transform: translateY(-1px);
-}
-
-/* ── Context Indicator ── */
-.context-indicator {
-  animation: contextPulse 2.5s ease-in-out infinite;
-}
-
-@keyframes contextPulse {
-  0%, 100% { opacity: 0.7; }
-  50% { opacity: 1; }
 }
 
 @keyframes badgeSlideUp {
@@ -232,15 +189,14 @@
   filter: invert(1) !important;
 }
 
-/* Active: aervyn-status-cyan (Cyan tint) */
+/* Active: Primary Blue */
 .maplibregl-ctrl-group button:active .maplibregl-ctrl-icon {
-  /* Creating a cyan tint from black is hard with filters, but we can do a hue shift + high saturate + sepia */
-  filter: invert(0.6) sepia(1) saturate(5) hue-rotate(150deg) brightness(1.2) !important;
+  filter: invert(0.4) sepia(1) saturate(5) hue-rotate(200deg) brightness(1.2) !important;
 }
 
 /* Disabled: aervyn-text-muted */
 .maplibregl-ctrl-group button:disabled .maplibregl-ctrl-icon {
-  filter: invert(0.3) !important;
+  filter: invert(0.6) !important;
   opacity: 0.5 !important;
 }
 

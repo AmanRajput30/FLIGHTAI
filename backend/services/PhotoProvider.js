@@ -22,7 +22,11 @@ class PhotoProvider {
     try {
       // Primary: Planespotters
       const res = await axios.get(`https://api.planespotters.net/pub/photos/hex/${hex}`, {
-        timeout: 4000 // 4s timeout
+        timeout: 4000, // 4s timeout
+        headers: {
+          'User-Agent': 'Aervyn/1.0 (+https://aervyn.in/contact)',
+          'Accept': 'application/json'
+        }
       });
       
       if (res.data && res.data.photos && res.data.photos.length > 0) {
@@ -39,25 +43,7 @@ class PhotoProvider {
       console.warn(`[PhotoProvider] Planespotters failed for ${hex}:`, err.message);
     }
 
-    // Fallback: FR24 Static (doesn't have a structured API, just an image path, but we can verify it exists if we want, or just return the URL)
-    // The frontend was doing this blindly. We will do a HEAD request to verify.
-    try {
-      const fallbackUrl = `https://www.flightradar24.com/static/images/data/aircraft/lib/hex/${hex.toUpperCase()}.jpg`;
-      const fallbackRes = await axios.head(fallbackUrl, { timeout: 3000 });
-      if (fallbackRes.status === 200) {
-        const photoData = {
-          url: fallbackUrl,
-          photographer: 'Unknown',
-          source: 'flightradar24'
-        };
-        photoCache.set(hex, photoData);
-        return { data: photoData, source: 'flightradar24' };
-      }
-    } catch (err) {
-      // Ignored
-    }
-
-    // No photo found
+    // No generic fallbacks allowed per user requirements
     return { data: null, source: 'none' };
   }
 }
