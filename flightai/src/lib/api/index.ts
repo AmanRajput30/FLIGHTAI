@@ -57,4 +57,10 @@ export const userApi = {
   resendVerification: async (): Promise<void> => {
     await axios.post(`${API_URL}/api/auth/resend-verification`);
   },
+  updateProfile: async (data: { name?: string, role?: string, bio?: string }): Promise<void> => {
+    await axios.patch(`${API_URL}/api/user/profile`, data);
+  },
+  updatePassword: async (data: { currentPassword?: string, newPassword?: string }): Promise<void> => {
+    await axios.patch(`${API_URL}/api/user/password`, data);
+  }
 };

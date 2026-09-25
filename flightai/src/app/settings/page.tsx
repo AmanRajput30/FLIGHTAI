@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import { motion } from 'framer-motion';
@@ -9,11 +9,35 @@ import { User, Shield, CreditCard, Users, Bell, Zap, Link as LinkIcon, HelpCircl
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { useUIStore } from '@/store/useUIStore';
+import { userApi } from '@/lib/api';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('details');
   const [isSaved, setIsSaved] = useState(false);
-  const { user } = useAuth();
+  const [saveError, setSaveError] = useState<string | null>(null);
+  
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [passSaved, setPassSaved] = useState(false);
+  const [passError, setPassError] = useState<string | null>(null);
+  
+  const [apiKey, setApiKey] = useState('loading...');
+  const [copied, setCopied] = useState(false);
+
+  const { user, refreshUser } = useAuth();
+
+  useEffect(() => {
+    // Generate or retrieve a persistent mock API key for the user
+    if (typeof window !== 'undefined' && user?._id) {
+       const storedKey = localStorage.getItem(`aervyn_api_key_${user._id}`);
+       if (storedKey) {
+         setApiKey(storedKey);
+       } else {
+         const newKey = `ak_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+         localStorage.setItem(`aervyn_api_key_${user._id}`, newKey);
+         setApiKey(newKey);
+       }
+    }
+  }, [user?._id]);
   const { mapMode, setMapMode, performanceMode, setPerformanceMode } = useUIStore();
   
   const nameParts = user?.name ? user.name.split(' ') : ['Commander', 'Sky'];
@@ -87,18 +111,32 @@ export default function SettingsPage() {
 
                     <form 
                       className="space-y-6 max-w-2xl"
-                      onSubmit={(e) => {
+                      onSubmit={async (e) => {
                         e.preventDefault();
-                        setIsSaved(true);
-                        setTimeout(() => setIsSaved(false), 2000);
+                        setSaveError(null);
+                        const formData = new FormData(e.currentTarget);
+                        const fName = formData.get('firstName') as string;
+                        const lName = formData.get('lastName') as string;
+                        const fullName = `${fName} ${lName}`.trim();
+                        const role = formData.get('role') as string;
+                        const bio = formData.get('bio') as string;
+                        
+                        try {
+                          await userApi.updateProfile({ name: fullName, role, bio });
+                          await refreshUser();
+                          setIsSaved(true);
+                          setTimeout(() => setIsSaved(false), 2000);
+                        } catch (err: any) {
+                          setSaveError(err.response?.data?.error || 'Failed to save changes.');
+                        }
                       }}
                     >
                       {/* Name */}
                       <div className="grid grid-cols-1 sm:grid-cols-6 gap-4 items-start">
                         <label className="sm:col-span-2 block text-sm font-medium text-white pt-2">Name</label>
                         <div className="sm:col-span-4 grid grid-cols-2 gap-4">
-                          <input type="text" defaultValue={firstName} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
-                          <input type="text" defaultValue={lastName} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
+                          <input type="text" name="firstName" defaultValue={firstName} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
+                          <input type="text" name="lastName" defaultValue={lastName} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
                         </div>
                       </div>
 
@@ -109,7 +147,7 @@ export default function SettingsPage() {
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span className="text-aervyn-text-dark-muted text-sm">@</span>
                           </div>
-                          <input type="email" defaultValue={user?.email || "loading..."} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg pl-9 pr-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
+                          <input type="email" disabled defaultValue={user?.email || "loading..."} className="w-full bg-aervyn-bg-dark/50 border border-aervyn-border-dark rounded-lg pl-9 pr-4 py-2 text-sm text-white/50 cursor-not-allowed outline-none transition-colors" title="Email cannot be changed here." />
                         </div>
                       </div>
 
@@ -141,7 +179,7 @@ export default function SettingsPage() {
                       <div className="grid grid-cols-1 sm:grid-cols-6 gap-4 items-start border-t border-aervyn-border-dark pt-6">
                         <label className="sm:col-span-2 block text-sm font-medium text-white pt-2">Role</label>
                         <div className="sm:col-span-4">
-                          <input type="text" defaultValue={user?.role || "Mission Commander"} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
+                          <input type="text" name="role" defaultValue={user?.role || "Mission Commander"} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors" />
                         </div>
                       </div>
 
@@ -152,19 +190,24 @@ export default function SettingsPage() {
                           <p className="text-xs text-aervyn-text-dark-secondary mt-1">Write a short introduction.</p>
                         </div>
                         <div className="sm:col-span-4">
-                          <textarea rows={4} defaultValue={user?.bio || "Aviation enthusiast and telemetry analyst."} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-3 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors resize-none" />
+                          <textarea name="bio" rows={4} defaultValue={user?.bio || "Aviation enthusiast and telemetry analyst."} className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-3 text-sm text-white focus:border-aervyn-primary focus:outline-none transition-colors resize-none" />
                           <p className="text-xs text-aervyn-text-dark-secondary mt-2">275 characters left</p>
                         </div>
                       </div>
 
                       {/* Actions */}
-                      <div className="flex justify-end gap-3 pt-6 border-t border-aervyn-border-dark">
-                        <button type="button" className="bg-transparent hover:bg-aervyn-surface-dark border border-aervyn-border-dark text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
-                          Cancel
-                        </button>
-                        <button type="submit" className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${isSaved ? 'bg-green-600 hover:bg-green-700' : 'bg-aervyn-primary hover:bg-aervyn-primary-light'} text-white`}>
-                          {isSaved ? 'Saved!' : 'Save changes'}
-                        </button>
+                      <div className="flex justify-between gap-3 pt-6 border-t border-aervyn-border-dark items-center">
+                        <div>
+                           {saveError && <span className="text-red-500 text-sm">{saveError}</span>}
+                        </div>
+                        <div className="flex gap-3">
+                          <button type="button" className="bg-transparent hover:bg-aervyn-surface-dark border border-aervyn-border-dark text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
+                            Cancel
+                          </button>
+                          <button type="submit" disabled={isSaved} className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${isSaved ? 'bg-green-600' : 'bg-aervyn-primary hover:bg-aervyn-primary-light'} text-white disabled:opacity-80`}>
+                            {isSaved ? 'Saved!' : 'Save changes'}
+                          </button>
+                        </div>
                       </div>
                     </form>
                   </div>
@@ -255,23 +298,48 @@ export default function SettingsPage() {
                       <h2 className="text-lg font-semibold text-white">Password</h2>
                       <p className="text-sm text-aervyn-text-dark-secondary mt-1">Manage your account security.</p>
                     </div>
-                    <div className="space-y-6 max-w-xl">
+                    <form 
+                      className="space-y-6 max-w-xl"
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        setPassError(null);
+                        if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                           setPassError("Passwords do not match.");
+                           return;
+                        }
+                        if (passwordForm.newPassword.length < 6) {
+                           setPassError("Password must be at least 6 characters.");
+                           return;
+                        }
+                        try {
+                          await userApi.updatePassword({ currentPassword: passwordForm.currentPassword, newPassword: passwordForm.newPassword });
+                          setPassSaved(true);
+                          setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+                          setTimeout(() => setPassSaved(false), 2000);
+                        } catch (err: any) {
+                          setPassError(err.response?.data?.error || 'Failed to update password.');
+                        }
+                      }}
+                    >
                       <div>
                         <label className="block text-sm font-medium text-white mb-2">Current Password</label>
-                        <input type="password" placeholder="Enter current password" className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary outline-none" />
+                        <input type="password" value={passwordForm.currentPassword} onChange={e => setPasswordForm(p => ({ ...p, currentPassword: e.target.value }))} placeholder="Enter current password" required className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary outline-none" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-white mb-2">New Password</label>
-                        <input type="password" placeholder="Create new password" className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary outline-none" />
+                        <input type="password" value={passwordForm.newPassword} onChange={e => setPasswordForm(p => ({ ...p, newPassword: e.target.value }))} placeholder="Create new password" required className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary outline-none" />
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-white mb-2">Confirm New Password</label>
-                        <input type="password" placeholder="Confirm new password" className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary outline-none" />
+                        <input type="password" value={passwordForm.confirmPassword} onChange={e => setPasswordForm(p => ({ ...p, confirmPassword: e.target.value }))} placeholder="Confirm new password" required className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2 text-sm text-white focus:border-aervyn-primary outline-none" />
                       </div>
-                      <button className="bg-aervyn-primary hover:bg-aervyn-primary-light text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors">
-                        Update Password
-                      </button>
-                    </div>
+                      <div className="flex justify-between items-center">
+                         {passError && <span className="text-red-500 text-sm">{passError}</span>}
+                         <button type="submit" disabled={passSaved} className={`px-5 py-2.5 rounded-lg text-sm font-medium transition-colors ${passSaved ? 'bg-green-600 text-white' : 'bg-aervyn-primary hover:bg-aervyn-primary-light text-white'} ${passError ? 'ml-auto' : ''}`}>
+                           {passSaved ? 'Updated!' : 'Update Password'}
+                         </button>
+                      </div>
+                    </form>
                   </div>
                 )}
 
@@ -290,21 +358,15 @@ export default function SettingsPage() {
                         <div className="col-span-4">Role</div>
                         <div className="col-span-3 text-right">Status</div>
                       </div>
-                      <div className="grid grid-cols-12 gap-4 p-4 items-center border-b border-aervyn-border-dark">
-                        <div className="col-span-5 flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-aervyn-primary/20 text-aervyn-primary flex items-center justify-center font-bold text-xs">{initial}</div>
-                          <span className="text-sm font-medium text-white">{user?.name || 'You'}</span>
-                        </div>
-                        <div className="col-span-4 text-sm text-aervyn-text-dark-muted">Owner</div>
-                        <div className="col-span-3 text-right"><span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded-full">Active</span></div>
-                      </div>
                       <div className="grid grid-cols-12 gap-4 p-4 items-center">
                         <div className="col-span-5 flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-aervyn-surface-dark-elevated text-aervyn-text-dark-secondary flex items-center justify-center font-bold text-xs">J</div>
-                          <span className="text-sm font-medium text-white">John Doe</span>
+                          <div className="w-8 h-8 rounded-full overflow-hidden bg-aervyn-surface-dark-elevated text-aervyn-text-dark-secondary flex items-center justify-center font-bold text-xs border border-aervyn-border-dark">
+                             {user?.avatar ? <Image src={user.avatar} alt="Profile" width={32} height={32} className="w-full h-full object-cover" /> : initial}
+                          </div>
+                          <span className="text-sm font-medium text-white">{user?.name || 'You'} (You)</span>
                         </div>
-                        <div className="col-span-4 text-sm text-aervyn-text-dark-muted">Analyst</div>
-                        <div className="col-span-3 text-right"><span className="px-2 py-1 bg-aervyn-status-warning/10 text-aervyn-status-warning text-xs rounded-full">Pending</span></div>
+                        <div className="col-span-4 text-sm text-aervyn-text-dark-muted">{user?.role || 'Owner'}</div>
+                        <div className="col-span-3 text-right"><span className="px-2 py-1 bg-green-500/10 text-green-500 text-xs rounded-full">Active</span></div>
                       </div>
                     </div>
                   </div>
@@ -339,14 +401,34 @@ export default function SettingsPage() {
                     <div className="bg-aervyn-surface-dark border border-aervyn-border-dark rounded-xl p-6 max-w-2xl">
                       <h3 className="text-sm font-medium text-white mb-4">Production API Key</h3>
                       <div className="flex gap-3">
-                        <div className="flex-1 bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2.5 text-sm font-mono text-aervyn-text-dark-muted flex items-center select-all">
-                          ak_live_aervyn99xx88zz77yy66
+                        <div className="flex-1 bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2.5 text-sm font-mono text-aervyn-text-dark-muted flex items-center select-all overflow-x-auto whitespace-nowrap">
+                          {apiKey}
                         </div>
-                        <button className="bg-aervyn-surface-dark-elevated hover:bg-aervyn-surface-dark-active border border-aervyn-border-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">Copy</button>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(apiKey);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          }}
+                          className="bg-aervyn-surface-dark-elevated hover:bg-aervyn-surface-dark-active border border-aervyn-border-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                        >
+                          {copied ? 'Copied!' : 'Copy'}
+                        </button>
                       </div>
                       <div className="mt-4 pt-4 border-t border-aervyn-border-dark flex justify-between items-center">
-                        <span className="text-xs text-aervyn-text-dark-secondary">Last used: 2 hours ago</span>
-                        <button className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors">Revoke Key</button>
+                        <span className="text-xs text-aervyn-text-dark-secondary">Last used: Never</span>
+                        <button 
+                          onClick={() => {
+                            if (user?._id) {
+                              const newKey = `ak_live_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
+                              localStorage.setItem(`aervyn_api_key_${user._id}`, newKey);
+                              setApiKey(newKey);
+                            }
+                          }}
+                          className="text-sm font-medium text-red-400 hover:text-red-300 transition-colors"
+                        >
+                          Revoke & Regenerate Key
+                        </button>
                       </div>
                     </div>
                   </div>
