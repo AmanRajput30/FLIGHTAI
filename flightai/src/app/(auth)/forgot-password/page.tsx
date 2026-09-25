@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
         <div className="absolute bottom-8 right-8 flex gap-4 text-xs text-slate-400">
           <Link href="/privacy" className="hover:text-slate-600 transition-colors">Privacy</Link>
           <Link href="/terms" className="hover:text-slate-600 transition-colors">Terms</Link>
-          <Link href="/support" className="hover:text-slate-600 transition-colors">Support</Link>
+          <Link href="/contact" className="hover:text-slate-600 transition-colors">Support</Link>
         </div>
         </div>
       </motion.div>

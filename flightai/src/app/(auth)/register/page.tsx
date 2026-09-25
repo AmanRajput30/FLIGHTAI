@@ -325,7 +325,7 @@ export default function RegisterPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 mt-4">
+          <div className="grid grid-cols-2 gap-3 mt-4">
             <button 
               type="button" 
               onClick={() => googleLogin()}
@@ -339,7 +339,7 @@ export default function RegisterPage() {
               authOptions={{
                 clientId: process.env.NEXT_PUBLIC_APPLE_CLIENT_ID || 'com.example.web',
                 scope: 'email name',
-                redirectURI: 'https://example.com',
+                redirectURI: process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://aervyn.in',
                 state: 'state',
                 nonce: 'nonce',
                 usePopup: true,
@@ -359,14 +359,6 @@ export default function RegisterPage() {
                 </button>
               )}
             />
-            
-            <button 
-              type="button" 
-              className="w-full bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 py-2.5 rounded-lg font-medium text-xs sm:text-sm transition-colors flex items-center justify-center gap-2"
-            >
-              <svg viewBox="0 0 23 23" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M11.4 24V12H0V24h11.4zM24 24V12H12.6v12H24zM11.4 11.4V0H0v11.4h11.4zM24 11.4V0H12.6v11.4H24z" fill="#00a4ef"/></svg>
-              Microsoft
-            </button>
           </div>
           
           <div className="absolute bottom-8 right-8 flex gap-4 text-xs text-slate-400">
