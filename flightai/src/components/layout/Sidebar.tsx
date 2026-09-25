@@ -94,7 +94,7 @@ export const Sidebar: React.FC = () => {
             >
               <div className="flex flex-col truncate">
                 <span className="text-sm font-medium text-white truncate">{user.name}</span>
-                <span className="text-xs text-aervyn-text-tertiary truncate">Free Plan</span>
+                <span className="text-xs text-aervyn-text-tertiary truncate capitalize">{user.plan || 'Free'} Plan</span>
               </div>
               <ChevronRight size={16} className="text-aervyn-text-tertiary shrink-0" />
             </motion.div>

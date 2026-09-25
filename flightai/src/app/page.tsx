@@ -6,9 +6,62 @@ import { useAuth } from "@/context/AuthContext";
 import UserMenu from "@/components/UserMenu";
 import { motion } from "framer-motion";
 import RotatingEarth from "@/components/ui/wireframe-dotted-globe";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import AERVYNMap from "@/components/map/AERVYNMap";
+import { useFlightStore } from "@/store/useFlightStore";
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
+  const [stats, setStats] = useState({ users: 0, uptime: 99.9 });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await axios.get(`${API_URL}/api/stats`);
+        setStats(res.data);
+      } catch (err) {
+        console.error("Failed to fetch landing stats", err);
+      }
+    };
+    fetchStats();
+
+    // Fetch live flights for the map
+    const fetchLiveFlights = async () => {
+      try {
+        const res = await fetch('/api/flights');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        if (data && data.states) {
+          const newFlights = data.states
+            .filter((p: any) => p[5] != null && p[6] != null)
+            .map((p: any) => ({
+              id: p[0],
+              icao24: p[0],
+              callsign: p[1]?.trim() || p[0],
+              lat: p[6],
+              lng: p[5],
+              heading: p[10] || 0,
+              speed: p[9] ? Math.round(p[9] * 1.94384) : 0,
+              altitude: p[7] ? Math.round(p[7] * 3.28084) : 0,
+              verticalRate: p[11] ? Math.round(p[11] * 196.85) : 0,
+              category: 'Commercial',
+              status: p[8] ? 'grounded' : 'active'
+            }));
+          useFlightStore.getState().setFlights(newFlights);
+        }
+      } catch (err) {
+        console.error("Failed to fetch live flights for landing map:", err);
+      }
+    };
+
+    fetchLiveFlights();
+    const interval = setInterval(fetchLiveFlights, 10000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="min-h-screen bg-aervyn-bg-dark text-aervyn-text-dark-primary flex flex-col relative font-inter selection:bg-aervyn-primary/30 selection:text-white">
@@ -110,15 +163,17 @@ export default function LandingPage() {
           className="grid grid-cols-1 sm:grid-cols-3 gap-12 mt-20 pt-10 border-t border-aervyn-border-dark-subtle text-left max-w-3xl w-full"
         >
           <div>
-            <div className="text-3xl font-bold text-aervyn-text-dark-primary">10K+</div>
+            <div className="text-3xl font-bold text-aervyn-text-dark-primary">{stats.users > 0 ? stats.users.toLocaleString() : '10K+'}</div>
             <div className="text-sm text-aervyn-text-dark-muted mt-1">Active Users</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-aervyn-text-dark-primary">1M+</div>
-            <div className="text-sm text-aervyn-text-dark-muted mt-1">Flights Tracked Daily</div>
+            <div className="text-3xl font-bold text-aervyn-text-dark-primary">
+              {useFlightStore((state) => state.flights).length > 0 ? useFlightStore((state) => state.flights).length.toLocaleString() : '1M+'}
+            </div>
+            <div className="text-sm text-aervyn-text-dark-muted mt-1">Flights Tracked Now</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-aervyn-text-dark-primary">99.9%</div>
+            <div className="text-3xl font-bold text-aervyn-text-dark-primary">{stats.uptime}%</div>
             <div className="text-sm text-aervyn-text-dark-muted mt-1">Uptime SLA</div>
           </div>
           </motion.div>
@@ -138,27 +193,8 @@ export default function LandingPage() {
                dashboard.aervyn.com
              </div>
           </div>
-          <div className="flex-1 bg-[url('/map-placeholder.jpg')] bg-cover bg-center relative">
-            <div className="absolute inset-0 bg-aervyn-bg-dark/80 backdrop-blur-[2px]"></div>
-            
-            {/* Mock Floating Panels */}
-            <div className="absolute left-6 top-6 bottom-6 w-64 bg-aervyn-surface-dark border border-aervyn-border-dark rounded-lg flex flex-col p-4 shadow-xl">
-               <div className="h-4 w-24 bg-aervyn-border-dark rounded mb-6"></div>
-               <div className="space-y-3">
-                 <div className="h-10 w-full bg-aervyn-surface-dark-elevated rounded"></div>
-                 <div className="h-10 w-full bg-aervyn-surface-dark-elevated rounded"></div>
-                 <div className="h-10 w-full bg-aervyn-surface-dark-elevated rounded"></div>
-               </div>
-            </div>
-            <div className="absolute right-6 top-6 bottom-6 w-64 flex flex-col gap-4">
-               <div className="flex-1 bg-aervyn-surface-dark border border-aervyn-border-dark rounded-lg shadow-xl p-4">
-                 <div className="h-4 w-32 bg-aervyn-border-dark rounded mb-4"></div>
-                 <div className="h-32 w-full bg-aervyn-surface-dark-elevated rounded"></div>
-               </div>
-               <div className="h-48 bg-aervyn-surface-dark border border-aervyn-border-dark rounded-lg shadow-xl p-4">
-                 <div className="h-4 w-20 bg-aervyn-border-dark rounded mb-4"></div>
-               </div>
-            </div>
+          <div className="flex-1 relative bg-aervyn-bg-dark">
+            <AERVYNMap mapMode="dark" />
           </div>
         </div>
       </div>
