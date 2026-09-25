@@ -109,7 +109,7 @@ export default function TelemetryPanel() {
                 flightNumber={(aircraftMetadata as any)?.registered_owner || (aircraftMetadata as any)?.manufacturer || 'Unknown Airline'} 
                 origin={flightRouteData?.origin || '---'} 
                 destination={flightRouteData?.destination || '---'} 
-                statusText="AIRBORNE"
+                statusText={selectedFlight.onGround ? 'GROUNDED' : 'AIRBORNE'}
                 isActive={true}
               />
 

@@ -11,7 +11,7 @@ export interface FlightCardProps {
 }
 
 export const FlightCard: React.FC<FlightCardProps> = ({
-  callsign, flightNumber, origin = '???', destination = '???', statusText, isActive, onClick
+  callsign, flightNumber, origin = 'UNK', destination = 'UNK', statusText, isActive, onClick
 }) => {
   return (
     <div 

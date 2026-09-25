@@ -42,8 +42,8 @@ export default function FleetPanel() {
                 <FlightRow 
                   key={flight.id}
                   callsign={flight.flightNumber || flight.callsign || 'UNK'}
-                  origin="---"
-                  destination="---"
+                  origin={flight.originCountry || "UNK"}
+                  destination={flight.status === 'grounded' ? 'GND' : 'AIR'}
                   statusText={(flight.altitude ?? 0) > 0 ? `${flight.altitude} FT` : 'GND'}
                   isActive={selectedFlight?.id === flight.id}
                   onClick={() => {

@@ -12,7 +12,7 @@ export interface FlightRowProps {
 }
 
 export const FlightRow: React.FC<FlightRowProps> = ({
-  callsign, origin = '???', destination = '???', statusText, isActive, onClick
+  callsign, origin = 'UNK', destination = 'UNK', statusText, isActive, onClick
 }) => {
   return (
     <div 
