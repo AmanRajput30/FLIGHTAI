@@ -49,7 +49,7 @@ export default function AlertsPage() {
     return generated;
   }, [flights]);
 
-  const alerts = dynamicAlerts.filter(a => !readAlertIds.includes(a.id));
+  const alerts = dynamicAlerts;
 
   const handleMarkAllRead = () => {
     const currentViewIds = alerts.filter(alert => activeCategory === 'all' || alert.type === activeCategory).map(a => a.id);
@@ -66,8 +66,15 @@ export default function AlertsPage() {
       if (flight.lat && flight.lng) {
         setTargetPos([flight.lat, flight.lng]);
       }
-      router.push('/dashboard');
+    } else {
+       // fallback if no longer live
+       setFocusedFlightId(alert.flight);
     }
+    // ensure we mark it as read when clicked
+    if (!readAlertIds.includes(alert.id)) {
+      setReadAlertIds(prev => [...prev, alert.id]);
+    }
+    router.push('/dashboard');
   };
 
   const getIcon = (type: string, severity: string) => {
@@ -118,10 +125,19 @@ export default function AlertsPage() {
                   <CheckCircle2 size={16} />
                   Mark all read
                 </button>
-                <button className="bg-aervyn-surface-dark-elevated hover:bg-aervyn-surface-dark-active border border-aervyn-border-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                  <Filter size={16} />
-                  Filter
-                </button>
+                <div className="relative group">
+                  <button className="bg-aervyn-surface-dark-elevated hover:bg-aervyn-surface-dark-active border border-aervyn-border-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                    <Filter size={16} />
+                    Filter
+                  </button>
+                  <div className="absolute right-0 mt-2 w-48 bg-aervyn-surface-dark border border-aervyn-border-dark rounded-xl shadow-xl overflow-hidden opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none group-hover:pointer-events-auto z-50">
+                     <div className="p-1">
+                        <button className="w-full text-left px-3 py-2 text-sm text-aervyn-text-dark-primary hover:bg-aervyn-surface-dark-active rounded-lg">High Severity First</button>
+                        <button className="w-full text-left px-3 py-2 text-sm text-aervyn-text-dark-primary hover:bg-aervyn-surface-dark-active rounded-lg">Most Recent First</button>
+                        <button className="w-full text-left px-3 py-2 text-sm text-aervyn-text-dark-primary hover:bg-aervyn-surface-dark-active rounded-lg">Unread Only</button>
+                     </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -157,11 +173,13 @@ export default function AlertsPage() {
               <div className="flex-1 flex flex-col gap-4">
                 {alerts
                   .filter(alert => activeCategory === 'all' || alert.type === activeCategory)
-                  .map((alert) => (
+                  .map((alert) => {
+                    const isRead = readAlertIds.includes(alert.id);
+                    return (
                   <div 
                     key={alert.id} 
                     onClick={() => handleAlertClick(alert)}
-                    className={`bg-aervyn-surface-dark border border-aervyn-border-dark rounded-xl p-5 hover:bg-aervyn-surface-dark-active transition-colors cursor-pointer flex gap-4 ${getBorderColor(alert.severity)}`}
+                    className={`bg-aervyn-surface-dark border rounded-xl p-5 hover:bg-aervyn-surface-dark-active transition-all cursor-pointer flex gap-4 ${getBorderColor(alert.severity)} ${isRead ? 'opacity-50 border-aervyn-border-dark' : 'border-aervyn-border-dark-subtle shadow-[0_0_15px_rgba(56,189,248,0.1)]'}`}
                   >
                     <div className="pt-1 shrink-0">
                       {getIcon(alert.type, alert.severity)}
@@ -188,7 +206,8 @@ export default function AlertsPage() {
                       </div>
                     </div>
                   </div>
-                ))}
+                );
+              })}
                 
                 {alerts.filter(alert => activeCategory === 'all' || alert.type === activeCategory).length === 0 && (
                   <div className="flex flex-col items-center justify-center p-12 border border-dashed border-aervyn-border-dark rounded-xl text-aervyn-text-dark-muted">

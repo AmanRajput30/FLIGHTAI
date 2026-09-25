@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface UIState {
   systemStatus: 'live' | 'stale';
@@ -12,14 +13,22 @@ interface UIState {
   setUiVisible: (visible: boolean) => void;
 }
 
-export const useUIStore = create<UIState>((set) => ({
-  systemStatus: 'live',
-  mapMode: 'satellite',
-  performanceMode: false,
-  uiVisible: true,
+export const useUIStore = create<UIState>()(
+  persist(
+    (set) => ({
+      systemStatus: 'live',
+      mapMode: 'satellite',
+      performanceMode: false,
+      uiVisible: true,
 
-  setSystemStatus: (status) => set({ systemStatus: status }),
-  setMapMode: (mode) => set({ mapMode: mode }),
-  setPerformanceMode: (mode) => set({ performanceMode: mode }),
-  setUiVisible: (visible) => set({ uiVisible: visible }),
-}));
+      setSystemStatus: (status) => set({ systemStatus: status }),
+      setMapMode: (mode) => set({ mapMode: mode }),
+      setPerformanceMode: (mode) => set({ performanceMode: mode }),
+      setUiVisible: (visible) => set({ uiVisible: visible }),
+    }),
+    {
+      name: 'ui-storage',
+      partialize: (state) => ({ mapMode: state.mapMode, performanceMode: state.performanceMode }),
+    }
+  )
+);
