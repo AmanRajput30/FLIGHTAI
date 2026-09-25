@@ -7,11 +7,14 @@ import { motion } from 'framer-motion';
 import { M_PRESETS } from '@/lib/motion/presets';
 import { AlertCircle, AlertTriangle, ShieldAlert, CloudLightning, Activity, Filter, CheckCircle2, Navigation } from 'lucide-react';
 import { useFlightStore } from '@/store/useFlightStore';
+import { useRouter } from 'next/navigation';
 
 export default function AlertsPage() {
+  const router = useRouter();
   const [activeCategory, setActiveCategory] = useState('all');
+  const [readAlertIds, setReadAlertIds] = useState<string[]>([]);
 
-  const { flights } = useFlightStore();
+  const { flights, setSelectedFlight, setFocusedFlightId, setTargetPos, setAirportData } = useFlightStore();
 
   // Generate dynamic alerts based on live flight data
   const dynamicAlerts = React.useMemo(() => {
@@ -46,7 +49,26 @@ export default function AlertsPage() {
     return generated;
   }, [flights]);
 
-  const alerts = dynamicAlerts;
+  const alerts = dynamicAlerts.filter(a => !readAlertIds.includes(a.id));
+
+  const handleMarkAllRead = () => {
+    const currentViewIds = alerts.filter(alert => activeCategory === 'all' || alert.type === activeCategory).map(a => a.id);
+    setReadAlertIds(prev => [...prev, ...currentViewIds]);
+  };
+
+  const handleAlertClick = (alert: any) => {
+    // If it's a real flight alert, fly to it
+    const flight = flights.find(f => f.callsign === alert.flight || f.icao24 === alert.flight || f.id === alert.id.replace(/^[a-z]{2}-/, ''));
+    if (flight) {
+      setSelectedFlight(flight);
+      setFocusedFlightId(flight.id);
+      setAirportData(null);
+      if (flight.lat && flight.lng) {
+        setTargetPos([flight.lat, flight.lng]);
+      }
+      router.push('/dashboard');
+    }
+  };
 
   const getIcon = (type: string, severity: string) => {
     switch (type) {
@@ -92,7 +114,7 @@ export default function AlertsPage() {
                 <p className="text-sm text-aervyn-text-dark-secondary">Monitor critical anomalies, weather, and system alerts.</p>
               </div>
               <div className="flex items-center gap-3">
-                <button className="bg-aervyn-surface-dark-elevated hover:bg-aervyn-surface-dark-active border border-aervyn-border-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                <button onClick={handleMarkAllRead} className="bg-aervyn-surface-dark-elevated hover:bg-aervyn-surface-dark-active border border-aervyn-border-dark text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
                   <CheckCircle2 size={16} />
                   Mark all read
                 </button>
@@ -109,6 +131,7 @@ export default function AlertsPage() {
                 {['All Alerts', 'Security', 'Weather', 'Airspace', 'Maintenance', 'System'].map((cat) => {
                   const id = cat.toLowerCase().replace(' ', '-');
                   const isActive = activeCategory === (id === 'all-alerts' ? 'all' : id);
+                  const count = id === 'all-alerts' ? alerts.length : alerts.filter(a => a.type === id).length;
                   return (
                     <button
                       key={id}
@@ -120,8 +143,11 @@ export default function AlertsPage() {
                       }`}
                     >
                       {cat}
-                      {cat === 'All Alerts' && <span className="bg-aervyn-status-red text-white text-[10px] px-2 py-0.5 rounded-full">5</span>}
-                      {cat === 'Security' && <span className="bg-aervyn-surface-dark text-white text-[10px] px-2 py-0.5 rounded-full">1</span>}
+                      {count > 0 && (
+                        <span className={`${id === 'all-alerts' || id === 'security' || id === 'system' ? 'bg-aervyn-status-red' : 'bg-aervyn-surface-dark border border-aervyn-border-dark text-aervyn-text-dark-secondary'} text-white text-[10px] px-2 py-0.5 rounded-full`}>
+                          {count}
+                        </span>
+                      )}
                     </button>
                   );
                 })}
@@ -134,6 +160,7 @@ export default function AlertsPage() {
                   .map((alert) => (
                   <div 
                     key={alert.id} 
+                    onClick={() => handleAlertClick(alert)}
                     className={`bg-aervyn-surface-dark border border-aervyn-border-dark rounded-xl p-5 hover:bg-aervyn-surface-dark-active transition-colors cursor-pointer flex gap-4 ${getBorderColor(alert.severity)}`}
                   >
                     <div className="pt-1 shrink-0">

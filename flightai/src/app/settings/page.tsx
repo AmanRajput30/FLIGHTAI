@@ -5,13 +5,15 @@ import { Sidebar } from '@/components/layout/Sidebar';
 import Header from '@/components/layout/Header';
 import { motion } from 'framer-motion';
 import { M_PRESETS } from '@/lib/motion/presets';
-import { User, Shield, CreditCard, Users, Bell, Zap, Link as LinkIcon, HelpCircle, UploadCloud } from 'lucide-react';
+import { User, Shield, CreditCard, Users, Bell, Zap, Link as LinkIcon, HelpCircle, UploadCloud, Monitor, Map as MapIcon } from 'lucide-react';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
+import { useUIStore } from '@/store/useUIStore';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('details');
   const { user } = useAuth();
+  const { mapMode, setMapMode, performanceMode, setPerformanceMode } = useUIStore();
   
   const nameParts = user?.name ? user.name.split(' ') : ['Commander', 'Sky'];
   const firstName = nameParts[0] || '';
@@ -20,7 +22,7 @@ export default function SettingsPage() {
 
   const tabs = [
     { id: 'details', label: 'My details', icon: User },
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'preferences', label: 'Preferences', icon: Monitor },
     { id: 'password', label: 'Password', icon: Shield },
     { id: 'team', label: 'Team', icon: Users },
     { id: 'billing', label: 'Billing', icon: CreditCard },
@@ -160,7 +162,86 @@ export default function SettingsPage() {
                   </div>
                 )}
                 
-                {activeTab !== 'details' && (
+                {activeTab === 'preferences' && (
+                  <div className="space-y-6">
+                    <div className="pb-5 border-b border-aervyn-border-dark">
+                      <h2 className="text-lg font-semibold text-white">Application Preferences</h2>
+                      <p className="text-sm text-aervyn-text-dark-secondary mt-1">Customize how AERVYN looks and performs.</p>
+                    </div>
+
+                    <div className="space-y-8 max-w-2xl">
+                      {/* Map Mode */}
+                      <div>
+                        <h3 className="text-sm font-medium text-white mb-4">Map Appearance</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <button 
+                            onClick={() => setMapMode('dark')}
+                            className={`flex flex-col items-start p-4 rounded-xl border transition-all ${mapMode === 'dark' ? 'border-aervyn-primary bg-aervyn-primary/5' : 'border-aervyn-border-dark hover:border-aervyn-border-dark-subtle bg-aervyn-surface-dark'}`}
+                          >
+                            <MapIcon size={24} className={mapMode === 'dark' ? 'text-aervyn-primary mb-3' : 'text-aervyn-text-dark-muted mb-3'} />
+                            <span className="font-medium text-white">Dark Mode</span>
+                            <span className="text-xs text-aervyn-text-dark-secondary mt-1 text-left">High contrast tactical interface optimized for dark environments.</span>
+                          </button>
+                          <button 
+                            onClick={() => setMapMode('light')}
+                            className={`flex flex-col items-start p-4 rounded-xl border transition-all ${mapMode === 'light' ? 'border-aervyn-primary bg-aervyn-primary/5' : 'border-aervyn-border-dark hover:border-aervyn-border-dark-subtle bg-aervyn-surface-dark'}`}
+                          >
+                            <MapIcon size={24} className={mapMode === 'light' ? 'text-aervyn-primary mb-3' : 'text-aervyn-text-dark-muted mb-3'} />
+                            <span className="font-medium text-white">Light Mode</span>
+                            <span className="text-xs text-aervyn-text-dark-secondary mt-1 text-left">Clean, bright interface optimized for daylight conditions.</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Performance Mode */}
+                      <div className="pt-6 border-t border-aervyn-border-dark">
+                        <h3 className="text-sm font-medium text-white mb-4">Performance Profile</h3>
+                        <div className="bg-aervyn-surface-dark border border-aervyn-border-dark rounded-xl p-5 flex items-center justify-between">
+                          <div>
+                            <p className="text-sm font-medium text-white">Low Latency Mode</p>
+                            <p className="text-xs text-aervyn-text-dark-secondary mt-1 max-w-md">Disables animations and visual effects to prioritize rendering speed and battery life.</p>
+                          </div>
+                          <button 
+                            onClick={() => setPerformanceMode(performanceMode === 'standard' ? 'low' : 'standard')}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${performanceMode === 'low' ? 'bg-aervyn-primary' : 'bg-slate-700'}`}
+                          >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${performanceMode === 'low' ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'notifications' && (
+                  <div className="space-y-6">
+                    <div className="pb-5 border-b border-aervyn-border-dark">
+                      <h2 className="text-lg font-semibold text-white">Notification Settings</h2>
+                      <p className="text-sm text-aervyn-text-dark-secondary mt-1">Control when and how you receive alerts.</p>
+                    </div>
+
+                    <div className="space-y-6 max-w-2xl">
+                      {[
+                        { title: 'Critical System Alerts', desc: 'Receive immediate notifications for core system outages.', active: true },
+                        { title: 'Fleet Anomalies', desc: 'Alerts when aircraft in your fleet experience rapid descent or squawk 7700.', active: true },
+                        { title: 'Weather Advisories', desc: 'Daily digests of severe weather affecting your tracked regions.', active: false },
+                        { title: 'New Features', desc: 'Occasional emails about new AERVYN updates.', active: false }
+                      ].map((pref, i) => (
+                        <div key={i} className="flex items-center justify-between py-3 border-b border-aervyn-border-dark/50 last:border-0">
+                          <div>
+                            <p className="text-sm font-medium text-white">{pref.title}</p>
+                            <p className="text-xs text-aervyn-text-dark-secondary mt-1">{pref.desc}</p>
+                          </div>
+                          <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${pref.active ? 'bg-aervyn-primary' : 'bg-slate-700'} opacity-70 cursor-not-allowed`}>
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${pref.active ? 'translate-x-6' : 'translate-x-1'}`} />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {activeTab !== 'details' && activeTab !== 'preferences' && activeTab !== 'notifications' && (
                   <div className="flex flex-col items-center justify-center h-64 text-aervyn-text-dark-muted border border-dashed border-aervyn-border-dark rounded-xl">
                     <HelpCircle size={32} className="mb-4 opacity-50" />
                     <p>Settings for {tabs.find(t => t.id === activeTab)?.label} will appear here.</p>
