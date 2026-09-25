@@ -51,8 +51,15 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['USER', 'ADMIN', 'MODERATOR'],
-      default: 'USER',
+      default: 'Mission Commander',
+    },
+    plan: {
+      type: String,
+      default: 'AERVYN Professional',
+    },
+    preferences: {
+      type: Object,
+      default: { alerts: true, fleet: true, weather: false, updates: false },
     },
     isEmailVerified: {
       type: Boolean,

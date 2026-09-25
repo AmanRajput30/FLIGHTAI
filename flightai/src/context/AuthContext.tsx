@@ -17,6 +17,13 @@ export interface User {
   isEmailVerified: boolean;
   googleId?: string;
   appleId?: string;
+  plan?: string;
+  preferences?: {
+    alerts: boolean;
+    fleet: boolean;
+    weather: boolean;
+    updates: boolean;
+  };
 }
 
 interface AuthContextType {

@@ -28,7 +28,7 @@ export default function SettingsPage() {
   const { user, refreshUser } = useAuth();
 
   useEffect(() => {
-    // Generate or retrieve a persistent mock API key for the user
+    // Generate or retrieve a persistent API key for the user
     if (typeof window !== 'undefined' && user?._id) {
        const storedKey = localStorage.getItem(`aervyn_api_key_${user._id}`);
        if (storedKey) {
@@ -300,19 +300,29 @@ export default function SettingsPage() {
 
                     <div className="space-y-6 max-w-2xl">
                       {[
-                        { title: 'Critical System Alerts', desc: 'Receive immediate notifications for core system outages.', active: true },
-                        { title: 'Fleet Anomalies', desc: 'Alerts when aircraft in your fleet experience rapid descent or squawk 7700.', active: true },
-                        { title: 'Weather Advisories', desc: 'Daily digests of severe weather affecting your tracked regions.', active: false },
-                        { title: 'New Features', desc: 'Occasional emails about new AERVYN updates.', active: false }
+                        { key: 'alerts', title: 'Critical System Alerts', desc: 'Receive immediate notifications for core system outages.', active: user?.preferences?.alerts ?? true },
+                        { key: 'fleet', title: 'Fleet Anomalies', desc: 'Alerts when aircraft in your fleet experience rapid descent or squawk 7700.', active: user?.preferences?.fleet ?? true },
+                        { key: 'weather', title: 'Weather Advisories', desc: 'Daily digests of severe weather affecting your tracked regions.', active: user?.preferences?.weather ?? false },
+                        { key: 'updates', title: 'New Features', desc: 'Occasional emails about new AERVYN updates.', active: user?.preferences?.updates ?? false }
                       ].map((pref, i) => (
                         <div key={i} className="flex items-center justify-between py-3 border-b border-aervyn-border-dark/50 last:border-0">
                           <div>
                             <p className="text-sm font-medium text-white">{pref.title}</p>
                             <p className="text-xs text-aervyn-text-dark-secondary mt-1">{pref.desc}</p>
                           </div>
-                          <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${pref.active ? 'bg-aervyn-primary' : 'bg-slate-700'} opacity-70 cursor-not-allowed`}>
+                          <button 
+                            onClick={async () => {
+                              try {
+                                await userApi.updateProfile({ preferences: { [pref.key]: !pref.active } });
+                                await refreshUser();
+                              } catch (e) {
+                                console.error('Failed to update preference', e);
+                              }
+                            }}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${pref.active ? 'bg-aervyn-primary' : 'bg-slate-700'}`}
+                          >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${pref.active ? 'translate-x-6' : 'translate-x-1'}`} />
-                          </div>
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -409,7 +419,7 @@ export default function SettingsPage() {
                       <div className="absolute top-0 right-0 p-6">
                          <span className="px-3 py-1 bg-aervyn-primary text-white text-xs font-bold uppercase tracking-wider rounded-full">Pro Tier</span>
                       </div>
-                      <h3 className="text-xl font-bold text-white mb-2">AERVYN Professional</h3>
+                      <h3 className="text-xl font-bold text-white mb-2">{user?.plan || 'AERVYN Professional'}</h3>
                       <p className="text-aervyn-text-dark-secondary mb-6 max-w-md">You have unlimited access to live telemetry, predictive modeling, and fleet tracking.</p>
                       <div className="flex gap-4">
                         <button className="bg-white text-black hover:bg-slate-200 px-5 py-2 rounded-lg text-sm font-medium transition-colors">Manage Plan</button>
@@ -442,8 +452,7 @@ export default function SettingsPage() {
                           {copied ? 'Copied!' : 'Copy'}
                         </button>
                       </div>
-                      <div className="mt-4 pt-4 border-t border-aervyn-border-dark flex justify-between items-center">
-                        <span className="text-xs text-aervyn-text-dark-secondary">Last used: Never</span>
+                      <div className="mt-4 pt-4 border-t border-aervyn-border-dark flex justify-end items-center">
                         <button 
                           onClick={() => {
                             if (user?._id) {
