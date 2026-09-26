@@ -197,7 +197,7 @@ const flightRoute = require('./routes/flightRoute');
 app.use('/api/auth', authLimiter, csrfProtection, authRoute);
 app.use('/api/oauth', authLimiter, csrfProtection, oauthRoute);
 app.use('/api/user', csrfProtection, userRoute);
-app.use('/api/flight', flightRoute);
+app.use('/api/flight', globalLimiter, flightRoute);
 
 // Rate Limiters
 const searchLimiter = rateLimit({
@@ -366,9 +366,15 @@ app.use('/api/chat', optionalAuth, (req, res, next) => {
 
 
 // Endpoint for Flight Paths (Robust combines OpenSky tracks + Planned Route)
-app.get('/api/flight-path/:icao24', async (req, res) => {
+app.get('/api/flight-path/:icao24', routeLimiter, async (req, res) => {
   try {
     const { icao24 } = req.params;
+    
+    // Mitigate HTTP Parameter Pollution & SSRF injections
+    if (!/^[a-zA-Z0-9]{1,10}$/.test(icao24)) {
+      return res.status(400).json({ error: 'Invalid ICAO24 format' });
+    }
+    
     let path = [];
     let isSynthetic = false;
 
