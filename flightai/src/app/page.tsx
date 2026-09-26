@@ -10,25 +10,15 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import AERVYNMap from "@/components/map/AERVYNMap";
 import { useFlightStore } from "@/store/useFlightStore";
+import Footer from "@/components/layout/Footer";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
-  const [stats, setStats] = useState({ users: 0, uptime: 99.9 });
   const flights = useFlightStore((state) => state.flights);
 
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await axios.get(`${API_URL}/api/stats`);
-        setStats(res.data);
-      } catch (err) {
-        console.error("Failed to fetch landing stats", err);
-      }
-    };
-    fetchStats();
-
     // Fetch live flights for the map
     const fetchLiveFlights = async () => {
       try {
@@ -164,18 +154,23 @@ export default function LandingPage() {
           className="grid grid-cols-1 sm:grid-cols-3 gap-12 mt-20 pt-10 border-t border-aervyn-border-dark-subtle text-left max-w-3xl w-full"
         >
           <div>
-            <div className="text-3xl font-bold text-aervyn-text-dark-primary">{stats.users > 0 ? stats.users.toLocaleString() : '10K+'}</div>
-            <div className="text-sm text-aervyn-text-dark-muted mt-1">Active Users</div>
+            <div className="text-3xl font-bold text-aervyn-text-dark-primary">
+              {flights.length > 0 ? flights.filter(f => f.status === 'active' || f.altitude > 0).length.toLocaleString() : '...'}
+            </div>
+            <div className="text-sm text-aervyn-text-dark-muted mt-1">Airborne Aircraft</div>
           </div>
           <div>
             <div className="text-3xl font-bold text-aervyn-text-dark-primary">
-              {flights.length > 0 ? flights.length.toLocaleString() : '1M+'}
+              {flights.length > 0 ? flights.length.toLocaleString() : '...'}
             </div>
-            <div className="text-sm text-aervyn-text-dark-muted mt-1">Flights Tracked Now</div>
+            <div className="text-sm text-aervyn-text-dark-muted mt-1">Total Live Tracked</div>
           </div>
           <div>
-            <div className="text-3xl font-bold text-aervyn-text-dark-primary">{stats.uptime}%</div>
-            <div className="text-sm text-aervyn-text-dark-muted mt-1">Uptime SLA</div>
+            <div className="text-3xl font-bold text-aervyn-status-success flex items-center gap-3">
+               <div className="w-3 h-3 rounded-full bg-aervyn-status-success animate-pulse shadow-[0_0_10px_rgba(20,241,217,0.5)]"></div>
+               Live
+            </div>
+            <div className="text-sm text-aervyn-text-dark-muted mt-1">Global Telemetry</div>
           </div>
           </motion.div>
         </div>
@@ -233,23 +228,7 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="w-full py-12 px-6 text-sm text-aervyn-text-dark-muted border-t border-aervyn-border-dark bg-aervyn-bg-dark z-10">
-        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Plane className="w-4 h-4" />
-            <span className="font-semibold text-aervyn-text-dark-secondary">AERVYN</span>
-          </div>
-          <div className="flex gap-6">
-            <Link href="/terms" className="hover:text-aervyn-text-dark-primary transition-colors">Terms of Service</Link>
-            <Link href="/privacy" className="hover:text-aervyn-text-dark-primary transition-colors">Privacy Policy</Link>
-          </div>
-          <div>
-            &copy; {new Date().getFullYear()} Aervyn, Inc. All rights reserved.
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
