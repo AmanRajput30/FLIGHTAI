@@ -1,5 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const User = require('../models/User');
 const Session = require('../models/Session');
 const SecurityEvent = require('../models/SecurityEvent');
@@ -34,14 +35,25 @@ const logSecurityEvent = async (userId, eventType, req, metadata = {}) => {
  */
 router.patch('/profile', requireAuth, async (req, res) => {
   try {
-    const { name, bio, avatar, role, preferences } = req.body;
+    const { name, bio, avatar, role, preferences, paymentMethod, team } = req.body;
     
     // Allow updating these fields
     if (name) req.user.name = name;
     if (bio !== undefined) req.user.bio = bio;
     if (avatar !== undefined) req.user.avatar = avatar;
     if (role !== undefined) req.user.role = role;
-    if (preferences !== undefined) req.user.preferences = { ...req.user.preferences, ...preferences };
+    if (preferences !== undefined) {
+      req.user.preferences = { ...req.user.preferences, ...preferences };
+      req.user.markModified('preferences');
+    }
+    if (paymentMethod !== undefined) {
+      req.user.paymentMethod = paymentMethod;
+      req.user.markModified('paymentMethod');
+    }
+    if (team !== undefined) {
+      req.user.team = team;
+      req.user.markModified('team');
+    }
 
     await req.user.save();
     res.json({ message: 'Profile updated successfully', user: req.user });
@@ -296,6 +308,26 @@ router.delete('/account', requireAuth, async (req, res) => {
     res.json({ message: 'Account permanently deleted' });
   } catch (error) {
     console.error('Delete Account Error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+/**
+ * POST /api/user/api-key/regenerate
+ */
+router.post('/api-key/regenerate', requireAuth, async (req, res) => {
+  try {
+    const randomBytes = crypto.randomBytes(32).toString('hex');
+    const newApiKey = `ak_live_${randomBytes}`;
+    
+    req.user.apiKey = newApiKey;
+    await req.user.save();
+    
+    await logSecurityEvent(req.user._id, 'API_KEY_REGENERATED', req);
+    
+    res.json({ message: 'API key regenerated successfully', apiKey: newApiKey });
+  } catch (error) {
+    console.error('Regenerate API Key Error:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

@@ -25,7 +25,6 @@ export default function Footer() {
           <h3 className="font-semibold text-aervyn-text-dark-primary mb-3 text-sm">Company</h3>
           <Link href="/about" className="text-sm text-aervyn-text-dark-secondary hover:text-aervyn-text-dark-primary transition-colors w-full">About</Link>
           <Link href="/contact" className="text-sm text-aervyn-text-dark-secondary hover:text-aervyn-text-dark-primary transition-colors w-full">Contact</Link>
-          <Link href="/status" className="text-sm text-aervyn-text-dark-secondary hover:text-aervyn-text-dark-primary transition-colors w-full">Status</Link>
         </div>
 
         <div className="flex flex-col gap-2 p-6 border-r border-b border-aervyn-border-dark bg-aervyn-bg-dark">

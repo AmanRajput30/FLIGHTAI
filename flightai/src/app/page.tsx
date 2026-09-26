@@ -11,6 +11,7 @@ import axios from "axios";
 import AERVYNMap from "@/components/map/AERVYNMap";
 import { useFlightStore } from "@/store/useFlightStore";
 import Footer from "@/components/layout/Footer";
+import PublicNavbar from "@/components/layout/PublicNavbar";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
@@ -57,41 +58,7 @@ export default function LandingPage() {
   return (
     <div className="min-h-screen bg-aervyn-bg-dark text-aervyn-text-dark-primary flex flex-col relative font-inter selection:bg-aervyn-primary/30 selection:text-white">
       {/* Navigation */}
-      <header className="h-16 flex items-center justify-between px-6 lg:px-12 z-20 border-b border-aervyn-border-dark-subtle bg-aervyn-bg-dark/80 backdrop-blur-md sticky top-0">
-        <div className="flex items-center gap-2">
-          <Plane className="w-6 h-6 text-aervyn-text-dark-primary" />
-          <span className="font-bold text-lg tracking-wide text-aervyn-text-dark-primary">AERVYN</span>
-        </div>
-        
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-aervyn-text-dark-secondary">
-          <Link href="/features" className="hover:text-aervyn-text-dark-primary transition-colors">Features</Link>
-          <Link href="/data-sources" className="hover:text-aervyn-text-dark-primary transition-colors">Data Sources</Link>
-          <Link href="/pricing" className="hover:text-aervyn-text-dark-primary transition-colors">Pricing</Link>
-          <Link href="/about" className="hover:text-aervyn-text-dark-primary transition-colors">About</Link>
-        </nav>
-
-        <div className="flex items-center gap-4">
-          {loading ? (
-            <div className="w-8 h-8 rounded-full bg-white/5 animate-pulse"></div>
-          ) : user ? (
-            <>
-              <Link href="/dashboard" className="hidden sm:flex items-center justify-center bg-aervyn-primary hover:bg-aervyn-primary-hover text-white transition-colors text-sm font-medium px-4 py-2 rounded-md">
-                Open Dashboard
-              </Link>
-              <UserMenu />
-            </>
-          ) : (
-            <>
-              <Link href="/login" className="text-sm font-medium text-aervyn-text-dark-secondary hover:text-aervyn-text-dark-primary px-3 py-2 transition-colors">
-                Sign In
-              </Link>
-              <Link href="/register" className="flex items-center justify-center bg-aervyn-primary hover:bg-aervyn-primary-hover text-white transition-colors text-sm font-medium px-4 py-2 rounded-md">
-                Get Started
-              </Link>
-            </>
-          )}
-        </div>
-      </header>
+      <PublicNavbar />
 
       {/* Hero Section */}
       <main className="relative flex-1 flex flex-col items-center justify-center text-center px-4 pt-24 pb-32 z-10 overflow-hidden min-h-[80vh]">

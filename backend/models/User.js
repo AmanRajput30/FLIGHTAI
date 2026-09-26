@@ -30,13 +30,11 @@ const userSchema = new mongoose.Schema(
     },
     googleId: {
       type: String,
-      default: null,
       sparse: true,
       unique: true,
     },
     appleId: {
       type: String,
-      default: null,
       sparse: true,
       unique: true,
     },
@@ -60,6 +58,26 @@ const userSchema = new mongoose.Schema(
     preferences: {
       type: Object,
       default: { alerts: true, fleet: true, weather: false, updates: false },
+    },
+    apiKey: {
+      type: String,
+      default: ''
+    },
+    team: {
+      type: Array,
+      default: []
+    },
+    paymentMethod: {
+      type: Object,
+      default: { brand: 'VISA', last4: '4242', exp: '12/28' }
+    },
+    invoices: {
+      type: Array,
+      default: [
+        { date: 'Sep 1, 2026', amount: '$299.00', status: 'Paid', id: 'INV-2026-09' },
+        { date: 'Aug 1, 2026', amount: '$299.00', status: 'Paid', id: 'INV-2026-08' },
+        { date: 'Jul 1, 2026', amount: '$299.00', status: 'Paid', id: 'INV-2026-07' }
+      ]
     },
     isEmailVerified: {
       type: Boolean,

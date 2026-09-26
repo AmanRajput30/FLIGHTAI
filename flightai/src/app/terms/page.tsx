@@ -1,4 +1,4 @@
-import Header from '@/components/layout/Header';
+import PublicNavbar from '@/components/layout/PublicNavbar';
 import Footer from '@/components/layout/Footer';
 import type { Metadata } from "next";
 
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default function TermsPage() {
   return (
     <div className="flex flex-col min-h-screen bg-aervyn-bg-dark text-aervyn-text-primary font-inter">
-      <Header />
+      <PublicNavbar />
       
       <main className="flex-1 max-w-3xl mx-auto px-6 py-24">
         <h1 className="text-3xl font-black mb-8 text-aervyn-text-dark-primary">Terms of Service</h1>

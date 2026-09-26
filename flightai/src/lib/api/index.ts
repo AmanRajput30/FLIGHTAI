@@ -62,5 +62,9 @@ export const userApi = {
   },
   updatePassword: async (data: { currentPassword?: string, newPassword?: string }): Promise<void> => {
     await axios.patch(`${API_URL}/api/user/password`, data);
+  },
+  regenerateApiKey: async (): Promise<{ apiKey: string }> => {
+    const res = await axios.post(`${API_URL}/api/user/api-key/regenerate`);
+    return res.data;
   }
 };

@@ -1,7 +1,8 @@
-import Header from '@/components/layout/Header';
+import PublicNavbar from '@/components/layout/PublicNavbar';
 import Footer from '@/components/layout/Footer';
 import { Check, Sparkles, Zap, Building } from 'lucide-react';
 import { CockpitButton } from '@/components/ui/CockpitButton';
+import WaitlistButton from '@/components/ui/WaitlistButton';
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -19,7 +20,7 @@ export const metadata: Metadata = {
 export default function PricingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-aervyn-bg-dark text-aervyn-text-primary font-inter">
-      <Header />
+      <PublicNavbar />
       
       <main className="flex-1 max-w-7xl mx-auto px-6 py-24 w-full">
         <div className="text-center mb-16 border-b border-aervyn-border-dark pb-16">
@@ -59,9 +60,7 @@ export default function PricingPage() {
                 <Check className="w-4 h-4 text-aervyn-primary flex-shrink-0" /> 100 AI queries / month
               </div>
             </div>
-            <button className="w-full mt-8 py-2.5 bg-aervyn-surface-dark-elevated hover:bg-aervyn-border-dark text-aervyn-text-dark-primary rounded-lg font-medium text-sm transition-colors border border-aervyn-border-dark">
-              Join Waitlist
-            </button>
+            <WaitlistButton className="mt-8 bg-aervyn-surface-dark-elevated hover:bg-aervyn-border-dark text-aervyn-text-dark-primary border border-aervyn-border-dark" />
           </div>
 
           {/* Pro Tier */}
@@ -98,9 +97,7 @@ export default function PricingPage() {
                 <Check className="w-4 h-4 text-aervyn-primary flex-shrink-0" /> No API rate limits
               </div>
             </div>
-            <button className="w-full mt-8 py-2.5 bg-aervyn-primary hover:bg-aervyn-primary-hover text-white rounded-lg font-medium text-sm transition-colors">
-              Join Waitlist
-            </button>
+            <WaitlistButton className="mt-8 bg-aervyn-primary hover:bg-aervyn-primary-hover text-white border border-transparent" />
           </div>
 
           {/* Enterprise Tier */}

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Header from '@/components/layout/Header';
+import PublicNavbar from '@/components/layout/PublicNavbar';
 import Footer from '@/components/layout/Footer';
 import { Activity, Shield, Map } from 'lucide-react';
 
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export default function FeaturesPage() {
   return (
     <div className="flex flex-col min-h-screen bg-aervyn-bg-dark text-aervyn-text-primary font-inter">
-      <Header />
+      <PublicNavbar />
       
       <main className="flex-1 max-w-5xl mx-auto px-6 py-24 w-full">
         <div className="text-center mb-16 border-b border-aervyn-border-dark pb-16">

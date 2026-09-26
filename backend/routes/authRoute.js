@@ -97,8 +97,8 @@ router.post('/register', emailLimiter, async (req, res) => {
       return res.status(400).json({ error: 'Invalid input types' });
     }
 
-    if (password.length < 12 || password.length > 100) {
-      return res.status(400).json({ error: 'Password must be between 12 and 100 characters' });
+    if (password.length < 8 || password.length > 100) {
+      return res.status(400).json({ error: 'Password must be between 8 and 100 characters' });
     }
 
     // Check if email or username exists safely

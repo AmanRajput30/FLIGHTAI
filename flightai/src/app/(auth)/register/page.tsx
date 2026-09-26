@@ -88,9 +88,12 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
+      const baseUsername = formData.email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '').toLowerCase();
+      const uniqueSuffix = Math.floor(1000 + Math.random() * 9000);
+      
       const payload = {
-        name: formData.username,
-        username: formData.username,
+        name: formData.username, // using the 'Full name' field
+        username: `${baseUsername}${uniqueSuffix}`, // robust unique username
         email: formData.email,
         password: formData.password,
       };

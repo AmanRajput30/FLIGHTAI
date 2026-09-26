@@ -107,7 +107,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   // Simple route protection logic
   useEffect(() => {
     if (!loading) {
-      const isAuthRoute = pathname.startsWith('/settings');
+      const protectedPaths = [
+        '/dashboard',
+        '/live-tracking',
+        '/fleet',
+        '/aircraft',
+        '/analytics',
+        '/alerts',
+        '/settings'
+      ];
+      
+      const isAuthRoute = protectedPaths.some(path => pathname.startsWith(path));
+      
       if (isAuthRoute && !user) {
         router.push('/login');
       }
