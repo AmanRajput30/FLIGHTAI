@@ -19,6 +19,11 @@ export default function ConvergingEarth({ className = "" }: RotatingEarthProps) 
     if (!canvasRef.current || hasStartedRef.current) return
     hasStartedRef.current = true;
 
+    const skipAnimation = sessionStorage.getItem('globeAnimationPlayed') === 'true';
+    if (!skipAnimation) {
+      sessionStorage.setItem('globeAnimationPlayed', 'true');
+    }
+
     const canvas = canvasRef.current
     const context = canvas.getContext("2d", { alpha: true, antialias: false }) as CanvasRenderingContext2D
     if (!context) return
@@ -223,19 +228,11 @@ export default function ConvergingEarth({ className = "" }: RotatingEarthProps) 
        targetMouseY = e.clientY;
     }
 
-    const handleWheel = (event: WheelEvent) => {
-      event.preventDefault()
-      const scaleFactor = event.deltaY > 0 ? 0.95 : 1.05
-      const newRadius = Math.max(containerWidth * 0.1, Math.min(containerWidth * 1.0, projection.scale() * scaleFactor))
-      projection.scale(newRadius)
-    }
-
     canvas.addEventListener("mousedown", handleMouseDown)
-    canvas.addEventListener("wheel", handleWheel, { passive: false })
     window.addEventListener("mousemove", handleGlobalMouseMove)
 
     // --- ANIMATION LOOP ---
-    const startTime = performance.now();
+    const startTime = skipAnimation ? performance.now() - 15000 : performance.now();
     const easeQuartInOut = (t: number) => t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
     const bezierInterpolate = (p0: number, p1: number, p2: number, t: number) => {
       const u = 1 - t;
@@ -458,7 +455,6 @@ export default function ConvergingEarth({ className = "" }: RotatingEarthProps) 
     return () => {
       timer.stop()
       canvas.removeEventListener("mousedown", handleMouseDown)
-      canvas.removeEventListener("wheel", handleWheel)
       window.removeEventListener("mousemove", handleGlobalMouseMove)
     }
   }, [className])
