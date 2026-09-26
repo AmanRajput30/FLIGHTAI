@@ -187,7 +187,7 @@ export default function ConvergingEarth({ className = "" }: RotatingEarthProps) 
     // --- INTERACTION STATE ---
     let rotation: [number, number] = [0, 0];
     let autoRotate = true;
-    const baseRotationSpeed = 0.05; 
+    const baseRotationSpeed = 0.3; 
     
     let mouseX = containerWidth / 2;
     let mouseY = containerHeight / 2;
