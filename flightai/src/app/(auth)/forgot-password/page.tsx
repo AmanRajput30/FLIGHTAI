@@ -54,7 +54,7 @@ export default function ForgotPasswordPage() {
         <div className="absolute bottom-16 left-12 max-w-lg z-10">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2, ...M_PRESETS.panel }}>
             <p className="text-xs text-slate-300 tracking-widest font-bold uppercase mb-4">Real-Time Aviation Intelligence</p>
-            <h1 className="text-5xl font-bold text-white mb-6 leading-tight">See the Sky<br/><span className="text-[#155EEF]">Differently.</span></h1>
+            <h1 className="text-5xl font-bold text-white mb-6 leading-tight">See the Sky<br/><span className="text-aervyn-primary">Differently.</span></h1>
             <p className="text-slate-300 text-sm leading-relaxed mb-10 max-w-md">Track. Analyze. Understand. AERVYN provides real-time flight data, powerful insights, and tools for a more connected world.</p>
             
             <div className="flex gap-8">
@@ -63,29 +63,29 @@ export default function ForgotPasswordPage() {
                   <span className="text-white text-xs">🌐</span>
                 </div>
                 <span className="text-white font-bold text-sm">190+</span>
-                <span className="text-slate-400 text-xs">Countries</span>
+                <span className="text-aervyn-text-dark-muted text-xs">Countries</span>
               </div>
               <div className="flex flex-col">
                 <div className="w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center mb-2">
                   <span className="text-white text-xs">✈️</span>
                 </div>
                 <span className="text-white font-bold text-sm">1M+</span>
-                <span className="text-slate-400 text-xs">Flights Daily</span>
+                <span className="text-aervyn-text-dark-muted text-xs">Flights Daily</span>
               </div>
               <div className="flex flex-col">
                 <div className="w-8 h-8 rounded-full border border-slate-600 flex items-center justify-center mb-2">
                   <span className="text-white text-xs">📊</span>
                 </div>
                 <span className="text-white font-bold text-sm">Real-Time</span>
-                <span className="text-slate-400 text-xs">Global Data</span>
+                <span className="text-aervyn-text-dark-muted text-xs">Global Data</span>
               </div>
             </div>
 
-            <div className="mt-12 text-slate-400 italic font-serif text-sm">
+            <div className="mt-12 text-aervyn-text-dark-muted italic font-serif text-sm">
               "A clearer sky<br/>for a more informed world."
             </div>
             
-            <div className="absolute -bottom-8 text-[10px] text-slate-500">
+            <div className="absolute -bottom-8 text-[10px] text-aervyn-text-dark-secondary">
               © {new Date().getFullYear()} AERVYN. All rights reserved.
             </div>
           </motion.div>
@@ -97,42 +97,42 @@ export default function ForgotPasswordPage() {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ delay: 0.1, ...M_PRESETS.panel }}
-        className="w-full lg:w-1/2 flex flex-col p-8 sm:p-16 xl:p-24 bg-white justify-center items-center relative"
+        className="w-full lg:w-1/2 flex flex-col p-8 sm:p-16 xl:p-24 bg-aervyn-surface-dark justify-center items-center border-l border-aervyn-border-dark relative"
       >
-        <Link href="/login" className="absolute top-8 left-8 flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors">
+        <Link href="/login" className="absolute top-8 left-8 flex items-center gap-2 text-sm font-medium text-aervyn-text-dark-secondary hover:text-aervyn-text-dark-primary transition-colors">
           <ArrowLeft className="w-4 h-4" /> Back to sign in
         </Link>
         
         <div className="w-full max-w-sm flex flex-col">
         
         <div className="mb-10 lg:hidden text-center mt-8">
-          <span className="font-bold text-xl tracking-wide text-slate-900">AERVYN</span>
+          <span className="font-bold text-xl tracking-wide text-aervyn-text-dark-primary">AERVYN</span>
         </div>
 
         <div className="mb-8 relative mt-12 lg:mt-0">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+          <h1 className="text-3xl font-bold text-aervyn-text-dark-primary mb-2">
             Reset password
           </h1>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-aervyn-text-dark-secondary">
             Enter your email and we'll send a link to reset it.
           </p>
         </div>
 
         {error && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-3 rounded-lg bg-red-50 border border-red-100 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-            <p className="text-sm text-red-700 font-medium">{error}</p>
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-3 rounded-lg bg-aervyn-status-error/10 border border-aervyn-status-error/20 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-aervyn-status-error shrink-0 mt-0.5" />
+            <p className="text-sm text-aervyn-status-error font-medium">{error}</p>
           </motion.div>
         )}
 
         {success && (
-          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mb-6 p-6 rounded-lg bg-emerald-50 border border-emerald-100 flex flex-col items-center justify-center gap-3 text-center">
-            <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center mb-2">
-              <CheckCircle2 className="w-6 h-6 text-emerald-600" />
+          <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="mb-6 p-6 rounded-lg bg-aervyn-status-success/10 border border-aervyn-status-success/20 flex flex-col items-center justify-center gap-3 text-center">
+            <div className="w-12 h-12 rounded-full bg-aervyn-status-success/20 flex items-center justify-center mb-2">
+              <CheckCircle2 className="w-6 h-6 text-aervyn-status-success/80" />
             </div>
             <div>
-              <h3 className="text-emerald-800 font-medium text-lg mb-1">Link Sent</h3>
-              <p className="text-sm text-emerald-600">{success}</p>
+              <h3 className="text-aervyn-status-success font-medium text-lg mb-1">Link Sent</h3>
+              <p className="text-sm text-aervyn-status-success/80">{success}</p>
             </div>
           </motion.div>
         )}
@@ -140,13 +140,13 @@ export default function ForgotPasswordPage() {
         {!success && (
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email address</label>
+              <label className="block text-sm font-medium text-aervyn-text-dark-muted mb-1.5">Email address</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white border border-slate-200 rounded-lg px-4 py-2.5 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-[#155EEF] focus:ring-1 focus:ring-[#155EEF] transition-shadow text-sm"
+                className="w-full bg-aervyn-bg-dark border border-aervyn-border-dark rounded-lg px-4 py-2.5 text-aervyn-text-dark-primary placeholder:text-aervyn-text-dark-muted focus:outline-none focus:border-aervyn-primary focus:ring-1 focus:ring-aervyn-primary transition-shadow text-sm"
                 placeholder="name@company.com"
               />
             </div>
@@ -154,7 +154,7 @@ export default function ForgotPasswordPage() {
             <button
               type="submit"
               disabled={isLoading || !email}
-              className="w-full mt-2 bg-[#155EEF] hover:bg-[#1D6FFF] text-white py-2.5 rounded-lg font-medium text-sm transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full mt-2 bg-aervyn-primary hover:bg-aervyn-primary-hover border border-aervyn-primary text-white py-2.5 rounded-lg font-medium text-sm transition-colors duration-200 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -164,10 +164,10 @@ export default function ForgotPasswordPage() {
           </form>
         )}
         
-        <div className="absolute bottom-8 right-8 flex gap-4 text-xs text-slate-400">
-          <Link href="/privacy" className="hover:text-slate-600 transition-colors">Privacy</Link>
-          <Link href="/terms" className="hover:text-slate-600 transition-colors">Terms</Link>
-          <Link href="/contact" className="hover:text-slate-600 transition-colors">Support</Link>
+        <div className="absolute bottom-8 right-8 flex gap-4 text-xs text-aervyn-text-dark-muted">
+          <Link href="/privacy" className="hover:text-aervyn-text-dark-secondary transition-colors">Privacy</Link>
+          <Link href="/terms" className="hover:text-aervyn-text-dark-secondary transition-colors">Terms</Link>
+          <Link href="/contact" className="hover:text-aervyn-text-dark-secondary transition-colors">Support</Link>
         </div>
         </div>
       </motion.div>
