@@ -16,6 +16,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 export default function LandingPage() {
   const { user, loading } = useAuth();
   const [stats, setStats] = useState({ users: 0, uptime: 99.9 });
+  const flights = useFlightStore((state) => state.flights);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -168,7 +169,7 @@ export default function LandingPage() {
           </div>
           <div>
             <div className="text-3xl font-bold text-aervyn-text-dark-primary">
-              {useFlightStore((state) => state.flights).length > 0 ? useFlightStore((state) => state.flights).length.toLocaleString() : '1M+'}
+              {flights.length > 0 ? flights.length.toLocaleString() : '1M+'}
             </div>
             <div className="text-sm text-aervyn-text-dark-muted mt-1">Flights Tracked Now</div>
           </div>
